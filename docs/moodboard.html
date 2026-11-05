@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview Mood Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../signal/css/signal.css">
+<style>
+/* Mood board: one column of directions, each a row of reference cards. Images are linked from their sources, not copied. */
+html, body { margin: 0; background: var(--sg-surface-base); color: var(--sg-text-primary); }
+body { font-family: var(--sg-font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+header { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 16px; border-bottom: 1px solid var(--sg-border-subtle); font-family: var(--sg-font-mono); font-size: 12px; position: sticky; top: 0; background: var(--sg-surface-base); z-index: 2; }
+header a { color: var(--sg-text-secondary); text-decoration: none; }
+main { max-width: 1240px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 22px; font-weight: 500; margin: 4px 0 6px; }
+.lead { color: var(--sg-text-secondary); max-width: 70ch; margin: 0 0 8px; }
+section { margin-top: 36px; }
+h2 { font-size: 16px; font-weight: 500; margin: 0 0 4px; display: flex; align-items: baseline; gap: 10px; }
+h2 .k { font-family: var(--sg-font-mono); font-size: 12px; color: var(--sg-text-subtle); font-weight: 400; }
+.why { color: var(--sg-text-secondary); margin: 0 0 14px; max-width: 80ch; }
+.row { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.card { background: var(--sg-surface-raised); border: 1px solid var(--sg-border-subtle); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; }
+.card .img { background: #111214; aspect-ratio: 16 / 10; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.card img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.card .b { padding: 10px 12px 12px; display: grid; gap: 4px; }
+.card .t { font-weight: 500; }
+.card .m { font-family: var(--sg-font-mono); font-size: 12px; color: var(--sg-text-subtle); }
+.card .n { font-size: 13px; color: var(--sg-text-secondary); }
+.card a { color: var(--sg-text-link); text-underline-offset: 2px; font-size: 13px; }
+.free { color: var(--sg-status-done-fg); }
+.note { margin-top: 40px; border-top: 1px solid var(--sg-border-subtle); padding-top: 14px; color: var(--sg-text-subtle); font-size: 13px; }
+</style>
+</head>
+<body>
+<header><a href="../index.html">← hub</a><span>· mood board for v6</span></header>
+<main>
+  <h1>Which world do you see?</h1>
+  <p class="lead">Four directions, each with real references. Pick the one closest to the view you have in mind, or point at single images ("this one, but…"). Images load from their original pages; licenses are as stated on those pages on 5 Nov 2026.</p>
+
+  <section>
+    <h2>A · Organised blobs, our v3 <span class="k">what you said you preferred</span></h2>
+    <p class="why">Clean islands per machine, tidy plots, blobs at their desks, the commons. Calm and readable. What it lacks: life, and a reason for each place to exist.</p>
+    <div class="row">
+      <div class="card"><div class="img"><img src="moodboard/v3.png" alt="Overview map v3"></div><div class="b"><span class="t">Overview v3</span><span class="m">ours · isometric · monochrome</span><span class="n">Organised layout to keep; add one signature element per machine and a real society.</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>B · A living office, top-down <span class="k">the genre's closest product</span></h2>
+    <p class="why">Pixel Agents already shows Claude Code sessions as pixel people in an office. Top-down three-quarter view, rooms, desks, a lounge. It works because every pixel comes from one cohesive professional pack.</p>
+    <div class="row">
+      <div class="card"><div class="img"><img src="https://github.com/pixel-agents-hq/pixel-agents/raw/main/webview-ui/public/office.png" alt="Pixel Agents office"></div><div class="b"><span class="t">Pixel Agents</span><span class="m">open source · VS Code extension · top-down</span><span class="n">Same idea as Overview, single office. Its furniture pack is paid (~$2).</span><a href="https://github.com/pablodelucca/pixel-agents">github.com/pablodelucca/pixel-agents</a></div></div>
+      <div class="card"><div class="img"><img src="https://github.com/pixel-agents-hq/pixel-agents/raw/main/webview-ui/public/banner.png" alt="Pixel Agents banner"></div><div class="b"><span class="t">Pixel Agents characters</span><span class="m">character pack: Metro City by JIK-A-4</span><span class="n">Note how much life comes from small animations: typing, reading, speech bubbles.</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>C · An organic world: gardens, crops, a village <span class="k">your "vegetable" idea</span></h2>
+    <p class="why">Each project is a garden bed and work grows like a crop: running = growing, done = ripe, failed = wilted, waiting = a blob waving with a watering can. Each machine is a farmstead with one landmark (greenhouse, well, mill). Calm, alive and readable.</p>
+    <div class="row">
+      <div class="card"><div class="img"><img src="https://img.itch.zone/aW1nLzczMTk2MTIuZ2lm/original/D6cnPB.gif" alt="Sprout Lands"></div><div class="b"><span class="t">Sprout Lands</span><span class="m">Cup Nooble · top-down 16-bit · $3.99 for commercial use</span><span class="n">The cozy-farm benchmark. Free version is non-commercial only.</span><a href="https://cupnooble.itch.io/sprout-lands-asset-pack">itch.io page</a></div></div>
+      <div class="card"><div class="img"><img src="https://kenney.nl/media/pages/assets/tiny-town/e241a9f6c0-1674742338/sample.png" alt="Kenney Tiny Town"></div><div class="b"><span class="t">Kenney Tiny Town</span><span class="m free">CC0 · free · no credit needed · 16×16</span><span class="n">Village tiles: houses, trees, fences, paths. Fully ours to use.</span><a href="https://kenney.nl/assets/tiny-town">kenney.nl</a></div></div>
+      <div class="card"><div class="img"><img src="https://img.itch.zone/aW1hZ2UvOTMyNjc3LzIwNDM4MDA4LnBuZw==/original/VLynPf.png" alt="Ninja Adventure"></div><div class="b"><span class="t">Ninja Adventure</span><span class="m free">CC0 · free · 16×16 · huge</span><span class="n">50+ characters, interiors, villages, nature, effects. One artist, very cohesive.</span><a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack">itch.io page</a></div></div>
+      <div class="card"><div class="img"><img src="https://img.itch.zone/aW1nLzIwNzk4OTMyLnBuZw==/original/fCpDoP.png" alt="Isometric Pixel Garden"></div><div class="b"><span class="t">Isometric Pixel Garden</span><span class="m">sythpixie · isometric 32×32 · free, credit the author</span><span class="n">If we keep isometric: 47 tiles and 90+ garden pieces.</span><a href="https://sythpixie.itch.io/isometric-pixel-garden">itch.io page</a></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>D · Isometric city, for comparison <span class="k">what v5 was reaching for</span></h2>
+    <p class="why">Rich when one artist draws everything; cheap the moment pieces come from different hands. Few free isometric packs are cohesive.</p>
+    <div class="row">
+      <div class="card"><div class="img"><img src="https://img.itch.zone/aW1nLzIwMTc4OTQwLnBuZw==/original/VQ16tM.png" alt="Isometric Coffee Shop"></div><div class="b"><span class="t">Isometric Coffee Shop</span><span class="m">hoshiixs · 32×32 · $1+</span><span class="n">The level of detail one hand-made building needs.</span><a href="https://hoshiixs.itch.io/isometric-coffee-shop-pixel-art">itch.io page</a></div></div>
+      <div class="card"><div class="img"><img src="https://img.itch.zone/aW1hZ2UvMTM1MTk2OC83ODc3NDY0LnBuZw==/347x500/h89nDT.png" alt="Isometric Cyberpunk City"></div><div class="b"><span class="t">Isometric Cyberpunk City</span><span class="m">monogon · ~€10 · no redistribution</span><span class="n">Neon city kit; voxel-rendered.</span><a href="https://maxparata.itch.io/isocyberpunkcity-monogon">itch.io page</a></div></div>
+    </div>
+  </section>
+
+  <p class="note">Sources: <a href="https://github.com/pablodelucca/pixel-agents">Pixel Agents</a> · <a href="https://cupnooble.itch.io/sprout-lands-asset-pack">Sprout Lands</a> · <a href="https://kenney.nl/assets/tiny-town">Kenney Tiny Town</a> · <a href="https://pixel-boy.itch.io/ninja-adventure-asset-pack">Ninja Adventure</a> · <a href="https://sythpixie.itch.io/isometric-pixel-garden">Isometric Pixel Garden</a> · <a href="https://hoshiixs.itch.io/isometric-coffee-shop-pixel-art">Isometric Coffee Shop</a> · <a href="https://maxparata.itch.io/isocyberpunkcity-monogon">Isometric Cyberpunk City</a>. The society model comes from The Sims' needs-based AI (<a href="https://gameindustrylibrary.com/documents/gmtk-the-genius-ai-behind-the-sims">GMTK: The Genius AI Behind The Sims</a>).</p>
+</main>
+</body>
+</html>
