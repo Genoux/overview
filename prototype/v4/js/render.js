@@ -25,7 +25,14 @@ export function frameTo(list, instant, minFloor) {
   const b = boundsOf(list), zMax = Math.min(G.W / G.dpr / (b.x1 - b.x0), G.H / G.dpr / (b.y1 - b.y0)); let z = G.levels[0];
   for (const l of G.levels) if (l <= zMax) z = l;
   const a = (b.x0 + b.x1) / 32, bb = (b.y0 + b.y1) / 16; G.tgt.u = (a + bb) / 2; G.tgt.v = (bb - a) / 2; G.tgt.z = z;
-  if (minFloor) { const floor = G.levels.find((l) => l >= 0.66) || G.levels[0]; if (z < floor) { G.tgt.z = floor; const w = waiting()[0]; if (w) { const fb = body(w); G.tgt.u = fb.u + 2; G.tgt.v = fb.v + 2; } } }
+  if (minFloor) {
+    const floor = G.levels.find((l) => l >= 0.66) || G.levels[0];
+    if (zMax < Math.max(z, floor)) {
+      G.tgt.z = Math.max(z, floor);
+      const urgent = G.S.filter((s) => s.state === 'wait' || s.state === 'err').map((s) => body(s)).map((b) => ({ u0: b.u - 3, v0: b.v - 3, u1: b.u + 3, v1: b.v + 3 }));
+      if (urgent.length) { const ub = boundsOf(urgent), zU = Math.min(G.W / G.dpr / (ub.x1 - ub.x0), G.H / G.dpr / (ub.y1 - ub.y0)); let z2 = G.levels[0]; for (const l of G.levels) if (l <= zU) z2 = l; G.tgt.z = Math.max(z2, floor); const a2 = (ub.x0 + ub.x1) / 32, b2 = (ub.y0 + ub.y1) / 16; G.tgt.u = (a2 + b2) / 2; G.tgt.v = (b2 - a2) / 2; }
+    }
+  }
   if (instant || reduce) Object.assign(G.cam, G.tgt);
 }
 export function fit(instant) { frameTo(G.world.hoods, instant, true); }
@@ -107,12 +114,17 @@ function slabFaces(u0, v0, u1, v1, th, cl, cr) {
   ctx.fillStyle = cl; poly([a, b, [b[0], b[1] + th], [a[0], a[1] + th]]); ctx.fill();
   ctx.fillStyle = cr; poly([b, c, [c[0], c[1] + th], [b[0], b[1] + th]]); ctx.fill();
 }
+function onScreen(u0, v0, u1, v1, pad) { const pts = [toS(u0, v0), toS(u1, v0), toS(u0, v1), toS(u1, v1)], m = (pad || 0) * G.dpr; return Math.max(...pts.map((p) => p[0])) > -m && Math.min(...pts.map((p) => p[0])) < G.W + m && Math.max(...pts.map((p) => p[1])) > -m && Math.min(...pts.map((p) => p[1])) < G.H + m; }
 function drawHood(h) {
+  if (!onScreen(h.u0, h.v0, h.u1, h.v1, 200)) return;
   const T = TINTS[h.tint], dpr = G.dpr, th = Math.max(4, Math.round(10 * G.cam.z)) * dpr;
   slabFaces(h.u0, h.v0, h.u1, h.v1, th, N(C.islandL), N(C.islandR));
   rhombus(h.u0, h.v0, h.u1, h.v1); ctx.fillStyle = N(T.ground); ctx.fill();
   ctx.save(); rhombus(h.u0, h.v0, h.u1, h.v1); ctx.clip(); ctx.globalAlpha = TEX[h.tex] || 0.07; ctx.fillStyle = C.fg; ctx.strokeStyle = C.fg; ctx.lineWidth = dpr;
-  if (h.tex === 'dots' || h.tex === 'stipple') { const st = h.tex === 'dots' ? 0.5 : 0.34; for (let u = h.u0; u <= h.u1; u += st) for (let v = h.v0; v <= h.v1; v += st) { if (h.tex === 'stipple' && (hash(u + ':' + v) & 3)) continue; const q = toS(u, v); ctx.fillRect(Math.round(q[0]), Math.round(q[1]), dpr, dpr); } }
+  if (h.tex === 'dots' || h.tex === 'stipple') {
+    if (!h.dots) { h.dots = []; const st = h.tex === 'dots' ? 0.5 : 0.34; for (let u = h.u0; u <= h.u1; u += st) for (let v = h.v0; v <= h.v1; v += st) if (h.tex === 'dots' || !(hash(u.toFixed(2) + ':' + v.toFixed(2)) & 3)) h.dots.push(u, v); }
+    for (let i = 0; i < h.dots.length; i += 2) { const q = toS(h.dots[i], h.dots[i + 1]); if (q[0] < 0 || q[1] < 0 || q[0] > G.W || q[1] > G.H) continue; ctx.fillRect(Math.round(q[0]), Math.round(q[1]), dpr, dpr); }
+  }
   else if (h.tex === 'hatch') { ctx.beginPath(); for (let s = h.u0 + h.v0; s <= h.u1 + h.v1; s += 0.5) line(s - h.v0, h.v0, s - h.v1, h.v1); ctx.stroke(); }
   else if (h.tex === 'lines') { ctx.beginPath(); for (let v = h.v0; v <= h.v1; v += 0.5) line(h.u0, v, h.u1, v); ctx.stroke(); }
   else { ctx.beginPath(); for (let u = h.u0; u <= h.u1; u++) line(u, h.v0, u, h.v1); for (let v = h.v0; v <= h.v1; v++) line(h.u0, v, h.u1, v); ctx.stroke(); }
@@ -120,10 +132,13 @@ function drawHood(h) {
   rhombus(h.u0, h.v0, h.u1, h.v1); ctx.strokeStyle = N(C.islandEdge); ctx.lineWidth = dpr; ctx.stroke();
   // the machine's name, painted big and faint along the front-right edge
   const sessions = G.S.filter((s) => hostOf(s).id === h.h.id), need = sessions.filter((s) => s.state === 'wait').length;
-  const len = groundText(h.h.name.toUpperCase(), h.u1 - 0.75, h.v1 - 1.2, 1.9, C.fg, 0.16, 500, 0.45);
+  const name = h.h.name.toUpperCase(), edge = h.v1 - h.v0;
+  if (!h.nameSize) { ctx.font = '500 20px ' + FONT.mono; let wsum = 0; for (const ch of name) wsum += ctx.measureText(ch).width; h.nameSize = Math.min(4.2, (0.8 * edge) / (wsum / 20 + 0.3 * name.length)); }
+  const ns = h.nameSize;
+  groundText(name, h.u1 - 0.95, h.v1 - 0.1 * edge, ns, C.fg, 0.09, 600, 0.3 * ns);
   const sub = h.h.sub + (h.h.lat ? ' ' + h.h.lat : '') + ' · ' + sessions.length + ' agents';
-  const l2 = groundText(sub, h.u1 - 0.75, h.v1 - 1.2 - len - 0.6, 0.62, C.fg, 0.42, 400, 0.05);
-  if (need) groundText('· ' + need + ' needs you', h.u1 - 0.75, h.v1 - 1.2 - len - 0.6 - l2 - 0.35, 0.62, C.wait, 0.95, 500, 0.05);
+  const l2 = groundText(sub, h.u1 - 0.18, h.v1 - 0.1 * edge, 0.55, C.fg, 0.45, 400, 0.04);
+  if (need) groundText('· ' + need + ' needs you', h.u1 - 0.18, h.v1 - 0.1 * edge - l2 - 0.3, 0.55, C.wait, 0.95, 500, 0.04);
 }
 function drawBridge(br) {
   const c0 = br.cells[0], c1 = br.cells[br.cells.length - 1], u0 = c0[0], v0 = c0[1], u1 = c1[0] + 1, v1 = c1[1] + 1, dpr = G.dpr;
@@ -171,18 +186,19 @@ function buildingThing(b, h, list) {
   list.push({ d: b.u + b.w - 1 + b.v + b.d - 1 + 0.4, draw: () => {
     box(b.u, b.v, b.w, b.d, b.h, N(T.roof), N(T.wall), N(T.wallShade), N(shade(T.wallShade, 0.3)));
     const lit = G.night > 0.15, glass = N(C.windowDay);
+    if (!b.litMap) { b.litMap = {}; for (let fi = 0; fi < 2; fi++) for (let x = 0; x < (fi ? b.d : b.w); x++) for (let y = 0; y < b.h; y++) b.litMap[fi + ':' + x + ':' + y] = (hash(b.seed + ':' + fi + x + ':' + y) % 100) < 20; }
     const leftFace = (x) => toS(b.u + x, b.v + b.d), rightFace = (x) => toS(b.u + b.w, b.v + b.d - x);
     for (let fi = 0; fi < 2; fi++) {
       const face = fi ? rightFace : leftFace, len = fi ? b.d : b.w;
       for (let x = 0; x < len; x++) for (let y = 0; y < b.h - 0.5; y++) {
-        const on = lit && (hash(b.seed + ':' + fi + x + ':' + y) % 100) < 45;
-        ctx.fillStyle = on ? C.windowLit : glass; ctx.globalAlpha = on ? 0.85 : 1;
+        const on = lit && b.litMap[fi + ':' + x + ':' + y];
+        ctx.fillStyle = on ? C.windowLit : glass; ctx.globalAlpha = on ? 0.5 : 1;
         poly(faceQuad(face, x + 0.3, x + 0.7, y + 0.45, y + 0.95)); ctx.fill(); ctx.globalAlpha = 1;
       }
     }
     const k = P(), rp = up(toS(b.u + b.w / 2, b.v + b.d / 2), b.h);
     if (b.roof === 'ac') R(rp[0] - 4 * k, rp[1] - 4 * k, 8 * k, 4 * k, N(shade(T.roof, 0.3)));
-    else if (b.roof === 'antenna') { R(rp[0], rp[1] - 12 * k, k, 12 * k, N(C.dim)); if (Math.floor(G.t * 1.2) % 2) R(rp[0], rp[1] - 13 * k, k, k, C.err); }
+    else if (b.roof === 'antenna') { R(rp[0], rp[1] - 12 * k, k, 12 * k, N(C.dim)); R(rp[0], rp[1] - 13 * k, k, k, N(C.faint)); }
     else if (b.roof === 'tank') { R(rp[0] - 3 * k, rp[1] - 7 * k, 6 * k, 6 * k, N(shade(T.wallShade, 0.2))); R(rp[0] - 4 * k, rp[1] - 8 * k, 8 * k, k, N(T.roof)); }
   } });
 }
@@ -333,20 +349,25 @@ export function draw(t) {
 
 /* ---------------- overlays: edge markers, tooltip, minimap ---------------- */
 const edgesEl = document.getElementById('edges'), edgeEls = {};
+const CROSS = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3 3 9" stroke="var(--err)" stroke-width="1.5"/></svg>';
 export const DIAM = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 11 6 6 11 1 6Z" fill="var(--wait)"/></svg>';
 export function edgeMarkers(onLocate) {
   const cw = G.W / G.dpr, ch = G.H / G.dpr, pad = 26, seen = {};
   for (const s of G.S) {
-    if (s.state !== 'wait' || !G.boxes[s.id]) continue;
+    if ((s.state !== 'wait' && s.state !== 'err') || !G.boxes[s.id]) continue;
     const b = G.boxes[s.id], x = b.fx / G.dpr, y = (b.y + b.h / 2) / G.dpr;
     if (x > 0 && x < cw && y > 0 && y < ch) continue;
     seen[s.id] = 1;
     const cx = cw / 2, cy = ch / 2, dx = x - cx, dy = y - cy, sc = Math.min((cw / 2 - pad - 60) / Math.abs(dx || 1e-6), (ch / 2 - pad - 34) / Math.abs(dy || 1e-6)), ang = Math.atan2(dy, dx) * 180 / Math.PI;
     let el = edgeEls[s.id];
     if (!el) { el = document.createElement('button'); el.type = 'button'; el.className = 'edge'; el.addEventListener('click', () => onLocate(s.id)); edgesEl.appendChild(el); edgeEls[s.id] = el; }
-    const label = DIAM + '<span>' + s.plot + '</span> ' + fmt(s.since) + '<svg class="ar" viewBox="0 0 10 10" style="transform:rotate(' + ang.toFixed(0) + 'deg)" aria-hidden="true"><path d="M2 5h6M5.5 2.5 8 5 5.5 7.5" fill="none" stroke="var(--dim)" stroke-width="1.2"/></svg>';
+    el.classList.toggle('err', s.state === 'err');
+    const label = (s.state === 'err' ? CROSS : DIAM) + '<span>' + s.plot + '</span> ' + fmt(s.since) + '<svg class="ar" viewBox="0 0 10 10" style="transform:rotate(' + ang.toFixed(0) + 'deg)" aria-hidden="true"><path d="M2 5h6M5.5 2.5 8 5 5.5 7.5" fill="none" stroke="var(--dim)" stroke-width="1.2"/></svg>';
     if (el._l !== label) { el.innerHTML = label; el._l = label; el.setAttribute('aria-label', s.plot + ' needs you, off screen. Go to it.'); }
-    el.style.left = (cx + dx * sc) + 'px'; el.style.top = (cy + dy * sc) + 'px';
+    let ex = cx + dx * sc, ey = cy + dy * sc;
+    const sr = stage.getBoundingClientRect();
+    stage.querySelectorAll('.zoom, .mini').forEach((ov) => { const r = ov.getBoundingClientRect(), x0 = r.left - sr.left - 70, x1 = r.right - sr.left + 70, y0 = r.top - sr.top - 16, y1 = r.bottom - sr.top + 16; if (ex > x0 && ex < x1 && ey > y0 && ey < y1) { if (ov.classList.contains('zoom')) ey = y1 + 4; else ey = y0 - 4; } });
+    el.style.left = ex + 'px'; el.style.top = ey + 'px';
   }
   for (const id in edgeEls) if (!seen[id]) { edgeEls[id].remove(); delete edgeEls[id]; }
 }

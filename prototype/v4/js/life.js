@@ -19,7 +19,7 @@ export function body(s) {
 }
 function home(s) { return W().offices[s.plot].hood; }
 function hoodOf(b) { return hoodAt(W(), b.u, b.v); }
-function goTo(b, u, v) { const p = findPath(W(), b.u, b.v, u, v); b.path = p || []; return !!p; }
+function goTo(b, u, v) { const p = findPath(W(), b.u, b.v, u, v); b.path = p || []; if (!p) { leave(b); b.noPath = true; } return !!p; }
 function claim(b, spot) { leave(b); spot.occ = b.id; b.spot = spot; }
 function leave(b) { if (b.spot && b.spot.occ === b.id) b.spot.occ = null; b.spot = null; b.seated = false; }
 function freeSpot(room, kind) { if (!room) return null; const free = room.spots.filter((x) => (!kind || x.kind === kind) && !x.occ); return free.length ? free[Math.floor(Math.random() * free.length)] : null; }
@@ -125,7 +125,7 @@ export function onStateChange(s, prev) {
     emote(b, 'bang', 1.5);
     const friends = G.S.filter((o) => o.state === 'done' && o.id !== s.id).sort((a, c) => affinity(s.id, c.id) - affinity(s.id, a.id)).slice(0, 2);
     const room = W().offices[s.plot];
-    friends.forEach((f, i) => { const fb = body(f), spot = room.visit.find((sp) => !sp.occ) || room.visit[i % room.visit.length]; leave(fb); if (spot) { claim(fb, spot); goTo(fb, spot.u, spot.v); fb.act = { type: 'comfort', friend: s.id, until: Infinity, stay: 6, label: 'comforting ' + gene(s.id).name }; } });
+    friends.forEach((f) => { const fb = body(f), spot = room.visit.find((sp) => !sp.occ); if (spot) { leave(fb); claim(fb, spot); goTo(fb, spot.u, spot.v); fb.act = { type: 'comfort', friend: s.id, until: Infinity, stay: 6, label: 'comforting ' + gene(s.id).name }; } });
   } else if (s.state === 'wait' || (prev === 'idle' && wantsDesk(s))) emote(b, 'bang', 1.6);
 }
 
@@ -137,7 +137,7 @@ export function settle() {
     b.atDesk = false;
     if (b.spot) continue;
     const hm = home(s), room = s.state === 'idle' ? (hm.park || hm.cafe) : (hm.cafe || hm.canteen || hm.park);
-    const spot = room && (freeSpot(room, s.state === 'idle' ? 'bench' : 'seat') || freeSpot(room));
+    const spot = room && (freeSpot(room, s.state === 'idle' ? 'bench' : 'seat') || freeSpot(room, 'seat') || freeSpot(room, 'bench'));
     if (spot) { claim(b, spot); b.u = spot.u; b.v = spot.v; b.seated = spot.kind === 'seat' || spot.kind === 'bench'; b.face = spot.face; b.act = { type: s.state === 'idle' ? 'sleep' : 'sit', room, until: Infinity, label: s.state === 'idle' ? 'asleep' : 'having a coffee' }; }
   }
 }
@@ -158,13 +158,14 @@ export function simulate(dt, t) {
     if (b.act.type === 'desk') b.act = { type: 'none', until: 0 };
     if (b.act.type === 'celebrate') { if (t < b.act.until) continue; b.act = { type: 'none', until: 0 }; }
     if (s.state === 'idle') {
-      if (b.act.type !== 'sleep') { const hm = home(s), room = hm.park || hm.cafe, spot = room && (freeSpot(room, 'bench') || freeSpot(room, 'seat') || freeSpot(room)); if (spot) { claim(b, spot); goTo(b, spot.u, spot.v); } b.act = { type: 'sleep', until: Infinity, label: 'asleep' }; }
+      if (b.act.type !== 'sleep') { const hm = home(s), room = hm.park || hm.cafe, spot = room && (freeSpot(room, 'bench') || freeSpot(room, 'seat')); if (spot) { claim(b, spot); if (!goTo(b, spot.u, spot.v)) leave(b); } b.act = { type: 'sleep', until: Infinity, label: 'asleep' }; }
       if (stepAlong(b, s, dt) && b.spot) { b.seated = true; b.face = b.spot.face; }
       continue;
     }
     if (b.act.type === 'sleep') b.act = { type: 'none', until: 0 };
     if (b.path.length) { stepAlong(b, s, dt); b.seated = false; waveCheck(b, t); continue; }
     b.moving = false;
+    if (b.noPath) { b.noPath = false; b.act = { type: 'pause', until: t + 1, label: 'looking around' }; continue; }
     // arrived somewhere: start the stay timer
     if (b.act.until === Infinity) {
       if (b.act.type === 'cafe' && b.act.phase === 'counter') {

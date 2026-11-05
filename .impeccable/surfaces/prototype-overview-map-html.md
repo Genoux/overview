@@ -5,7 +5,7 @@ primary_target: "prototype/overview-map.html"
 related_targets: []
 ---
 
-# Surface brief: the map (prototype/overview-map.html)
+# Surface brief: the map (prototype/v4/, formerly prototype/overview-map.html)
 
 Scope: Overview's main screen. Mode: Operate (a working monitor the owner opens during the day, pans, then returns to Orca).
 
@@ -38,6 +38,17 @@ Unresolved: whether plot positions mean something (for example, recency) or are 
 - The rail adds state filter chips and a tasks tab. It is a tracker the owner checks off; it only tracks and never writes to an agent (owner's choice). Waiting and failed sessions become tasks automatically, and brief items have a track button. When the agent moves on, the task shows "agent moved on · mark done".
 - Colours and faces now come from Signal (@barrymind/signal 0.1.1, vendored in prototype/vendor/signal). The map aliases them and the canvas reads them at boot.
 - Machine labels are optional: when no spot fits, they step aside rather than cover a callout.
+
+## v4 changes (owner requests, 2026-11-05)
+
+- Build moved to `prototype/v4/` as ES modules (core, creatures, world, life, render, ui). v3 stays as history.
+- Neighborhoods are generated per machine from its id: a muted tint (one of slate, sage, clay, plum, sand), a ground texture, a skyline of closed buildings with windows and roof props, project offices as low open-front rooms, a café, and a canteen or a park. Streets between lots, and bridges with the SSH latency.
+- The owner chose "Muted tints": low-chroma hues only on terrain, walls and roofs, and status stays the only saturated colour. Tints live in Signal as `overview.color.hood.*`.
+- Names are painted on the ground in perspective, big and faint, like a country name on a map (the owner's reference image). That covers the machine name plus its sub-line and needs-you count, project names on office floors, café, canteen and park. Floating machine and project labels are gone; only callouts and speech float.
+- Life: social pull toward occupied rooms; café visits (counter, then a seat), lunch rush at the canteen during real lunch hours, park naps, street chats, greeting friends at work, comforting a friend who failed, and celebrating a finish. Waves happen when creatures pass each other, and friendship grows with time spent talking.
+- Conversations: groups that share a room or stand close take turns speaking. Lines come from the real sessions (status gossip, the speaker's own work), small talk, or a reply to a question. Words show from 1.5x zoom; below that a glyph bubble shows instead. Speech uses the label placer at the lowest priority and never covers a callout.
+- Expressions: focus at the desk, worried while waiting, surprised on "!", happy when free, closed when asleep, x when melted. Plus emotes (coffee, food, heart, star, wave, note, ?, !), a sweat drop on failure, and squash on landing.
+- Day and night follow the real clock (override with ?hour=). Terrain and buildings shade toward night, and windows light warm; creatures and status colours are never shaded. A clock in the title bar shows the time and part of day.
 
 ## Direction contract
 

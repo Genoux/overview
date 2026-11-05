@@ -25,7 +25,7 @@ export const C = {
   islandL: '#161719', islandR: '#121314', islandEdge: '#38393c', bridgeTop: '#202123',
   gridMinor: 'rgba(233,233,235,0.035)', gridMajor: 'rgba(233,233,235,0.085)', cross: 'rgba(233,233,235,0.28)', tick: 'rgba(233,233,235,0.25)', plank: 'rgba(233,233,235,0.12)',
   shadow: 'rgba(0,0,0,0.38)', creatureInk: '#0e0f10', slabRim: '#3b3c3f', slabCursor: '#5a5c60', slabCrack: '#5c211a', minimapPlate: '#323336',
-  windowDay: '#20242a', windowLit: '#b9a77a', park: '#1f2520', treeDark: '#2f3d33', treeLight: '#455a49', trunk: '#3a2f28',
+  windowDay: '#20242a', windowLit: '#8e8774', park: '#1f2520', treeDark: '#2f3d33', treeLight: '#455a49', trunk: '#3a2f28',
   furniture: '#34363a', furnitureTop: '#44464b', night: '#0d1018'
 };
 export const TEX = { dots: 0.12, hatch: 0.08, grid: 0.07, commonsEdge: 0.18 };
