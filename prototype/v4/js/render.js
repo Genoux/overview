@@ -363,10 +363,12 @@ export function edgeMarkers(onLocate) {
     if (!el) { el = document.createElement('button'); el.type = 'button'; el.className = 'edge'; el.addEventListener('click', () => onLocate(s.id)); edgesEl.appendChild(el); edgeEls[s.id] = el; }
     el.classList.toggle('err', s.state === 'err');
     const label = (s.state === 'err' ? CROSS : DIAM) + '<span>' + s.plot + '</span> ' + fmt(s.since) + '<svg class="ar" viewBox="0 0 10 10" style="transform:rotate(' + ang.toFixed(0) + 'deg)" aria-hidden="true"><path d="M2 5h6M5.5 2.5 8 5 5.5 7.5" fill="none" stroke="var(--dim)" stroke-width="1.2"/></svg>';
-    if (el._l !== label) { el.innerHTML = label; el._l = label; el.setAttribute('aria-label', s.plot + ' needs you, off screen. Go to it.'); }
+    if (el._l !== label) { el.innerHTML = label; el._l = label; el.setAttribute('aria-label', s.plot + (s.state === 'err' ? ' failed' : ' needs you') + ', off screen. Go to it.'); }
     let ex = cx + dx * sc, ey = cy + dy * sc;
     const sr = stage.getBoundingClientRect();
-    stage.querySelectorAll('.zoom, .mini').forEach((ov) => { const r = ov.getBoundingClientRect(), x0 = r.left - sr.left - 70, x1 = r.right - sr.left + 70, y0 = r.top - sr.top - 16, y1 = r.bottom - sr.top + 16; if (ex > x0 && ex < x1 && ey > y0 && ey < y1) { if (ov.classList.contains('zoom')) ey = y1 + 4; else ey = y0 - 4; } });
+    const hw = el.offsetWidth / 2 + 6, hh = el.offsetHeight / 2 + 6;
+    stage.querySelectorAll('.zoom, .mini').forEach((ov) => { const r = ov.getBoundingClientRect(), x0 = r.left - sr.left - hw, x1 = r.right - sr.left + hw, y0 = r.top - sr.top - hh, y1 = r.bottom - sr.top + hh; if (ex > x0 && ex < x1 && ey > y0 && ey < y1) ey = ov.classList.contains('zoom') ? y1 : y0; });
+    ex = Math.max(hw, Math.min(cw - hw, ex));
     el.style.left = ex + 'px'; el.style.top = ey + 'px';
   }
   for (const id in edgeEls) if (!seen[id]) { edgeEls[id].remove(); delete edgeEls[id]; }

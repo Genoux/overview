@@ -178,3 +178,4 @@ svg.i { width: 12px; height: 12px; flex: none; display: inline-block; vertical-a
 @media (max-width: 860px) { .clock { display: none; } }
 .edge.err { border-color: var(--sg-status-err-border); }
 .edge.err span { color: var(--err); }
+.edge.err:hover { background: var(--sg-status-err-bg); }
