@@ -13,7 +13,8 @@ A read-only monitor of every coding-agent session (Orca, Claude Code, Codex, SSH
 | Path | What |
 |---|---|
 | `index.html` | Local hub linking every prototype and doc |
-| `prototype/v5/` | Current prototype (map v5). Same modules as v4 plus `pix.js`, which rasterises landmark sprites pixel by pixel (2:1 edges, 3-tone faces, outline) so they share the creatures' pixel grid. Never draw world objects as smooth vector shapes |
+| `prototype/v6/` | Current prototype (map v6): v3's organised islands, one signature landmark per machine, a plant per desk as the status readout, and a needs-based society in `life.js` (energy, hunger, social, fun; places advertise what they restore). The world is drawn at 1 art pixel per pixel into an offscreen image and enlarged at once (no zoom glitch). Fallback art if needed: sythpixie Isometric Pixel Garden (credit required) |
+| `prototype/v5/` | Map v5 (history). Same modules as v4 plus `pix.js`, which rasterises landmark sprites pixel by pixel (2:1 edges, 3-tone faces, outline) so they share the creatures' pixel grid. Never draw world objects as smooth vector shapes |
 | `prototype/v4/` | Map v4 (history): ES modules in `js/`: `core` (state, palette from Signal, sample data), `creatures` (genome, sprites, emotes), `world` (neighborhood generation, A*), `life` (simulation, conversations), `render` (canvas), `ui` (rail, input, boot). Needs `./serve.sh` because modules don't load from file:// |
 | `prototype/overview-map.html` | Map v3, single file. `map.html` (v2) and `world.html` (v1) are history |
 | `prototype/vendor/signal/` | Copy of the Signal CSS the prototype loads. Never edit it here |
