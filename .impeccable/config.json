@@ -29,6 +29,12 @@
         ],
         "createdAt": "2026-11-05T15:50:59.785Z",
         "reason": "Claude: world.html is the superseded v1 prototype the owner rejected, kept only as history; it predates DESIGN.md and is not maintained"
+      },
+      {
+        "rule": "overused-font",
+        "value": "instrument sans",
+        "createdAt": "2026-11-05T17:08:27.644Z",
+        "reason": "Claude: Instrument Sans is Signal's prose face, inherited from Hangar's Signal tokens; John approved this look ('doesn't feel too much like AI')"
       }
     ]
   }
