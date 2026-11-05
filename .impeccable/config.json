@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "prototype/map.html"
+        ],
+        "createdAt": "2026-11-05T15:37:21.831Z",
+        "reason": "Claude: div.tabs is a tab strip whose active tab draws a 2px underline on the strip's bottom rule; text flush to that rule is the pattern, as in Hangar's Signal tabs"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "prototype/overview-map.html"
+        ],
+        "createdAt": "2026-11-05T15:42:13.776Z",
+        "reason": "Claude: same tab strip as map.html; active tab underline sits on the strip's bottom rule by design"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          "prototype/world.html"
+        ],
+        "createdAt": "2026-11-05T15:50:59.785Z",
+        "reason": "Claude: world.html is the superseded v1 prototype the owner rejected, kept only as history; it predates DESIGN.md and is not maintained"
+      }
+    ]
+  }
+}

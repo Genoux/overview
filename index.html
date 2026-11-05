@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../signal/css/signal.css">
+<link rel="stylesheet" href="../signal/css/components.css">
+<style>
+/* Local hub: one column of grouped links, Signal tokens only. Served by ./serve.sh; nothing here is bound to an account. */
+html, body { margin: 0; background: var(--sg-surface-base); color: var(--sg-text-primary); }
+body { font-family: var(--sg-font-sans); font-size: 13px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+header { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 16px; border-bottom: 1px solid var(--sg-border-subtle); font-family: var(--sg-font-mono); font-size: 12px; }
+header b { font-weight: 500; }
+header span { color: var(--sg-text-secondary); }
+header .sp { flex: 1; }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 20px; font-weight: 500; margin: 8px 0 4px; }
+.lead { color: var(--sg-text-secondary); margin: 0 0 8px; max-width: 62ch; }
+section { margin-top: 24px; }
+h2 { font-family: var(--sg-font-mono); font-size: 11px; font-weight: 400; color: var(--sg-text-subtle); letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 8px; display: flex; gap: 8px; }
+h2 span { color: var(--sg-text-primary); letter-spacing: 0; }
+.list { border: 1px solid var(--sg-border-subtle); border-radius: 6px; overflow: hidden; background: var(--sg-surface-raised); }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 16px; padding: 10px 12px; text-decoration: none; color: inherit; align-items: baseline; }
+.item + .item { border-top: 1px solid var(--sg-border-subtle); }
+.item:hover { background: var(--sg-state-hover-control); }
+.item:focus-visible { outline: 2px solid var(--sg-border-focus); outline-offset: -2px; }
+.item .t { font-size: 14px; font-weight: 500; }
+.item .p { font-family: var(--sg-font-mono); font-size: 11px; color: var(--sg-text-subtle); white-space: nowrap; }
+.item .d { grid-column: 1 / -1; color: var(--sg-text-secondary); font-size: 12.5px; }
+.cur { font-family: var(--sg-font-mono); font-size: 11px; color: var(--sg-status-done-fg); margin-left: 6px; font-weight: 400; }
+.note { margin-top: 24px; font-family: var(--sg-font-mono); font-size: 12.5px; color: var(--sg-text-subtle); border-top: 1px solid var(--sg-border-subtle); padding-top: 12px; }
+.note code { color: var(--sg-text-secondary); }
+</style>
+</head>
+<body>
+<header><b>overview</b><span>· local hub</span><span class="sp"></span><span>files on this machine · no account</span></header>
+<main>
+  <h1>Overview and Signal</h1>
+  <p class="lead">Everything for the project, served from this folder. Edit the files, refresh the page. Nothing here is uploaded or tied to a Claude account.</p>
+
+  <section>
+    <h2>prototypes <span>3</span></h2>
+    <div class="list">
+      <a class="item" href="prototype/overview-map.html"><span class="t">Map v3<span class="cur">current</span></span><span class="p">prototype/overview-map.html</span><span class="d">Islands, creature life, tracker. Uses Signal from prototype/vendor/signal.</span></a>
+      <a class="item" href="prototype/map.html"><span class="t">Map v2</span><span class="p">prototype/map.html</span><span class="d">First isometric metric grid. Kept as history.</span></a>
+      <a class="item" href="prototype/world.html"><span class="t">World v1</span><span class="p">prototype/world.html</span><span class="d">Side-view pixel office. Rejected as "vibe coded"; kept as history.</span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>project docs <span>4</span></h2>
+    <div class="list">
+      <a class="item" href="docs/view.html?f=PLAN.md"><span class="t">Product plan</span><span class="p">docs/PLAN.md</span><span class="d">Vision, pipeline, stack, security, roadmap, open questions.</span></a>
+      <a class="item" href="docs/view.html?f=../PRODUCT.md"><span class="t">Product facts</span><span class="p">PRODUCT.md</span><span class="d">Users, purpose, constraints, principles.</span></a>
+      <a class="item" href="docs/view.html?f=../DESIGN.md"><span class="t">Design system for Overview</span><span class="p">DESIGN.md</span><span class="d">How the map uses Signal: projection, terrain, creatures, labels, motion.</span></a>
+      <a class="item" href="docs/view.html?f=../.impeccable/surfaces/prototype-overview-map-html.md"><span class="t">Map design brief</span><span class="p">.impeccable/surfaces/…</span><span class="d">The direction contract and every recorded change.</span></a>
+    </div>
+  </section>
+
+  <section>
+    <h2>signal design system <span>4</span></h2>
+    <div class="list">
+      <a class="item" href="../signal/index.html"><span class="t">Signal reference</span><span class="p">signal/index.html</span><span class="d">Every token and component, live. Press t for the Fog theme.</span></a>
+      <a class="item" href="docs/view.html?f=../../signal/docs/reference/README.md"><span class="t">Brand book</span><span class="p">signal/docs/reference/README.md</span><span class="d">Principles, voice, iconography and usage rules.</span></a>
+      <a class="item" href="docs/view.html?f=../../signal/docs/reference/gaps.md"><span class="t">Gaps and open decisions</span><span class="p">signal/docs/reference/gaps.md</span><span class="d">Unapproved Fog colours, contrast notes, Overview vs Hangar.</span></a>
+      <a class="item" href="docs/view.html?f=../../signal/README.md"><span class="t">Package readme</span><span class="p">signal/README.md</span><span class="d">How apps import Signal, naming, how to add an extension.</span></a>
+    </div>
+  </section>
+
+  <p class="note">Start with <code>./serve.sh</code>. After changing Signal, run <code>./scripts/sync-signal.sh</code> to copy it into the prototype.</p>
+</main>
+</body>
+</html>

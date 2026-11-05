@@ -1,0 +1,1689 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-05T16:59:12+00:00",
+  "title": "Design System: Overview",
+  "extensions": {
+    "tokenSource": {
+      "package": "@barrymind/signal",
+      "version": "0.1.1",
+      "vendored": [
+        "prototype/vendor/signal/signal.css",
+        "prototype/vendor/signal/overview.css"
+      ],
+      "sourceRepo": "/Users/johnbarry/Desktop/@john/signal",
+      "note": "Overview owns no token values. Frontmatter keys are Signal custom-property names without \"--\"; values mirror Signal 0.1.1 for tooling. Edit tokens/*.tokens.json in Signal and rebuild."
+    },
+    "colorMeta": {
+      "sg-accent-fg": {
+        "role": "primary",
+        "displayName": "Signal Periwinkle",
+        "cssVar": "--sg-accent-fg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#888ff7",
+        "oklch": "oklch(69.0% 0.152 279)",
+        "tonalRamp": [
+          "#08091b",
+          "#1f2045",
+          "#383b73",
+          "#5357a6",
+          "#7075da",
+          "#959df0",
+          "#bbc4ff",
+          "#e4ebff"
+        ]
+      },
+      "sg-accent-bg": {
+        "role": "primary",
+        "displayName": "Accent Bg",
+        "cssVar": "--sg-accent-bg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(136 143 247 / 0.12)",
+        "oklch": "oklch(69.0% 0.152 279 / 0.12)",
+        "tonalRamp": [
+          "#08091b",
+          "#1f2045",
+          "#383b73",
+          "#5357a6",
+          "#7075da",
+          "#959df0",
+          "#bbc4ff",
+          "#e4ebff"
+        ],
+        "alphaOf": "#888ff7"
+      },
+      "sg-accent-bg-hover": {
+        "role": "primary",
+        "displayName": "Accent Bg Hover",
+        "cssVar": "--sg-accent-bg-hover",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(136 143 247 / 0.2)",
+        "oklch": "oklch(69.0% 0.152 279 / 0.2)",
+        "tonalRamp": [
+          "#08091b",
+          "#1f2045",
+          "#383b73",
+          "#5357a6",
+          "#7075da",
+          "#959df0",
+          "#bbc4ff",
+          "#e4ebff"
+        ],
+        "alphaOf": "#888ff7"
+      },
+      "sg-accent-border": {
+        "role": "primary",
+        "displayName": "Accent Border",
+        "cssVar": "--sg-accent-border",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(136 143 247 / 0.6)",
+        "oklch": "oklch(69.0% 0.152 279 / 0.6)",
+        "tonalRamp": [
+          "#08091b",
+          "#1f2045",
+          "#383b73",
+          "#5357a6",
+          "#7075da",
+          "#959df0",
+          "#bbc4ff",
+          "#e4ebff"
+        ],
+        "alphaOf": "#888ff7"
+      },
+      "sg-selection-bg": {
+        "role": "primary",
+        "displayName": "Selection Bg",
+        "cssVar": "--sg-selection-bg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(136 143 247 / 0.3)",
+        "oklch": "oklch(69.0% 0.152 279 / 0.3)",
+        "tonalRamp": [
+          "#08091b",
+          "#1f2045",
+          "#383b73",
+          "#5357a6",
+          "#7075da",
+          "#959df0",
+          "#bbc4ff",
+          "#e4ebff"
+        ],
+        "alphaOf": "#888ff7"
+      },
+      "sg-status-wait-fg": {
+        "role": "status",
+        "displayName": "Needs-You Yellow",
+        "cssVar": "--sg-status-wait-fg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#fec04a",
+        "oklch": "oklch(84.4% 0.148 80)",
+        "tonalRamp": [
+          "#130900",
+          "#352000",
+          "#5b3b00",
+          "#855700",
+          "#af7600",
+          "#cc9c45",
+          "#e8c385",
+          "#ffebc0"
+        ]
+      },
+      "sg-status-wait-bg": {
+        "role": "status",
+        "displayName": "Status Wait Bg",
+        "cssVar": "--sg-status-wait-bg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(254 192 74 / 0.06)",
+        "oklch": "oklch(84.4% 0.148 80 / 0.06)",
+        "tonalRamp": [
+          "#130900",
+          "#352000",
+          "#5b3b00",
+          "#855700",
+          "#af7600",
+          "#cc9c45",
+          "#e8c385",
+          "#ffebc0"
+        ],
+        "alphaOf": "#fec04a"
+      },
+      "sg-status-wait-border": {
+        "role": "status",
+        "displayName": "Status Wait Border",
+        "cssVar": "--sg-status-wait-border",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(254 192 74 / 0.4)",
+        "oklch": "oklch(84.4% 0.148 80 / 0.4)",
+        "tonalRamp": [
+          "#130900",
+          "#352000",
+          "#5b3b00",
+          "#855700",
+          "#af7600",
+          "#cc9c45",
+          "#e8c385",
+          "#ffebc0"
+        ],
+        "alphaOf": "#fec04a"
+      },
+      "sg-status-err-fg": {
+        "role": "status",
+        "displayName": "Failed Coral",
+        "cssVar": "--sg-status-err-fg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#f26b59",
+        "oklch": "oklch(69.0% 0.170 30)",
+        "tonalRamp": [
+          "#1a0402",
+          "#42130d",
+          "#70261d",
+          "#a13a2e",
+          "#d45141",
+          "#ee8272",
+          "#ffb0a2",
+          "#ffded3"
+        ]
+      },
+      "sg-status-err-bg": {
+        "role": "status",
+        "displayName": "Status Err Bg",
+        "cssVar": "--sg-status-err-bg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(242 107 89 / 0.06)",
+        "oklch": "oklch(69.0% 0.170 30 / 0.06)",
+        "tonalRamp": [
+          "#1a0402",
+          "#42130d",
+          "#70261d",
+          "#a13a2e",
+          "#d45141",
+          "#ee8272",
+          "#ffb0a2",
+          "#ffded3"
+        ],
+        "alphaOf": "#f26b59"
+      },
+      "sg-status-err-border": {
+        "role": "status",
+        "displayName": "Status Err Border",
+        "cssVar": "--sg-status-err-border",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(242 107 89 / 0.4)",
+        "oklch": "oklch(69.0% 0.170 30 / 0.4)",
+        "tonalRamp": [
+          "#1a0402",
+          "#42130d",
+          "#70261d",
+          "#a13a2e",
+          "#d45141",
+          "#ee8272",
+          "#ffb0a2",
+          "#ffded3"
+        ],
+        "alphaOf": "#f26b59"
+      },
+      "sg-status-done-fg": {
+        "role": "status",
+        "displayName": "Done Sage",
+        "cssVar": "--sg-status-done-fg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#86c2a2",
+        "oklch": "oklch(76.4% 0.077 161)",
+        "tonalRamp": [
+          "#050e08",
+          "#152a1f",
+          "#294a39",
+          "#3f6d55",
+          "#579173",
+          "#83b198",
+          "#afd3bf",
+          "#ddf6e7"
+        ]
+      },
+      "sg-status-run-fg": {
+        "role": "status",
+        "displayName": "Running Steel",
+        "cssVar": "--sg-status-run-fg",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#cad0d7",
+        "oklch": "oklch(85.5% 0.012 252)",
+        "tonalRamp": [
+          "#0a0b0c",
+          "#232528",
+          "#3f4246",
+          "#5d6267",
+          "#7d8389",
+          "#a1a5ab",
+          "#c6c9ce",
+          "#eceff2"
+        ]
+      },
+      "sg-surface-base": {
+        "role": "neutral",
+        "displayName": "Graphite Base",
+        "cssVar": "--sg-surface-base",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#202123",
+        "oklch": "oklch(24.8% 0.004 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-surface-raised": {
+        "role": "neutral",
+        "displayName": "Graphite Panel",
+        "cssVar": "--sg-surface-raised",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#262729",
+        "oklch": "oklch(27.2% 0.004 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeeef"
+        ]
+      },
+      "sg-surface-sunken": {
+        "role": "neutral",
+        "displayName": "Graphite Well",
+        "cssVar": "--sg-surface-sunken",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#1a1b1c",
+        "oklch": "oklch(22.1% 0.002 248)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#414243",
+          "#606162",
+          "#818284",
+          "#a4a5a6",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-surface-selected": {
+        "role": "neutral",
+        "displayName": "Selected Row",
+        "cssVar": "--sg-surface-selected",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#2e2e30",
+        "oklch": "oklch(30.2% 0.004 286)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616163",
+          "#828284",
+          "#a5a5a7",
+          "#c9c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-state-hover": {
+        "role": "neutral",
+        "displayName": "State Hover",
+        "cssVar": "--sg-state-hover",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(233 233 235 / 0.04)",
+        "oklch": "oklch(93.5% 0.003 286 / 0.04)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#e9e9eb"
+      },
+      "sg-state-hover-control": {
+        "role": "neutral",
+        "displayName": "State Hover Control",
+        "cssVar": "--sg-state-hover-control",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(233 233 235 / 0.06)",
+        "oklch": "oklch(93.5% 0.003 286 / 0.06)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#e9e9eb"
+      },
+      "sg-border-subtle": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "cssVar": "--sg-border-subtle",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#303133",
+        "oklch": "oklch(31.3% 0.004 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeeef"
+        ]
+      },
+      "sg-border-default": {
+        "role": "neutral",
+        "displayName": "Hairline Strong",
+        "cssVar": "--sg-border-default",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#424345",
+        "oklch": "oklch(38.3% 0.004 265)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818284",
+          "#a4a5a7",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-border-strong": {
+        "role": "neutral",
+        "displayName": "Hover Edge",
+        "cssVar": "--sg-border-strong",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#77787a",
+        "oklch": "oklch(57.2% 0.003 265)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818284",
+          "#a4a5a7",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-border-control": {
+        "role": "neutral",
+        "displayName": "Control Border",
+        "cssVar": "--sg-border-control",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#77787a",
+        "oklch": "oklch(57.2% 0.003 265)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818284",
+          "#a4a5a7",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-text-primary": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "cssVar": "--sg-text-primary",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#e9e9eb",
+        "oklch": "oklch(93.5% 0.003 286)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-text-secondary": {
+        "role": "neutral",
+        "displayName": "Dim",
+        "cssVar": "--sg-text-secondary",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#abacae",
+        "oklch": "oklch(74.4% 0.003 265)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818284",
+          "#a4a5a6",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-text-subtle": {
+        "role": "neutral",
+        "displayName": "Subtle",
+        "cssVar": "--sg-text-subtle",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#9b9c9e",
+        "oklch": "oklch(69.3% 0.003 265)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818284",
+          "#a4a5a7",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-text-disabled": {
+        "role": "neutral",
+        "displayName": "Faint",
+        "cssVar": "--sg-text-disabled",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#727375",
+        "oklch": "oklch(55.5% 0.003 265)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818284",
+          "#a4a5a7",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-text-on-accent": {
+        "role": "neutral",
+        "displayName": "On Accent",
+        "cssVar": "--sg-text-on-accent",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "#1a1b1c",
+        "oklch": "oklch(22.1% 0.002 248)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#414243",
+          "#606162",
+          "#818284",
+          "#a4a5a6",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-overlay-label": {
+        "role": "neutral",
+        "displayName": "Label Scrim",
+        "cssVar": "--sg-overlay-label",
+        "source": "@barrymind/signal 0.1.1 signal.css",
+        "canonical": "rgb(26 27 28 / 0.86)",
+        "oklch": "oklch(22.1% 0.002 248 / 0.86)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#414243",
+          "#606162",
+          "#818284",
+          "#a4a5a6",
+          "#c8c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#1a1b1c"
+      },
+      "sg-overview-ground": {
+        "role": "terrain",
+        "displayName": "Ground",
+        "cssVar": "--sg-overview-ground",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#1b1c1e",
+        "oklch": "oklch(22.6% 0.004 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-plate": {
+        "role": "terrain",
+        "displayName": "Plate",
+        "cssVar": "--sg-overview-plate",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#232426",
+        "oklch": "oklch(26.0% 0.004 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeeef"
+        ]
+      },
+      "sg-overview-plate-face-left": {
+        "role": "terrain",
+        "displayName": "Plate Face Left",
+        "cssVar": "--sg-overview-plate-face-left",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#18191b",
+        "oklch": "oklch(21.3% 0.004 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-plate-face-right": {
+        "role": "terrain",
+        "displayName": "Plate Face Right",
+        "cssVar": "--sg-overview-plate-face-right",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#131415",
+        "oklch": "oklch(19.1% 0.003 248)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606162",
+          "#818284",
+          "#a4a5a6",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-overview-minimap-plate": {
+        "role": "neutral",
+        "displayName": "Minimap Plate",
+        "cssVar": "--sg-overview-minimap-plate",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#323336",
+        "oklch": "oklch(32.1% 0.005 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414244",
+          "#606164",
+          "#818286",
+          "#a4a5a8",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-wait-wash-hover": {
+        "role": "neutral",
+        "displayName": "Wait Wash Hover",
+        "cssVar": "--sg-overview-wait-wash-hover",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#2f2c25",
+        "oklch": "oklch(29.4% 0.013 88)",
+        "tonalRamp": [
+          "#0c0b0a",
+          "#262522",
+          "#44423d",
+          "#64615a",
+          "#85827a",
+          "#a8a59e",
+          "#cbc9c3",
+          "#f0eeea"
+        ]
+      },
+      "sg-overview-hud-minimap": {
+        "role": "neutral",
+        "displayName": "Hud Minimap",
+        "cssVar": "--sg-overview-hud-minimap",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "rgb(26 27 28 / 0.9)",
+        "oklch": "oklch(22.1% 0.002 248 / 0.9)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#414243",
+          "#606162",
+          "#818284",
+          "#a4a5a6",
+          "#c8c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#1a1b1c"
+      },
+      "sg-overview-terrain-island-top": {
+        "role": "terrain",
+        "displayName": "Terrain Island Top",
+        "cssVar": "--sg-overview-terrain-island-top",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#1f2022",
+        "oklch": "oklch(24.3% 0.004 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-terrain-island-face-left": {
+        "role": "terrain",
+        "displayName": "Terrain Island Face Left",
+        "cssVar": "--sg-overview-terrain-island-face-left",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#161719",
+        "oklch": "oklch(20.4% 0.004 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-terrain-island-face-right": {
+        "role": "terrain",
+        "displayName": "Terrain Island Face Right",
+        "cssVar": "--sg-overview-terrain-island-face-right",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#121314",
+        "oklch": "oklch(18.6% 0.003 248)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606162",
+          "#818284",
+          "#a4a5a6",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-overview-terrain-island-edge": {
+        "role": "terrain",
+        "displayName": "Terrain Island Edge",
+        "cssVar": "--sg-overview-terrain-island-edge",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#38393c",
+        "oklch": "oklch(34.5% 0.005 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414244",
+          "#606164",
+          "#818286",
+          "#a4a5a8",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-terrain-commons": {
+        "role": "terrain",
+        "displayName": "Commons",
+        "cssVar": "--sg-overview-terrain-commons",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#242527",
+        "oklch": "oklch(26.4% 0.004 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeeef"
+        ]
+      },
+      "sg-overview-terrain-bridge-top": {
+        "role": "terrain",
+        "displayName": "Terrain Bridge Top",
+        "cssVar": "--sg-overview-terrain-bridge-top",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#202123",
+        "oklch": "oklch(24.8% 0.004 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-prop-bench-top": {
+        "role": "terrain",
+        "displayName": "Prop Bench Top",
+        "cssVar": "--sg-overview-prop-bench-top",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#2e2f32",
+        "oklch": "oklch(30.5% 0.006 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414244",
+          "#606164",
+          "#818286",
+          "#a4a5a8",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-prop-bench-face-left": {
+        "role": "terrain",
+        "displayName": "Prop Bench Face Left",
+        "cssVar": "--sg-overview-prop-bench-face-left",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#2a2b2e",
+        "oklch": "oklch(28.9% 0.006 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414244",
+          "#606164",
+          "#818286",
+          "#a4a5a8",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-prop-bench-face-right": {
+        "role": "terrain",
+        "displayName": "Prop Bench Face Right",
+        "cssVar": "--sg-overview-prop-bench-face-right",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#232427",
+        "oklch": "oklch(26.0% 0.006 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242526",
+          "#414244",
+          "#606164",
+          "#818286",
+          "#a4a5a8",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-prop-bench-edge": {
+        "role": "terrain",
+        "displayName": "Prop Bench Edge",
+        "cssVar": "--sg-overview-prop-bench-edge",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#46474a",
+        "oklch": "oklch(39.8% 0.005 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414244",
+          "#606164",
+          "#818285",
+          "#a4a5a8",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-lattice-grid-minor": {
+        "role": "terrain",
+        "displayName": "Lattice Grid Minor",
+        "cssVar": "--sg-overview-lattice-grid-minor",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "rgb(233 233 235 / 0.035)",
+        "oklch": "oklch(93.5% 0.003 286 / 0.035)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#e9e9eb"
+      },
+      "sg-overview-lattice-grid-major": {
+        "role": "terrain",
+        "displayName": "Lattice Grid Major",
+        "cssVar": "--sg-overview-lattice-grid-major",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "rgb(233 233 235 / 0.085)",
+        "oklch": "oklch(93.5% 0.003 286 / 0.085)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#e9e9eb"
+      },
+      "sg-overview-lattice-survey-cross": {
+        "role": "terrain",
+        "displayName": "Lattice Survey Cross",
+        "cssVar": "--sg-overview-lattice-survey-cross",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "rgb(233 233 235 / 0.28)",
+        "oklch": "oklch(93.5% 0.003 286 / 0.28)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#e9e9eb"
+      },
+      "sg-overview-lattice-graticule-tick": {
+        "role": "terrain",
+        "displayName": "Lattice Graticule Tick",
+        "cssVar": "--sg-overview-lattice-graticule-tick",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "rgb(233 233 235 / 0.25)",
+        "oklch": "oklch(93.5% 0.003 286 / 0.25)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#e9e9eb"
+      },
+      "sg-overview-lattice-plate-tick": {
+        "role": "terrain",
+        "displayName": "Lattice Plate Tick",
+        "cssVar": "--sg-overview-lattice-plate-tick",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "rgb(233 233 235 / 0.12)",
+        "oklch": "oklch(93.5% 0.003 286 / 0.12)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#424243",
+          "#616162",
+          "#828284",
+          "#a5a5a6",
+          "#c9c9ca",
+          "#eeeeef"
+        ],
+        "alphaOf": "#e9e9eb"
+      },
+      "sg-overview-creature-ink": {
+        "role": "creature",
+        "displayName": "Creature Ink",
+        "cssVar": "--sg-overview-creature-ink",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#0e0f10",
+        "oklch": "oklch(16.8% 0.003 248)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252526",
+          "#414243",
+          "#606162",
+          "#818284",
+          "#a4a5a6",
+          "#c8c9ca",
+          "#eeeeef"
+        ]
+      },
+      "sg-overview-creature-shadow": {
+        "role": "creature",
+        "displayName": "Creature Shadow",
+        "cssVar": "--sg-overview-creature-shadow",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "rgb(0 0 0 / 0.38)",
+        "oklch": "oklch(0.0% 0.000 0 / 0.38)",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ],
+        "alphaOf": "#000000"
+      },
+      "sg-overview-creature-pale-shade": {
+        "role": "creature",
+        "displayName": "Creature Pale Shade",
+        "cssVar": "--sg-overview-creature-pale-shade",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#66686d",
+        "oklch": "oklch(51.7% 0.008 268)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414245",
+          "#5f6165",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef1"
+        ]
+      },
+      "sg-overview-creature-pale-base": {
+        "role": "creature",
+        "displayName": "Creature Pale Base",
+        "cssVar": "--sg-overview-creature-pale-base",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#9a9ca1",
+        "oklch": "oklch(69.3% 0.008 269)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414245",
+          "#606165",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef1"
+        ]
+      },
+      "sg-overview-creature-pale-light": {
+        "role": "creature",
+        "displayName": "Creature Pale Light",
+        "cssVar": "--sg-overview-creature-pale-light",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#bfc1c5",
+        "oklch": "oklch(81.1% 0.006 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242526",
+          "#414244",
+          "#606164",
+          "#808286",
+          "#a3a5a8",
+          "#c8c9cb",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-creature-pale-highlight": {
+        "role": "creature",
+        "displayName": "Creature Pale Highlight",
+        "cssVar": "--sg-overview-creature-pale-highlight",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#e1e2e5",
+        "oklch": "oklch(91.3% 0.004 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-creature-lit-shade": {
+        "role": "creature",
+        "displayName": "Creature Lit Shade",
+        "cssVar": "--sg-overview-creature-lit-shade",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#56585d",
+        "oklch": "oklch(46.0% 0.008 268)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414245",
+          "#5f6165",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef1"
+        ]
+      },
+      "sg-overview-creature-lit-base": {
+        "role": "creature",
+        "displayName": "Creature Lit Base",
+        "cssVar": "--sg-overview-creature-lit-base",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#85878c",
+        "oklch": "oklch(62.3% 0.008 269)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414245",
+          "#606165",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef1"
+        ]
+      },
+      "sg-overview-creature-lit-light": {
+        "role": "creature",
+        "displayName": "Creature Lit Light",
+        "cssVar": "--sg-overview-creature-lit-light",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#a9abaf",
+        "oklch": "oklch(74.1% 0.006 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242526",
+          "#414244",
+          "#606164",
+          "#808286",
+          "#a3a5a8",
+          "#c8c9cc",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-creature-lit-highlight": {
+        "role": "creature",
+        "displayName": "Creature Lit Highlight",
+        "cssVar": "--sg-overview-creature-lit-highlight",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#d3d4d7",
+        "oklch": "oklch(87.0% 0.004 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414243",
+          "#606163",
+          "#818285",
+          "#a4a5a7",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-creature-dusk-shade": {
+        "role": "creature",
+        "displayName": "Creature Dusk Shade",
+        "cssVar": "--sg-overview-creature-dusk-shade",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#3f4145",
+        "oklch": "oklch(37.5% 0.007 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414244",
+          "#5f6165",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-creature-dusk-base": {
+        "role": "creature",
+        "displayName": "Creature Dusk Base",
+        "cssVar": "--sg-overview-creature-dusk-base",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#66686d",
+        "oklch": "oklch(51.7% 0.008 268)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414245",
+          "#5f6165",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef1"
+        ]
+      },
+      "sg-overview-creature-dusk-light": {
+        "role": "creature",
+        "displayName": "Creature Dusk Light",
+        "cssVar": "--sg-overview-creature-dusk-light",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#86888c",
+        "oklch": "oklch(62.6% 0.006 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242526",
+          "#414244",
+          "#606164",
+          "#808286",
+          "#a3a5a8",
+          "#c8c9cc",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-creature-dusk-highlight": {
+        "role": "creature",
+        "displayName": "Creature Dusk Highlight",
+        "cssVar": "--sg-overview-creature-dusk-highlight",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#a9abaf",
+        "oklch": "oklch(74.1% 0.006 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242526",
+          "#414244",
+          "#606164",
+          "#808286",
+          "#a3a5a8",
+          "#c8c9cc",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-creature-dim-shade": {
+        "role": "creature",
+        "displayName": "Creature Dim Shade",
+        "cssVar": "--sg-overview-creature-dim-shade",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#38393d",
+        "oklch": "oklch(34.5% 0.007 275)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414244",
+          "#606165",
+          "#818287",
+          "#a4a5a9",
+          "#c8c9cc",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-creature-dim-base": {
+        "role": "creature",
+        "displayName": "Creature Dim Base",
+        "cssVar": "--sg-overview-creature-dim-base",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#515357",
+        "oklch": "oklch(44.2% 0.007 264)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414244",
+          "#5f6165",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-creature-dim-light": {
+        "role": "creature",
+        "displayName": "Creature Dim Light",
+        "cssVar": "--sg-overview-creature-dim-light",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#626468",
+        "oklch": "oklch(50.3% 0.007 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414244",
+          "#606164",
+          "#808286",
+          "#a3a5a8",
+          "#c8c9cc",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-creature-dim-highlight": {
+        "role": "creature",
+        "displayName": "Creature Dim Highlight",
+        "cssVar": "--sg-overview-creature-dim-highlight",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#75777b",
+        "oklch": "oklch(56.9% 0.007 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242526",
+          "#414244",
+          "#606164",
+          "#808286",
+          "#a3a5a8",
+          "#c8c9cc",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-slab-asleep-rim": {
+        "role": "creature",
+        "displayName": "Slab Asleep Rim",
+        "cssVar": "--sg-overview-slab-asleep-rim",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#3b3c3f",
+        "oklch": "oklch(35.6% 0.005 271)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#252526",
+          "#414244",
+          "#606164",
+          "#818286",
+          "#a4a5a8",
+          "#c8c9cb",
+          "#eeeef0"
+        ]
+      },
+      "sg-overview-slab-run-cursor": {
+        "role": "creature",
+        "displayName": "Slab Run Cursor",
+        "cssVar": "--sg-overview-slab-run-cursor",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#5a5c60",
+        "oklch": "oklch(47.4% 0.007 265)",
+        "tonalRamp": [
+          "#0b0b0c",
+          "#242527",
+          "#414244",
+          "#606164",
+          "#808286",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef0"
+        ]
+      },
+      "sg-overview-slab-err-crack": {
+        "role": "creature",
+        "displayName": "Slab Err Crack",
+        "cssVar": "--sg-overview-slab-err-crack",
+        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "canonical": "#5c211a",
+        "oklch": "oklch(33.5% 0.088 29)",
+        "tonalRamp": [
+          "#130806",
+          "#361e1a",
+          "#5c3630",
+          "#865149",
+          "#b16e64",
+          "#ce958c",
+          "#eabdb5",
+          "#ffe6e0"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "sg-type-headline": {
+        "displayName": "Type Headline",
+        "cssVar": "--sg-type-headline",
+        "purpose": "Morning-brief title."
+      },
+      "sg-type-title": {
+        "displayName": "Type Title",
+        "cssVar": "--sg-type-title",
+        "purpose": "Needs-you and failed card titles."
+      },
+      "sg-type-body": {
+        "displayName": "Type Body",
+        "cssVar": "--sg-type-body",
+        "purpose": "Row and task titles, questions, toasts, tracker input."
+      },
+      "sg-type-body-strong": {
+        "displayName": "Type Body Strong",
+        "cssVar": "--sg-type-body-strong",
+        "purpose": "Tooltip and brief-item titles."
+      },
+      "sg-type-body-small": {
+        "displayName": "Type Body Small",
+        "cssVar": "--sg-type-body-small",
+        "purpose": "Brief explanations, empty states."
+      },
+      "sg-type-code": {
+        "displayName": "Type Code",
+        "cssVar": "--sg-type-code",
+        "purpose": "Commands a session wants to run."
+      },
+      "sg-type-control": {
+        "displayName": "Type Control",
+        "cssVar": "--sg-type-control",
+        "purpose": "Buttons, tabs, chips, breadcrumb, zoom."
+      },
+      "sg-type-status": {
+        "displayName": "Type Status",
+        "cssVar": "--sg-type-status",
+        "purpose": "Status bar."
+      },
+      "sg-type-map-label": {
+        "displayName": "Type Map Label",
+        "cssVar": "--sg-type-map-label",
+        "purpose": "Island labels on the canvas (plots 11px, bridges 10.5px)."
+      },
+      "sg-type-meta": {
+        "displayName": "Type Meta",
+        "cssVar": "--sg-type-meta",
+        "purpose": "Agent lines, ages, summaries, graticule, callouts, popover rows."
+      },
+      "sg-type-section": {
+        "displayName": "Type Section",
+        "cssVar": "--sg-type-section",
+        "purpose": "Uppercase list heads with counts."
+      },
+      "sg-type-badge": {
+        "displayName": "Type Badge",
+        "cssVar": "--sg-type-badge",
+        "purpose": "Waiting count on island labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "tooltip",
+        "cssVar": "--sg-shadow-tooltip",
+        "value": "0 6px 18px rgb(0 0 0 / 0.5)",
+        "purpose": "Creature tooltip. Build writes the literal; it equals the Signal token."
+      },
+      {
+        "name": "toast",
+        "cssVar": "--sg-shadow-toast",
+        "value": "0 8px 24px rgb(0 0 0 / 0.5)",
+        "purpose": "Toast. Build writes the literal; it equals the Signal token."
+      },
+      {
+        "name": "popover (as built)",
+        "value": "0 10px 28px rgb(0 0 0 / 0.55)",
+        "purpose": "Legend and status-list popovers. Drift: Signal --sg-shadow-popover is 0 8px 24px -8px rgb(0 0 0 / 0.5)."
+      },
+      {
+        "name": "creature",
+        "cssVar": "--sg-overview-creature-shadow",
+        "value": "ellipse, half sprite width by 3 sprite px",
+        "purpose": "Grounds each creature on the canvas."
+      }
+    ],
+    "motion": [
+      {
+        "name": "fast",
+        "cssVar": "--sg-duration-fast",
+        "value": "80ms",
+        "purpose": "Hover and border changes."
+      },
+      {
+        "name": "base",
+        "cssVar": "--sg-duration-base",
+        "value": "140ms",
+        "purpose": "Live-demo switch."
+      },
+      {
+        "name": "slow",
+        "cssVar": "--sg-duration-slow",
+        "value": "220ms",
+        "purpose": "Toast in and out (visible 3.2s)."
+      },
+      {
+        "name": "camera-rate",
+        "cssVar": "--sg-overview-motion-camera-rate",
+        "value": "10 per second",
+        "purpose": "Exponential camera ease toward target."
+      },
+      {
+        "name": "follow",
+        "value": "while walking, released 4s after locate once stopped",
+        "purpose": "Camera follows a located creature."
+      },
+      {
+        "name": "hop-period",
+        "cssVar": "--sg-overview-motion-hop-period",
+        "value": "800ms",
+        "purpose": "Waiting creature hop (up to 4px)."
+      },
+      {
+        "name": "diamond-flicker",
+        "cssVar": "--sg-overview-motion-diamond-flicker",
+        "value": "500ms",
+        "purpose": "Needs-you diamond 1px flicker."
+      },
+      {
+        "name": "bob-step",
+        "cssVar": "--sg-overview-motion-bob-step",
+        "value": "333ms",
+        "purpose": "Running creature bob."
+      },
+      {
+        "name": "blink",
+        "cssVar": "--sg-overview-motion-blink",
+        "value": "120ms every 3800ms",
+        "purpose": "Eye blink."
+      },
+      {
+        "name": "speech-cycle",
+        "value": "1.4s visible of a 2.8s cycle, sine fade",
+        "purpose": "Chat bubbles alternate between partners."
+      },
+      {
+        "name": "walk-speed",
+        "value": "2.4 cells/s to desk, 1.3 free, x energy (0.7 to 1.4)",
+        "purpose": "A* path following."
+      },
+      {
+        "name": "reduced-redraw",
+        "cssVar": "--sg-overview-motion-reduced-redraw",
+        "value": "400ms",
+        "purpose": "Under reduced motion the simulation settles and the frame redraws every 400ms."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "stacked",
+        "cssVar": "--sg-overview-layout-stacked-breakpoint",
+        "value": "860px"
+      }
+    ],
+    "geometry": {
+      "projection": "2:1 iso, 16 x 8 px per u at 1x",
+      "zoomLevels": "k/dpr, k in {1,2,3,4,5,6,8}, 0.3x to 4x",
+      "islandGap": "6 u",
+      "islandWidth": "2 x widest plate + 4 u",
+      "plateDepth": "4 u",
+      "plateWidth": "max(4, 2n + 2) u",
+      "deskPitch": "2 u from 1.5 u",
+      "lotRowGap": "2 u",
+      "benchesPerCommons": 2,
+      "islandThickness": "max(4, round(10z)) px",
+      "bridgeThickness": "max(2, round(3z)) px",
+      "textures": {
+        "macbook": "dots",
+        "arch-workstation": "hatch",
+        "home-server": "grid"
+      }
+    },
+    "drift": [
+      "Rail tab bar is 34px; Signal --sg-size-tab-bar is 32px.",
+      "Popover shadow literal 0 10px 28px rgb(0 0 0 / 0.55) differs from --sg-shadow-popover.",
+      "Tooltip and toast shadows, body type, kbd and focus ring are re-declared as literals rather than var(--sg-*); values match Signal.",
+      "Edge-marker border uses --sg-status-wait-border (40%); Signal extension --sg-overview-opacity-edge-marker-border says 45%.",
+      "Minimap viewport is Dim at full opacity, 1.5px; Signal --sg-overview-opacity-viewport describes Ink at 70%.",
+      "Plate geometry: build uses desk inset 1.5 u, pitch 2 u, width max(4, 2n+2); Signal --sg-overview-plate-session-inset 1.75 and -pitch 2.5 are stale.",
+      "Signal extension tokens unused by v3: district-edge, district-padding, district-dash, hud-readout, slab-done-mark (done slabs no longer show a check).",
+      "Off-scale values: task checkbox radius 4px and 1.5px border; tracker input height 30px; scrollbar thumb radius 4px (Signal: --sg-radius-full) with no thumb hover.",
+      "Commons edge dash (3px) and graticule clearance bands (60/230/34/160px) are not tokenised.",
+      "Canvas fallback colours and the task check stroke (#1a1b1c) are hard-coded copies of Signal values.",
+      "Signal package: signal.css header comment reads \"Signal 0.1.0\" while package.json is 0.1.1 (same in source)."
+    ]
+  },
+  "components": [
+    {
+      "name": "Button",
+      "kind": "button",
+      "refersTo": "button",
+      "description": "Keycapped inset action; 26px, sunken fill, line2 border.",
+      "html": "<button class=\"ds-btn\"><kbd class=\"ds-kbd\">l</kbd>locate</button>",
+      "css": ".ds-btn{height:26px;display:inline-flex;align-items:center;gap:7px;padding:0 8px 0 4px;border:1px solid var(--sg-border-default);border-radius:var(--sg-radius-md);font:var(--sg-type-control);color:var(--sg-text-primary);background:var(--sg-surface-sunken);cursor:pointer;transition:background-color 80ms,border-color 80ms}.ds-btn:hover{border-color:var(--sg-border-strong)}.ds-btn:focus-visible{outline:2px solid var(--sg-border-focus);outline-offset:1px}.ds-kbd{font:var(--sg-type-meta);line-height:16px;min-width:18px;text-align:center;padding:0 4px;color:var(--sg-text-secondary);background:var(--sg-surface-sunken);border:1px solid var(--sg-border-default);border-bottom-width:2px;border-radius:var(--sg-radius-sm)}"
+    },
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "One per card: open the session in Orca.",
+      "html": "<button class=\"ds-btn-pri\"><kbd class=\"ds-kbd\">Enter</kbd>open in orca</button>",
+      "css": ".ds-btn-pri{height:26px;display:inline-flex;align-items:center;gap:7px;padding:0 8px 0 4px;border:1px solid var(--sg-accent-border);border-radius:var(--sg-radius-md);font:var(--sg-type-control);color:var(--sg-text-primary);background:var(--sg-accent-bg);cursor:pointer;transition:background-color 80ms}.ds-btn-pri:hover{background:var(--sg-accent-bg-hover)}.ds-btn-pri:focus-visible{outline:2px solid var(--sg-border-focus);outline-offset:1px}.ds-kbd{font:var(--sg-type-meta);line-height:16px;min-width:18px;text-align:center;padding:0 4px;color:var(--sg-text-secondary);background:var(--sg-surface-sunken);border:1px solid var(--sg-border-default);border-bottom-width:2px;border-radius:var(--sg-radius-sm)}"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "filter-chip",
+      "description": "State filter in the now tab; accent when pressed.",
+      "html": "<div style=\"display:flex;gap:6px\"><button class=\"ds-chip\" aria-pressed=\"true\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"var(--sg-status-wait-fg)\"/></svg><b>2</b>needs you</button><button class=\"ds-chip\" aria-pressed=\"false\"><b>4</b>running</button></div>",
+      "css": ".ds-chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 9px 0 7px;border:1px solid var(--sg-border-subtle);border-radius:var(--sg-radius-lg);font:var(--sg-type-control);color:var(--sg-text-secondary);background:none;font-variant-numeric:tabular-nums;cursor:pointer;transition:border-color 80ms,background-color 80ms}.ds-chip b{font-weight:500;color:var(--sg-text-primary)}.ds-chip:hover{border-color:var(--sg-border-default);color:var(--sg-text-primary)}.ds-chip[aria-pressed=\"true\"]{border-color:var(--sg-accent-border);background:var(--sg-accent-bg);color:var(--sg-text-primary)}.ds-chip:focus-visible{outline:2px solid var(--sg-border-focus);outline-offset:1px}"
+    },
+    {
+      "name": "Tracker Input",
+      "kind": "input",
+      "refersTo": "task-input",
+      "description": "Add a task in the tasks tab; accent border on focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"add a task\">",
+      "css": ".ds-input{height:30px;width:260px;border:1px solid var(--sg-border-control);border-radius:var(--sg-radius-md);background:var(--sg-surface-sunken);padding:0 10px;font:var(--sg-type-body);color:var(--sg-text-primary)}.ds-input::placeholder{color:var(--sg-text-subtle)}.ds-input:focus{outline:none;border-color:var(--sg-accent-border)}"
+    },
+    {
+      "name": "Rail Tabs",
+      "kind": "nav",
+      "refersTo": "rail-tab",
+      "description": "now / tasks / morning brief, 2px Ink underline when selected.",
+      "html": "<div class=\"ds-tabs\"><button aria-selected=\"true\">now</button><button aria-selected=\"false\">tasks <span>3</span></button><button aria-selected=\"false\">morning brief</button></div>",
+      "css": ".ds-tabs{display:flex;gap:16px;padding:0 16px;height:34px;border-bottom:1px solid var(--sg-border-subtle);background:var(--sg-surface-raised)}.ds-tabs button{position:relative;height:34px;background:none;border:0;padding:0;font:var(--sg-type-control);color:var(--sg-text-subtle);cursor:pointer}.ds-tabs button span{font-size:11px;font-variant-numeric:tabular-nums}.ds-tabs button:hover,.ds-tabs button[aria-selected=\"true\"]{color:var(--sg-text-primary)}.ds-tabs button[aria-selected=\"true\"]::after{content:\"\";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--sg-text-primary)}.ds-tabs button:focus-visible{outline:2px solid var(--sg-border-focus);outline-offset:1px}"
+    },
+    {
+      "name": "Status Bar",
+      "kind": "nav",
+      "refersTo": "status-bar",
+      "description": "Interactive 24px bar: counts focus or list; hosts fly to islands.",
+      "html": "<div class=\"ds-status\"><button class=\"ds-sb\" style=\"color:var(--sg-text-primary)\">overview</button><button class=\"ds-sb\" style=\"color:var(--sg-status-wait-fg)\">2 needs you</button><button class=\"ds-sb\" style=\"color:var(--sg-status-err-fg)\">1 failed</button><button class=\"ds-sb\">4 running</button><button class=\"ds-sb\" style=\"color:var(--sg-status-done-fg)\">2 done</button><span style=\"flex:1\"></span><button class=\"ds-sb ds-host\">arch-workstation 14 ms</button></div>",
+      "css": ".ds-status{display:flex;align-items:center;gap:2px;height:24px;padding:0 6px;border-top:1px solid var(--sg-border-subtle);background:var(--sg-surface-base);font:var(--sg-type-status);color:var(--sg-text-secondary);white-space:nowrap}.ds-sb{height:22px;padding:0 7px;border-radius:var(--sg-radius-sm);display:inline-flex;align-items:center;gap:5px;background:none;border:0;font:inherit;color:inherit;font-variant-numeric:tabular-nums;cursor:pointer;transition:background-color 80ms,color 80ms}.ds-sb:hover{background:var(--sg-state-hover-control);color:var(--sg-text-primary)}.ds-sb:focus-visible{outline:2px solid var(--sg-border-focus);outline-offset:1px}.ds-host::before{content:\"\";width:6px;height:6px;border-radius:50%;background:var(--sg-status-done-fg)}"
+    },
+    {
+      "name": "Attention Card",
+      "kind": "card",
+      "refersTo": "attention-card",
+      "description": "Needs-you (or failed) session in the rail, with command and actions.",
+      "html": "<div class=\"ds-card\"><div class=\"ds-ct\">Fix sync conflict on reconnect</div><div class=\"ds-cm\">Soba · claude · macbook:gramly</div><div class=\"ds-cs\"><span>wants to run a command</span><em>waiting 18m</em></div><div class=\"ds-cmd\"><i>$</i> pnpm db:migrate</div></div>",
+      "css": ".ds-card{width:300px;border:1px solid var(--sg-status-wait-border);background:var(--sg-status-wait-bg);border-radius:var(--sg-radius-lg);padding:10px 12px;display:grid;gap:6px;color:var(--sg-text-primary)}.ds-card:hover{border-color:var(--sg-status-wait-fg)}.ds-card:focus-visible{outline:2px solid var(--sg-border-focus);outline-offset:1px}.ds-ct{font:var(--sg-type-title);text-wrap:balance}.ds-cm{font:var(--sg-type-meta);color:var(--sg-text-subtle)}.ds-cs{display:flex;gap:6px;font:var(--sg-type-control);color:var(--sg-status-wait-fg)}.ds-cs span{flex:1}.ds-cs em{font-style:normal;font-size:11px;color:var(--sg-text-subtle)}.ds-cmd{font:var(--sg-type-code)}.ds-cmd i{font-style:normal;color:var(--sg-text-disabled)}"
+    },
+    {
+      "name": "List Row",
+      "kind": "custom",
+      "refersTo": "row",
+      "description": "Rail row: icon, title, age, meta line; accent inset ring when selected.",
+      "html": "<div class=\"ds-row\" tabindex=\"0\"><span class=\"ds-rt\">Rewrite suggestion ranking</span><span class=\"ds-ra\">12m</span><span class=\"ds-rs\">gramly · Tavi · 4 of 7 call sites moved</span></div>",
+      "css": ".ds-row{width:300px;display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:8px;row-gap:1px;padding:6px 4px;border-radius:var(--sg-radius-md);color:var(--sg-text-primary);cursor:pointer}.ds-row:hover{background:var(--sg-state-hover)}.ds-row:focus-visible{background:var(--sg-surface-selected);box-shadow:inset 0 0 0 1px var(--sg-accent-border);outline:none}.ds-rt{font:var(--sg-type-body);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ds-ra,.ds-rs{font:var(--sg-type-meta);color:var(--sg-text-subtle)}.ds-rs{grid-column:1/3}"
+    },
+    {
+      "name": "Edge Marker",
+      "kind": "custom",
+      "refersTo": "edge-marker",
+      "description": "Off-screen waiting agent pinned to the stage edge; click glides to it.",
+      "html": "<button class=\"ds-edge\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"var(--sg-status-wait-fg)\"/></svg><span>hangar-roadmap</span> 4m</button>",
+      "css": ".ds-edge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px 0 6px;border-radius:var(--sg-radius-md);background:var(--sg-surface-raised);border:1px solid var(--sg-status-wait-border);font:var(--sg-type-meta);color:var(--sg-text-primary);cursor:pointer}.ds-edge span{color:var(--sg-status-wait-fg)}.ds-edge:hover{background:var(--sg-overview-wait-wash-hover)}.ds-edge:focus-visible{outline:2px solid var(--sg-border-focus);outline-offset:1px}"
+    },
+    {
+      "name": "Map Label",
+      "kind": "custom",
+      "refersTo": "map-label",
+      "description": "Canvas label on Label Scrim; island labels carry a border and a yellow count badge.",
+      "html": "<span class=\"ds-ml\"><b>macbook</b><span>local · 5 agents</span><i>1</i></span>",
+      "css": ".ds-ml{display:inline-flex;align-items:center;gap:6px;height:18px;padding:0 5px;border-radius:var(--sg-radius-sm);background:var(--sg-overlay-label);border:1px solid var(--sg-border-default);font:var(--sg-type-map-label)}.ds-ml b{font-weight:500;color:var(--sg-text-primary)}.ds-ml span{font-weight:400;color:var(--sg-text-subtle)}.ds-ml i{font:var(--sg-type-badge);font-style:normal;width:15px;height:12px;display:inline-grid;place-items:center;border-radius:var(--sg-radius-hair);background:var(--sg-status-wait-fg);color:var(--sg-text-on-accent)}.ds-ml:hover{border-color:var(--sg-border-strong)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Inhabited Survey",
+    "overview": "Overview is a measured plane that something lives on. The fleet of agent sessions sits on a 2:1 isometric lattice with a graticule at the stage edges. Each machine is a terrain island with its own monochrome ground texture. Each project is a flat plate at integer grid coordinates, laid out automatically in a two-column lot. Each session is a small grey pixel creature, generated from its session id, that works at its desk while it is needed and lives on the island when it is free. Survey precision still governs: coordinates, integer pixels and the lattice. Within it, terrain, a commons with benches and bridges carrying SSH latency give the owner a small world with lore. It still refuses the dashboard of cards and any colour that is not status.\n\nEvery colour, face, radius and duration comes from Signal (@barrymind/signal 0.1.1). Signal's core tokens (`--sg-surface-*`, `--sg-text-*`, `--sg-border-*`, `--sg-accent-*`, `--sg-status-*`, `--sg-font-*`) dress the chrome, and Signal's Overview extension (`--sg-overview-*`) dresses the plane: terrain, props, lattice, creature coats, slabs and textures. The build aliases them to short local names (`--bg`, `--panel`, `--wait` and so on), and the canvas reads them through `getComputedStyle` at boot. Overview owns layout, geometry and behaviour, not values. The density is that of an instrument panel: 13px body, 11px metadata, 24 to 40px bars and 12px insets. Everything stays quiet until something needs the owner. Then yellow appears in several places at once: on the map, at the stage edge, in the rail and in the status bar.\n\nColour carries meaning only. Four status hues name what a session is doing. A single periwinkle accent marks the owner's own hand: selection, focus, the primary action and a pressed filter. Everything else is graphite, down to the creatures' coats, the speech glyphs and the ball.",
+    "keyCharacteristics": [
+      "Signal 0.1.1 is the token source; Overview references `--sg-*` variables and owns none of the values",
+      "2:1 isometric projection, 16 x 8 px per grid unit at 1x, integer device-pixel zoom steps",
+      "Machines as textured monochrome islands joined by latency-carrying bridges; projects in auto-laid-out two-column lots",
+      "Seeded pixel creatures with a monochrome genome and an ambient life simulation that desk states override",
+      "Mono for data, controls and the map; sans for human sentences",
+      "Hairlines (1px) and small radii (2 to 6px); flat chrome, soft shadows only on floating overlays"
+    ],
+    "rules": [
+      {
+        "name": "The Status-Only Colour Rule",
+        "body": "Hue is spent only on the four statuses and on the accent. Terrain, props, creatures, speech glyphs and the ball are graphite. If a new element is not a status and not the owner's own selection or action, it is grey.",
+        "section": "colors"
+      },
+      {
+        "name": "The Loudest Yellow Rule",
+        "body": "Needs-you yellow outranks everything. Only a waiting session gets the diamond, the ground ring, the hop, the edge marker and the island count badge; no other state may borrow those devices.",
+        "section": "colors"
+      },
+      {
+        "name": "The Signal Source Rule",
+        "body": "Every colour comes from a `--sg-*` variable. If a needed value is missing, add it to Signal's tokens and rebuild the package; do not write a literal into Overview.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono-for-Machines Rule",
+        "body": "If the text is a name, path, coordinate, number, command or control, it is JetBrains Mono. Instrument Sans is for sentences a person reads.",
+        "section": "typography"
+      },
+      {
+        "name": "The Tabular Rule",
+        "body": "Every number that updates (ages, counts, zoom, coordinates, latency) uses tabular figures. Coordinates are zero-padded to two digits with a true minus sign (−08).",
+        "section": "typography"
+      },
+      {
+        "name": "The Survey Rule",
+        "body": "Every plate stands at integer grid coordinates and is labelled with them. Terrain is ground the coordinates sit on, never decoration that hides them.",
+        "section": "layout"
+      },
+      {
+        "name": "The Integer Pixel Rule",
+        "body": "Creatures, terrain, plates and the lattice share one integer device-pixel scale. Never smooth a sprite or offer a zoom between levels.",
+        "section": "layout"
+      },
+      {
+        "name": "The Label Priority Rule",
+        "body": "Labels are placed in a fixed order: callouts first, island labels second, plot labels third, bridge latency labels last. Each tries its candidate spots in order and takes the first that is on screen (2px inset), clear of the HUD and of other labels by 7px, and, for plot labels, clear of other plates. Only callouts are forced on screen. Island labels drop their sub-text and then step aside. A plot label degrades from \"n agents · coord\" to the coordinate to the name alone. Any label that finds no spot is hidden.",
+        "section": "layout"
+      },
+      {
+        "name": "The Flat Chrome Rule",
+        "body": "Bars, rail, cards, chips, rows and buttons are flat. A shadow appears only on something floating above the stage, and state is shown with rings, borders and washes, never lift.",
+        "section": "elevation & depth"
+      }
+    ],
+    "dos": [
+      "Do reference every colour, face, radius and size through a `--sg-*` variable, and add missing values to Signal rather than to Overview.",
+      "Do keep plates at integer grid coordinates in their auto-laid-out lot and label them with their coordinate (`01·08`).",
+      "Do keep zoom on the integer levels (k / devicePixelRatio, k in 1 to 8) and draw sprites with image smoothing off.",
+      "Do reserve yellow for sessions that need the owner, and give every waiting session all of its signals: diamond, ring, callout, edge marker when off screen, card in the rail and island count badge.",
+      "Do keep callouts to 20 characters or fewer and say why the hand is raised (\"run pnpm db:migrate?\").",
+      "Do keep ambient life (speech glyphs, ball, \"z\" marks, path previews) in neutral greys and let it fade, so status always reads first.",
+      "Do let desk states override the simulation: a session that needs the owner, runs or fails goes back to its desk.",
+      "Do give every creature on the map a matching row or card in the rail."
+    ],
+    "donts": [
+      "Don't write a literal colour or font into Overview when a Signal token exists.",
+      "Don't colour terrain, props, creatures or ambient devices; only statuses and the owner's own selection or action carry hue.",
+      "Don't let terrain textures or props compete with the lattice and labels; textures stay at or below 12% Ink.",
+      "Don't smooth, rotate or fractionally scale creature sprites.",
+      "Don't add drop shadows or lift to bars, cards, chips, rows or buttons; only floating overlays above the stage get a shadow.",
+      "Don't set readable text in Faint; it is for the \"$\" prompt and ambient marks only.",
+      "Don't let the tracker act on an agent; it only tracks."
+    ]
+  }
+}

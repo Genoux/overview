@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overview Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../../signal/css/signal.css">
+<style>
+/* Markdown reader for local docs. Signal tokens only. ?f=<path relative to this file> */
+html, body { margin: 0; background: var(--sg-surface-base); color: var(--sg-text-primary); }
+body { font-family: var(--sg-font-sans); font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+header { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 16px; border-bottom: 1px solid var(--sg-border-subtle); font-family: var(--sg-font-mono); font-size: 12px; position: sticky; top: 0; background: var(--sg-surface-base); }
+header a { color: var(--sg-text-secondary); text-decoration: none; }
+header a:hover { color: var(--sg-text-primary); }
+header .f { color: var(--sg-text-subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+article { max-width: 720px; margin: 0 auto; padding: 24px 16px 64px; }
+article h1 { font-size: 22px; font-weight: 500; margin: 8px 0 12px; text-wrap: balance; }
+article h2 { font-size: 16px; font-weight: 500; margin: 32px 0 8px; padding-top: 12px; border-top: 1px solid var(--sg-border-subtle); }
+article h3 { font-size: 14px; font-weight: 500; margin: 20px 0 6px; }
+article p, article li { color: var(--sg-text-primary); max-width: 68ch; }
+article a { color: var(--sg-text-link); text-underline-offset: 2px; }
+article code { font-family: var(--sg-font-mono); font-size: 12.5px; background: var(--sg-surface-sunken); border: 1px solid var(--sg-border-subtle); border-radius: 3px; padding: 0 4px; }
+article pre { background: var(--sg-surface-sunken); border: 1px solid var(--sg-border-subtle); border-radius: 6px; padding: 12px; overflow-x: auto; }
+article pre code { border: 0; padding: 0; background: none; font-size: 12px; line-height: 1.5; }
+article table { border-collapse: collapse; width: 100%; font-size: 13px; display: block; overflow-x: auto; }
+article th, article td { border-bottom: 1px solid var(--sg-border-subtle); padding: 6px 10px 6px 0; text-align: left; vertical-align: top; }
+article th { font-family: var(--sg-font-mono); font-size: 11px; font-weight: 400; color: var(--sg-text-subtle); text-transform: uppercase; letter-spacing: 0.06em; }
+article blockquote { margin: 0; padding-left: 12px; border-left: 1px solid var(--sg-border-default); color: var(--sg-text-secondary); }
+article hr { border: 0; border-top: 1px solid var(--sg-border-subtle); margin: 24px 0; }
+.err { font-family: var(--sg-font-mono); color: var(--sg-status-err-fg); }
+</style>
+</head>
+<body>
+<header><a href="../index.html">← hub</a><span class="f" id="f"></span></header>
+<article id="doc"><p class="err" id="msg">Loading…</p></article>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script>
+(function () {
+  var f = new URLSearchParams(location.search).get('f') || 'PLAN.md';
+  var doc = document.getElementById('doc');
+  document.getElementById('f').textContent = f.replace(/^(\.\.\/)+/, '');
+  if (!/\.md$/.test(f) || /^[a-z]+:/i.test(f)) { doc.innerHTML = '<p class="err">Only local .md files can be shown here.</p>'; return; }
+  fetch(f).then(function (r) { if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.text(); }).then(function (md) {
+    md = md.replace(/^---\n[\s\S]*?\n---\n/, '');
+    if (window.marked) doc.innerHTML = marked.parse(md);
+    else { var pre = document.createElement('pre'); pre.textContent = md; doc.innerHTML = ''; doc.appendChild(pre); }
+    var h = doc.querySelector('h1'); if (h) document.title = h.textContent + ' · Overview Docs';
+  }).catch(function (e) {
+    doc.innerHTML = '<p class="err">Could not open ' + f + ' (' + e.message + '). Start the hub with ./serve.sh: browsers block reading files when a page is opened straight from disk.</p>';
+  });
+})();
+</script>
+</body>
+</html>

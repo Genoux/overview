@@ -1,0 +1,29 @@
+# Overview
+
+A read-only monitor of every coding-agent session (Orca, Claude Code, Codex, SSH hosts), drawn as an isometric world of islands, plots and creatures, with a ranked attention list and a task tracker. Read `PRODUCT.md` first, then `docs/PLAN.md`.
+
+## Local first: no artifacts
+
+- The files in this folder and in `../signal` are the only source of truth.
+- Do **not** publish this work as claude.ai artifacts, Claude Docs or any other account-bound page. The owner switches between several Claude accounts, and one of them ("dev") is shared with other people. Ask first before anything leaves this machine.
+- To show work, run `./serve.sh` (the local hub at http://localhost:4173/overview/), or capture screenshots with headless Chrome into `.impeccable/review/`.
+
+## Map of the folder
+
+| Path | What |
+|---|---|
+| `index.html` | Local hub linking every prototype and doc |
+| `prototype/overview-map.html` | Current prototype (map v3). `map.html` (v2) and `world.html` (v1) are history |
+| `prototype/vendor/signal/` | Copy of the Signal CSS the prototype loads. Never edit it here |
+| `docs/PLAN.md` | Product plan and roadmap |
+| `docs/view.html` | Markdown reader used by the hub (`?f=<path>`) |
+| `PRODUCT.md`, `DESIGN.md` | Product facts; how Overview applies Signal |
+| `.impeccable/` | Design brief, review captures, detector config |
+| `scripts/sync-signal.sh` | Rebuilds Signal and copies its CSS into `prototype/vendor/signal/` |
+
+## Design system
+
+Overview's look comes from **Signal** (`../signal`, package `@barrymind/signal`), which is shared with Hangar and future apps:
+- Change a colour, size or component in Signal (`tokens/*.json`), never in Overview, then run `./scripts/sync-signal.sh`.
+- Map-only values go in Signal's Overview extension, `../signal/tokens/extensions/overview.tokens.json`.
+- The design rules: colour only for status and for "you", monochrome graphite everywhere else, mono for machine text and sans for prose, hairlines and small radii.
