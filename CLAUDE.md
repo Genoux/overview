@@ -27,3 +27,11 @@ Overview's look comes from **Signal** (`../signal`, package `@barrymind/signal`)
 - Change a colour, size or component in Signal (`tokens/*.json`), never in Overview, then run `./scripts/sync-signal.sh`.
 - Map-only values go in Signal's Overview extension, `../signal/tokens/extensions/overview.tokens.json`.
 - The design rules: colour only for status and for "you", monochrome graphite everywhere else, mono for machine text and sans for prose, hairlines and small radii.
+
+## Sync between machines
+
+Both folders are private GitHub repos on the owner's personal account. Never use the barrymind org.
+- `Genoux/overview` is this folder; `Genoux/signal` is `../signal`.
+- Keep them side by side under `~/Desktop/@john/` on every machine: the hub and the sync script expect `../signal`.
+- New machine: `cd ~/Desktop/@john && gh repo clone Genoux/overview && gh repo clone Genoux/signal`.
+- Start of a session: `git pull` in both. At the end, commit and push only when the owner asks.
