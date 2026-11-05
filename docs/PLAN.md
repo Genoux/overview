@@ -101,7 +101,8 @@ Everything is local; run `./serve.sh` and open the hub.
 
 | Screen | File | Status |
 |---|---|---|
-| Map v3 (current) | `prototype/overview-map.html` | Islands, creature life, tracker, interactive status bar, on Signal |
+| Map v4 (current) | `prototype/v4/` | Generated neighborhoods with muted tints and ground-painted names, café/canteen/park, skylines, conversations from real sessions, expressions, day and night |
+| Map v3 | `prototype/overview-map.html` | Islands, creature life, tracker, interactive status bar, on Signal |
 | Map v2 | `prototype/map.html` | First isometric grid; history |
 | World v1 | `prototype/world.html` | Side-view office, rejected; history |
 | Signal reference | `../signal/index.html`, `../signal/docs/reference/` | Shared design system |

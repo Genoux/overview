@@ -13,7 +13,8 @@ A read-only monitor of every coding-agent session (Orca, Claude Code, Codex, SSH
 | Path | What |
 |---|---|
 | `index.html` | Local hub linking every prototype and doc |
-| `prototype/overview-map.html` | Current prototype (map v3). `map.html` (v2) and `world.html` (v1) are history |
+| `prototype/v4/` | Current prototype (map v4): ES modules in `js/`: `core` (state, palette from Signal, sample data), `creatures` (genome, sprites, emotes), `world` (neighborhood generation, A*), `life` (simulation, conversations), `render` (canvas), `ui` (rail, input, boot). Needs `./serve.sh` because modules don't load from file:// |
+| `prototype/overview-map.html` | Map v3, single file. `map.html` (v2) and `world.html` (v1) are history |
 | `prototype/vendor/signal/` | Copy of the Signal CSS the prototype loads. Never edit it here |
 | `docs/PLAN.md` | Product plan and roadmap |
 | `docs/view.html` | Markdown reader used by the hub (`?f=<path>`) |
