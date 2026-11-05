@@ -1,24 +1,24 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-11-05T16:59:12+00:00",
+  "generatedAt": "2026-11-05T13:30:00+00:00",
   "title": "Design System: Overview",
   "extensions": {
     "tokenSource": {
       "package": "@barrymind/signal",
-      "version": "0.1.1",
+      "version": "0.1.2",
       "vendored": [
         "prototype/vendor/signal/signal.css",
         "prototype/vendor/signal/overview.css"
       ],
       "sourceRepo": "/Users/johnbarry/Desktop/@john/signal",
-      "note": "Overview owns no token values. Frontmatter keys are Signal custom-property names without \"--\"; values mirror Signal 0.1.1 for tooling. Edit tokens/*.tokens.json in Signal and rebuild."
+      "note": "Overview owns no token values. Frontmatter keys are Signal custom-property names without \"--\"; values mirror Signal 0.1.2 (including the Overview extension color.hood.* tints) for tooling. Edit tokens/*.tokens.json in Signal and rebuild. Recorded from prototype/v4/."
     },
     "colorMeta": {
       "sg-accent-fg": {
         "role": "primary",
         "displayName": "Signal Periwinkle",
         "cssVar": "--sg-accent-fg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#888ff7",
         "oklch": "oklch(69.0% 0.152 279)",
         "tonalRamp": [
@@ -36,7 +36,7 @@
         "role": "primary",
         "displayName": "Accent Bg",
         "cssVar": "--sg-accent-bg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(136 143 247 / 0.12)",
         "oklch": "oklch(69.0% 0.152 279 / 0.12)",
         "tonalRamp": [
@@ -55,7 +55,7 @@
         "role": "primary",
         "displayName": "Accent Bg Hover",
         "cssVar": "--sg-accent-bg-hover",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(136 143 247 / 0.2)",
         "oklch": "oklch(69.0% 0.152 279 / 0.2)",
         "tonalRamp": [
@@ -74,7 +74,7 @@
         "role": "primary",
         "displayName": "Accent Border",
         "cssVar": "--sg-accent-border",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(136 143 247 / 0.6)",
         "oklch": "oklch(69.0% 0.152 279 / 0.6)",
         "tonalRamp": [
@@ -93,7 +93,7 @@
         "role": "primary",
         "displayName": "Selection Bg",
         "cssVar": "--sg-selection-bg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(136 143 247 / 0.3)",
         "oklch": "oklch(69.0% 0.152 279 / 0.3)",
         "tonalRamp": [
@@ -112,7 +112,7 @@
         "role": "status",
         "displayName": "Needs-You Yellow",
         "cssVar": "--sg-status-wait-fg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#fec04a",
         "oklch": "oklch(84.4% 0.148 80)",
         "tonalRamp": [
@@ -130,7 +130,7 @@
         "role": "status",
         "displayName": "Status Wait Bg",
         "cssVar": "--sg-status-wait-bg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(254 192 74 / 0.06)",
         "oklch": "oklch(84.4% 0.148 80 / 0.06)",
         "tonalRamp": [
@@ -149,7 +149,7 @@
         "role": "status",
         "displayName": "Status Wait Border",
         "cssVar": "--sg-status-wait-border",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(254 192 74 / 0.4)",
         "oklch": "oklch(84.4% 0.148 80 / 0.4)",
         "tonalRamp": [
@@ -168,7 +168,7 @@
         "role": "status",
         "displayName": "Failed Coral",
         "cssVar": "--sg-status-err-fg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#f26b59",
         "oklch": "oklch(69.0% 0.170 30)",
         "tonalRamp": [
@@ -186,7 +186,7 @@
         "role": "status",
         "displayName": "Status Err Bg",
         "cssVar": "--sg-status-err-bg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(242 107 89 / 0.06)",
         "oklch": "oklch(69.0% 0.170 30 / 0.06)",
         "tonalRamp": [
@@ -205,7 +205,7 @@
         "role": "status",
         "displayName": "Status Err Border",
         "cssVar": "--sg-status-err-border",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(242 107 89 / 0.4)",
         "oklch": "oklch(69.0% 0.170 30 / 0.4)",
         "tonalRamp": [
@@ -224,7 +224,7 @@
         "role": "status",
         "displayName": "Done Sage",
         "cssVar": "--sg-status-done-fg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#86c2a2",
         "oklch": "oklch(76.4% 0.077 161)",
         "tonalRamp": [
@@ -242,7 +242,7 @@
         "role": "status",
         "displayName": "Running Steel",
         "cssVar": "--sg-status-run-fg",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#cad0d7",
         "oklch": "oklch(85.5% 0.012 252)",
         "tonalRamp": [
@@ -260,7 +260,7 @@
         "role": "neutral",
         "displayName": "Graphite Base",
         "cssVar": "--sg-surface-base",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#202123",
         "oklch": "oklch(24.8% 0.004 264)",
         "tonalRamp": [
@@ -278,7 +278,7 @@
         "role": "neutral",
         "displayName": "Graphite Panel",
         "cssVar": "--sg-surface-raised",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#262729",
         "oklch": "oklch(27.2% 0.004 265)",
         "tonalRamp": [
@@ -296,7 +296,7 @@
         "role": "neutral",
         "displayName": "Graphite Well",
         "cssVar": "--sg-surface-sunken",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#1a1b1c",
         "oklch": "oklch(22.1% 0.002 248)",
         "tonalRamp": [
@@ -314,7 +314,7 @@
         "role": "neutral",
         "displayName": "Selected Row",
         "cssVar": "--sg-surface-selected",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#2e2e30",
         "oklch": "oklch(30.2% 0.004 286)",
         "tonalRamp": [
@@ -332,7 +332,7 @@
         "role": "neutral",
         "displayName": "State Hover",
         "cssVar": "--sg-state-hover",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(233 233 235 / 0.04)",
         "oklch": "oklch(93.5% 0.003 286 / 0.04)",
         "tonalRamp": [
@@ -351,7 +351,7 @@
         "role": "neutral",
         "displayName": "State Hover Control",
         "cssVar": "--sg-state-hover-control",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "rgb(233 233 235 / 0.06)",
         "oklch": "oklch(93.5% 0.003 286 / 0.06)",
         "tonalRamp": [
@@ -370,7 +370,7 @@
         "role": "neutral",
         "displayName": "Hairline",
         "cssVar": "--sg-border-subtle",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#303133",
         "oklch": "oklch(31.3% 0.004 265)",
         "tonalRamp": [
@@ -388,7 +388,7 @@
         "role": "neutral",
         "displayName": "Hairline Strong",
         "cssVar": "--sg-border-default",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#424345",
         "oklch": "oklch(38.3% 0.004 265)",
         "tonalRamp": [
@@ -406,7 +406,7 @@
         "role": "neutral",
         "displayName": "Hover Edge",
         "cssVar": "--sg-border-strong",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#77787a",
         "oklch": "oklch(57.2% 0.003 265)",
         "tonalRamp": [
@@ -424,7 +424,7 @@
         "role": "neutral",
         "displayName": "Control Border",
         "cssVar": "--sg-border-control",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#77787a",
         "oklch": "oklch(57.2% 0.003 265)",
         "tonalRamp": [
@@ -442,7 +442,7 @@
         "role": "neutral",
         "displayName": "Ink",
         "cssVar": "--sg-text-primary",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#e9e9eb",
         "oklch": "oklch(93.5% 0.003 286)",
         "tonalRamp": [
@@ -460,7 +460,7 @@
         "role": "neutral",
         "displayName": "Dim",
         "cssVar": "--sg-text-secondary",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#abacae",
         "oklch": "oklch(74.4% 0.003 265)",
         "tonalRamp": [
@@ -478,7 +478,7 @@
         "role": "neutral",
         "displayName": "Subtle",
         "cssVar": "--sg-text-subtle",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#9b9c9e",
         "oklch": "oklch(69.3% 0.003 265)",
         "tonalRamp": [
@@ -496,7 +496,7 @@
         "role": "neutral",
         "displayName": "Faint",
         "cssVar": "--sg-text-disabled",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#727375",
         "oklch": "oklch(55.5% 0.003 265)",
         "tonalRamp": [
@@ -514,7 +514,7 @@
         "role": "neutral",
         "displayName": "On Accent",
         "cssVar": "--sg-text-on-accent",
-        "source": "@barrymind/signal 0.1.1 signal.css",
+        "source": "@barrymind/signal 0.1.2 signal.css",
         "canonical": "#1a1b1c",
         "oklch": "oklch(22.1% 0.002 248)",
         "tonalRamp": [
@@ -528,30 +528,11 @@
           "#eeeeef"
         ]
       },
-      "sg-overlay-label": {
-        "role": "neutral",
-        "displayName": "Label Scrim",
-        "cssVar": "--sg-overlay-label",
-        "source": "@barrymind/signal 0.1.1 signal.css",
-        "canonical": "rgb(26 27 28 / 0.86)",
-        "oklch": "oklch(22.1% 0.002 248 / 0.86)",
-        "tonalRamp": [
-          "#0b0b0b",
-          "#252525",
-          "#414243",
-          "#606162",
-          "#818284",
-          "#a4a5a6",
-          "#c8c9ca",
-          "#eeeeef"
-        ],
-        "alphaOf": "#1a1b1c"
-      },
       "sg-overview-ground": {
         "role": "terrain",
         "displayName": "Ground",
         "cssVar": "--sg-overview-ground",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#1b1c1e",
         "oklch": "oklch(22.6% 0.004 264)",
         "tonalRamp": [
@@ -569,7 +550,7 @@
         "role": "terrain",
         "displayName": "Plate",
         "cssVar": "--sg-overview-plate",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#232426",
         "oklch": "oklch(26.0% 0.004 264)",
         "tonalRamp": [
@@ -587,7 +568,7 @@
         "role": "terrain",
         "displayName": "Plate Face Left",
         "cssVar": "--sg-overview-plate-face-left",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#18191b",
         "oklch": "oklch(21.3% 0.004 264)",
         "tonalRamp": [
@@ -605,7 +586,7 @@
         "role": "terrain",
         "displayName": "Plate Face Right",
         "cssVar": "--sg-overview-plate-face-right",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#131415",
         "oklch": "oklch(19.1% 0.003 248)",
         "tonalRamp": [
@@ -623,7 +604,7 @@
         "role": "neutral",
         "displayName": "Minimap Plate",
         "cssVar": "--sg-overview-minimap-plate",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#323336",
         "oklch": "oklch(32.1% 0.005 271)",
         "tonalRamp": [
@@ -641,7 +622,7 @@
         "role": "neutral",
         "displayName": "Wait Wash Hover",
         "cssVar": "--sg-overview-wait-wash-hover",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#2f2c25",
         "oklch": "oklch(29.4% 0.013 88)",
         "tonalRamp": [
@@ -659,7 +640,7 @@
         "role": "neutral",
         "displayName": "Hud Minimap",
         "cssVar": "--sg-overview-hud-minimap",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "rgb(26 27 28 / 0.9)",
         "oklch": "oklch(22.1% 0.002 248 / 0.9)",
         "tonalRamp": [
@@ -674,29 +655,11 @@
         ],
         "alphaOf": "#1a1b1c"
       },
-      "sg-overview-terrain-island-top": {
-        "role": "terrain",
-        "displayName": "Terrain Island Top",
-        "cssVar": "--sg-overview-terrain-island-top",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
-        "canonical": "#1f2022",
-        "oklch": "oklch(24.3% 0.004 264)",
-        "tonalRamp": [
-          "#0b0b0c",
-          "#252526",
-          "#414243",
-          "#606163",
-          "#818285",
-          "#a4a5a7",
-          "#c8c9cb",
-          "#eeeef0"
-        ]
-      },
       "sg-overview-terrain-island-face-left": {
         "role": "terrain",
         "displayName": "Terrain Island Face Left",
         "cssVar": "--sg-overview-terrain-island-face-left",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#161719",
         "oklch": "oklch(20.4% 0.004 264)",
         "tonalRamp": [
@@ -714,7 +677,7 @@
         "role": "terrain",
         "displayName": "Terrain Island Face Right",
         "cssVar": "--sg-overview-terrain-island-face-right",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#121314",
         "oklch": "oklch(18.6% 0.003 248)",
         "tonalRamp": [
@@ -732,7 +695,7 @@
         "role": "terrain",
         "displayName": "Terrain Island Edge",
         "cssVar": "--sg-overview-terrain-island-edge",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#38393c",
         "oklch": "oklch(34.5% 0.005 271)",
         "tonalRamp": [
@@ -746,29 +709,11 @@
           "#eeeef0"
         ]
       },
-      "sg-overview-terrain-commons": {
-        "role": "terrain",
-        "displayName": "Commons",
-        "cssVar": "--sg-overview-terrain-commons",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
-        "canonical": "#242527",
-        "oklch": "oklch(26.4% 0.004 264)",
-        "tonalRamp": [
-          "#0b0b0c",
-          "#252526",
-          "#414243",
-          "#606163",
-          "#818285",
-          "#a4a5a7",
-          "#c8c9cb",
-          "#eeeeef"
-        ]
-      },
       "sg-overview-terrain-bridge-top": {
         "role": "terrain",
         "displayName": "Terrain Bridge Top",
         "cssVar": "--sg-overview-terrain-bridge-top",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#202123",
         "oklch": "oklch(24.8% 0.004 264)",
         "tonalRamp": [
@@ -782,83 +727,533 @@
           "#eeeef0"
         ]
       },
-      "sg-overview-prop-bench-top": {
-        "role": "terrain",
-        "displayName": "Prop Bench Top",
-        "cssVar": "--sg-overview-prop-bench-top",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
-        "canonical": "#2e2f32",
-        "oklch": "oklch(30.5% 0.006 271)",
+      "sg-overview-hood-slate-ground": {
+        "role": "neighbourhood-tint",
+        "displayName": "Slate Ground",
+        "cssVar": "--sg-overview-hood-slate-ground",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#1d2026",
+        "oklch": "oklch(24.3% 0.012 264)",
         "tonalRamp": [
-          "#0b0b0c",
-          "#252526",
-          "#414244",
-          "#606164",
-          "#818286",
-          "#a4a5a8",
-          "#c8c9cb",
-          "#eeeef0"
+          "#0a0b0d",
+          "#232529",
+          "#3f4247",
+          "#5e6168",
+          "#7f8289",
+          "#a2a5ab",
+          "#c7c9ce",
+          "#edeef2"
         ]
       },
-      "sg-overview-prop-bench-face-left": {
-        "role": "terrain",
-        "displayName": "Prop Bench Face Left",
-        "cssVar": "--sg-overview-prop-bench-face-left",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
-        "canonical": "#2a2b2e",
-        "oklch": "oklch(28.9% 0.006 271)",
+      "sg-overview-hood-slate-wall": {
+        "role": "neighbourhood-tint",
+        "displayName": "Slate Wall",
+        "cssVar": "--sg-overview-hood-slate-wall",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#3b4250",
+        "oklch": "oklch(37.8% 0.026 264)",
         "tonalRamp": [
-          "#0b0b0c",
-          "#252526",
-          "#414244",
-          "#606164",
-          "#818286",
-          "#a4a5a8",
-          "#c8c9cb",
-          "#eeeef0"
+          "#090b10",
+          "#21252d",
+          "#3d424d",
+          "#5a616f",
+          "#7b8391",
+          "#9fa5b2",
+          "#c4c9d4",
+          "#ebeff6"
         ]
       },
-      "sg-overview-prop-bench-face-right": {
-        "role": "terrain",
-        "displayName": "Prop Bench Face Right",
-        "cssVar": "--sg-overview-prop-bench-face-right",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
-        "canonical": "#232427",
-        "oklch": "oklch(26.0% 0.006 271)",
+      "sg-overview-hood-slate-wall-shade": {
+        "role": "neighbourhood-tint",
+        "displayName": "Slate Wall Shade",
+        "cssVar": "--sg-overview-hood-slate-wall-shade",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#2c313b",
+        "oklch": "oklch(31.3% 0.019 264)",
         "tonalRamp": [
-          "#0b0b0c",
-          "#242526",
-          "#414244",
-          "#606164",
-          "#818286",
-          "#a4a5a8",
-          "#c8c9cb",
-          "#eeeef0"
+          "#090b0f",
+          "#22252b",
+          "#3e424a",
+          "#5c616c",
+          "#7d828d",
+          "#a0a5af",
+          "#c5c9d1",
+          "#eceef4"
         ]
       },
-      "sg-overview-prop-bench-edge": {
-        "role": "terrain",
-        "displayName": "Prop Bench Edge",
-        "cssVar": "--sg-overview-prop-bench-edge",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
-        "canonical": "#46474a",
-        "oklch": "oklch(39.8% 0.005 271)",
+      "sg-overview-hood-slate-roof": {
+        "role": "neighbourhood-tint",
+        "displayName": "Slate Roof",
+        "cssVar": "--sg-overview-hood-slate-roof",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#4a5262",
+        "oklch": "oklch(43.8% 0.028 264)",
         "tonalRamp": [
-          "#0b0b0c",
-          "#252526",
-          "#414244",
-          "#606164",
-          "#818285",
-          "#a4a5a8",
-          "#c8c9cb",
-          "#eeeef0"
+          "#090b11",
+          "#21252e",
+          "#3c424e",
+          "#5a6171",
+          "#7a8393",
+          "#9ea5b3",
+          "#c4c9d5",
+          "#eaeff7"
+        ]
+      },
+      "sg-overview-hood-sage-ground": {
+        "role": "neighbourhood-tint",
+        "displayName": "Sage Ground",
+        "cssVar": "--sg-overview-hood-sage-ground",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#1e221e",
+        "oklch": "oklch(24.6% 0.009 145)",
+        "tonalRamp": [
+          "#0a0c0a",
+          "#232623",
+          "#404340",
+          "#5e635e",
+          "#7f847f",
+          "#a2a6a2",
+          "#c7cac7",
+          "#edefed"
+        ]
+      },
+      "sg-overview-hood-sage-wall": {
+        "role": "neighbourhood-tint",
+        "displayName": "Sage Wall",
+        "cssVar": "--sg-overview-hood-sage-wall",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#3e4a40",
+        "oklch": "oklch(39.5% 0.023 150)",
+        "tonalRamp": [
+          "#080c09",
+          "#212722",
+          "#3c453d",
+          "#59655b",
+          "#7a867c",
+          "#9ea89f",
+          "#c3ccc4",
+          "#eaf0eb"
+        ]
+      },
+      "sg-overview-hood-sage-wall-shade": {
+        "role": "neighbourhood-tint",
+        "displayName": "Sage Wall Shade",
+        "cssVar": "--sg-overview-hood-sage-wall-shade",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#2e3730",
+        "oklch": "oklch(32.6% 0.017 152)",
+        "tonalRamp": [
+          "#090c0a",
+          "#212723",
+          "#3d443f",
+          "#5b645d",
+          "#7c857e",
+          "#9fa7a1",
+          "#c4cbc6",
+          "#ebf0ec"
+        ]
+      },
+      "sg-overview-hood-sage-roof": {
+        "role": "neighbourhood-tint",
+        "displayName": "Sage Roof",
+        "cssVar": "--sg-overview-hood-sage-roof",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#4c5a4e",
+        "oklch": "oklch(45.2% 0.026 149)",
+        "tonalRamp": [
+          "#080d09",
+          "#202721",
+          "#3b453c",
+          "#58655a",
+          "#79877b",
+          "#9da99e",
+          "#c2ccc4",
+          "#e9f1ea"
+        ]
+      },
+      "sg-overview-hood-clay-ground": {
+        "role": "neighbourhood-tint",
+        "displayName": "Clay Ground",
+        "cssVar": "--sg-overview-hood-clay-ground",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#241f1d",
+        "oklch": "oklch(24.4% 0.009 43)",
+        "tonalRamp": [
+          "#0d0b0a",
+          "#272423",
+          "#45413f",
+          "#65605e",
+          "#87817f",
+          "#a9a4a2",
+          "#ccc8c6",
+          "#f1eeec"
+        ]
+      },
+      "sg-overview-hood-clay-wall": {
+        "role": "neighbourhood-tint",
+        "displayName": "Clay Wall",
+        "cssVar": "--sg-overview-hood-clay-wall",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#4d3f38",
+        "oklch": "oklch(38.0% 0.023 48)",
+        "tonalRamp": [
+          "#0f0a08",
+          "#2b231f",
+          "#4a3f3a",
+          "#6c5e57",
+          "#8d7f78",
+          "#afa29c",
+          "#d1c7c2",
+          "#f5ede9"
+        ]
+      },
+      "sg-overview-hood-clay-wall-shade": {
+        "role": "neighbourhood-tint",
+        "displayName": "Clay Wall Shade",
+        "cssVar": "--sg-overview-hood-clay-wall-shade",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#3a2f2a",
+        "oklch": "oklch(31.6% 0.018 46)",
+        "tonalRamp": [
+          "#0e0a08",
+          "#2a2321",
+          "#49403c",
+          "#6a5e59",
+          "#8c7f7a",
+          "#ada39e",
+          "#d0c7c3",
+          "#f3edea"
+        ]
+      },
+      "sg-overview-hood-clay-roof": {
+        "role": "neighbourhood-tint",
+        "displayName": "Clay Roof",
+        "cssVar": "--sg-overview-hood-clay-roof",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#5c4b43",
+        "oklch": "oklch(42.8% 0.027 47)",
+        "tonalRamp": [
+          "#0f0a07",
+          "#2c231f",
+          "#4b3f39",
+          "#6e5d56",
+          "#8f7e76",
+          "#b0a19b",
+          "#d3c6c1",
+          "#f6ece8"
+        ]
+      },
+      "sg-overview-hood-plum-ground": {
+        "role": "neighbourhood-tint",
+        "displayName": "Plum Ground",
+        "cssVar": "--sg-overview-hood-plum-ground",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#221f25",
+        "oklch": "oklch(24.5% 0.012 308)",
+        "tonalRamp": [
+          "#0c0b0d",
+          "#262428",
+          "#434146",
+          "#636066",
+          "#848188",
+          "#a6a4aa",
+          "#cac8cd",
+          "#efedf1"
+        ]
+      },
+      "sg-overview-hood-plum-wall": {
+        "role": "neighbourhood-tint",
+        "displayName": "Plum Wall",
+        "cssVar": "--sg-overview-hood-plum-wall",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#463d4e",
+        "oklch": "oklch(37.6% 0.031 309)",
+        "tonalRamp": [
+          "#0d0a10",
+          "#28232c",
+          "#463f4c",
+          "#665d6e",
+          "#877e90",
+          "#a9a1b1",
+          "#ccc6d3",
+          "#f1ecf6"
+        ]
+      },
+      "sg-overview-hood-plum-wall-shade": {
+        "role": "neighbourhood-tint",
+        "displayName": "Plum Wall Shade",
+        "cssVar": "--sg-overview-hood-plum-wall-shade",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#342d3a",
+        "oklch": "oklch(31.0% 0.025 309)",
+        "tonalRamp": [
+          "#0c0a0f",
+          "#27232b",
+          "#453f4a",
+          "#655e6b",
+          "#867f8d",
+          "#a8a2ae",
+          "#ccc7d1",
+          "#f1edf4"
+        ]
+      },
+      "sg-overview-hood-plum-roof": {
+        "role": "neighbourhood-tint",
+        "displayName": "Plum Roof",
+        "cssVar": "--sg-overview-hood-plum-roof",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#554a5e",
+        "oklch": "oklch(42.8% 0.035 310)",
+        "tonalRamp": [
+          "#0d0910",
+          "#28222d",
+          "#463e4d",
+          "#675c6f",
+          "#887d91",
+          "#aaa1b2",
+          "#cdc6d4",
+          "#f2ecf7"
+        ]
+      },
+      "sg-overview-hood-sand-ground": {
+        "role": "neighbourhood-tint",
+        "displayName": "Sand Ground",
+        "cssVar": "--sg-overview-hood-sand-ground",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#23221d",
+        "oklch": "oklch(25.1% 0.009 98)",
+        "tonalRamp": [
+          "#0c0b09",
+          "#262522",
+          "#43423e",
+          "#62615c",
+          "#83827d",
+          "#a6a5a0",
+          "#cac9c5",
+          "#efeeeb"
+        ]
+      },
+      "sg-overview-hood-sand-wall": {
+        "role": "neighbourhood-tint",
+        "displayName": "Sand Wall",
+        "cssVar": "--sg-overview-hood-sand-wall",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#4a4637",
+        "oklch": "oklch(39.4% 0.025 95)",
+        "tonalRamp": [
+          "#0d0b06",
+          "#27251d",
+          "#454237",
+          "#656153",
+          "#868273",
+          "#a9a598",
+          "#ccc9bf",
+          "#f1eee6"
+        ]
+      },
+      "sg-overview-hood-sand-wall-shade": {
+        "role": "neighbourhood-tint",
+        "displayName": "Sand Wall Shade",
+        "cssVar": "--sg-overview-hood-sand-wall-shade",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#38352a",
+        "oklch": "oklch(32.8% 0.019 95)",
+        "tonalRamp": [
+          "#0c0b07",
+          "#27251f",
+          "#444239",
+          "#646156",
+          "#858277",
+          "#a8a59b",
+          "#cbc9c1",
+          "#f0eee8"
+        ]
+      },
+      "sg-overview-hood-sand-roof": {
+        "role": "neighbourhood-tint",
+        "displayName": "Sand Roof",
+        "cssVar": "--sg-overview-hood-sand-roof",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#59543f",
+        "oklch": "oklch(44.5% 0.033 96)",
+        "tonalRamp": [
+          "#0d0b05",
+          "#28251a",
+          "#464233",
+          "#66614e",
+          "#87836e",
+          "#a9a594",
+          "#cdc9bb",
+          "#f1efe4"
+        ]
+      },
+      "sg-overview-hood-shared-window-day": {
+        "role": "world-shared",
+        "displayName": "Window Glass",
+        "cssVar": "--sg-overview-hood-shared-window-day",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#20242a",
+        "oklch": "oklch(25.9% 0.013 258)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#232529",
+          "#3f4247",
+          "#5d6268",
+          "#7e8389",
+          "#a1a5ab",
+          "#c6c9ce",
+          "#eceff2"
+        ]
+      },
+      "sg-overview-hood-shared-window-lit": {
+        "role": "world-shared",
+        "displayName": "Lit Window",
+        "cssVar": "--sg-overview-hood-shared-window-lit",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#8e8774",
+        "oklch": "oklch(62.4% 0.029 90)",
+        "tonalRamp": [
+          "#0d0b06",
+          "#28251b",
+          "#464235",
+          "#676150",
+          "#888271",
+          "#aaa596",
+          "#cdc9bd",
+          "#f2eee5"
+        ]
+      },
+      "sg-overview-hood-shared-park": {
+        "role": "world-shared",
+        "displayName": "Park Ground",
+        "cssVar": "--sg-overview-hood-shared-park",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#1f2520",
+        "oklch": "oklch(25.7% 0.013 150)",
+        "tonalRamp": [
+          "#0a0c0a",
+          "#232623",
+          "#3f433f",
+          "#5d635e",
+          "#7e847f",
+          "#a1a7a2",
+          "#c6cbc6",
+          "#ecefec"
+        ]
+      },
+      "sg-overview-hood-shared-tree-dark": {
+        "role": "world-shared",
+        "displayName": "Canopy Dark",
+        "cssVar": "--sg-overview-hood-shared-tree-dark",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#2f3d33",
+        "oklch": "oklch(34.4% 0.025 154)",
+        "tonalRamp": [
+          "#080d09",
+          "#202722",
+          "#3a453d",
+          "#57655b",
+          "#78877c",
+          "#9ca9a0",
+          "#c2ccc5",
+          "#e9f1eb"
+        ]
+      },
+      "sg-overview-hood-shared-tree-light": {
+        "role": "world-shared",
+        "displayName": "Canopy Light",
+        "cssVar": "--sg-overview-hood-shared-tree-light",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#455a49",
+        "oklch": "oklch(44.5% 0.038 150)",
+        "tonalRamp": [
+          "#060d08",
+          "#1d281f",
+          "#37463a",
+          "#536757",
+          "#748978",
+          "#99aa9c",
+          "#bfcec2",
+          "#e7f2e9"
+        ]
+      },
+      "sg-overview-hood-shared-trunk": {
+        "role": "world-shared",
+        "displayName": "Trunk",
+        "cssVar": "--sg-overview-hood-shared-trunk",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#3a2f28",
+        "oklch": "oklch(31.5% 0.020 54)",
+        "tonalRamp": [
+          "#0e0a08",
+          "#2a2420",
+          "#49403a",
+          "#6a5f57",
+          "#8c8078",
+          "#ada39c",
+          "#d0c7c2",
+          "#f3ede9"
+        ]
+      },
+      "sg-overview-hood-shared-furniture": {
+        "role": "world-shared",
+        "displayName": "Furniture",
+        "cssVar": "--sg-overview-hood-shared-furniture",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#34363a",
+        "oklch": "oklch(33.2% 0.008 264)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#242527",
+          "#404245",
+          "#5f6165",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cc",
+          "#edeef1"
+        ]
+      },
+      "sg-overview-hood-shared-furniture-top": {
+        "role": "world-shared",
+        "displayName": "Furniture Top",
+        "cssVar": "--sg-overview-hood-shared-furniture-top",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#44464b",
+        "oklch": "oklch(39.4% 0.009 268)",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#242528",
+          "#404246",
+          "#5f6166",
+          "#808287",
+          "#a3a5a9",
+          "#c8c9cd",
+          "#edeef1"
+        ]
+      },
+      "sg-overview-hood-shared-night": {
+        "role": "world-shared",
+        "displayName": "Night",
+        "cssVar": "--sg-overview-hood-shared-night",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
+        "canonical": "#0d1018",
+        "oklch": "oklch(17.4% 0.017 269)",
+        "tonalRamp": [
+          "#0a0b0e",
+          "#23252a",
+          "#3f4249",
+          "#5d616b",
+          "#7e828c",
+          "#a1a5ae",
+          "#c6c9d0",
+          "#eceef4"
         ]
       },
       "sg-overview-lattice-grid-minor": {
         "role": "terrain",
         "displayName": "Lattice Grid Minor",
         "cssVar": "--sg-overview-lattice-grid-minor",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "rgb(233 233 235 / 0.035)",
         "oklch": "oklch(93.5% 0.003 286 / 0.035)",
         "tonalRamp": [
@@ -877,7 +1272,7 @@
         "role": "terrain",
         "displayName": "Lattice Grid Major",
         "cssVar": "--sg-overview-lattice-grid-major",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "rgb(233 233 235 / 0.085)",
         "oklch": "oklch(93.5% 0.003 286 / 0.085)",
         "tonalRamp": [
@@ -896,7 +1291,7 @@
         "role": "terrain",
         "displayName": "Lattice Survey Cross",
         "cssVar": "--sg-overview-lattice-survey-cross",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "rgb(233 233 235 / 0.28)",
         "oklch": "oklch(93.5% 0.003 286 / 0.28)",
         "tonalRamp": [
@@ -915,7 +1310,7 @@
         "role": "terrain",
         "displayName": "Lattice Graticule Tick",
         "cssVar": "--sg-overview-lattice-graticule-tick",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "rgb(233 233 235 / 0.25)",
         "oklch": "oklch(93.5% 0.003 286 / 0.25)",
         "tonalRamp": [
@@ -934,7 +1329,7 @@
         "role": "terrain",
         "displayName": "Lattice Plate Tick",
         "cssVar": "--sg-overview-lattice-plate-tick",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "rgb(233 233 235 / 0.12)",
         "oklch": "oklch(93.5% 0.003 286 / 0.12)",
         "tonalRamp": [
@@ -953,7 +1348,7 @@
         "role": "creature",
         "displayName": "Creature Ink",
         "cssVar": "--sg-overview-creature-ink",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#0e0f10",
         "oklch": "oklch(16.8% 0.003 248)",
         "tonalRamp": [
@@ -971,7 +1366,7 @@
         "role": "creature",
         "displayName": "Creature Shadow",
         "cssVar": "--sg-overview-creature-shadow",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "rgb(0 0 0 / 0.38)",
         "oklch": "oklch(0.0% 0.000 0 / 0.38)",
         "tonalRamp": [
@@ -990,7 +1385,7 @@
         "role": "creature",
         "displayName": "Creature Pale Shade",
         "cssVar": "--sg-overview-creature-pale-shade",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#66686d",
         "oklch": "oklch(51.7% 0.008 268)",
         "tonalRamp": [
@@ -1008,7 +1403,7 @@
         "role": "creature",
         "displayName": "Creature Pale Base",
         "cssVar": "--sg-overview-creature-pale-base",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#9a9ca1",
         "oklch": "oklch(69.3% 0.008 269)",
         "tonalRamp": [
@@ -1026,7 +1421,7 @@
         "role": "creature",
         "displayName": "Creature Pale Light",
         "cssVar": "--sg-overview-creature-pale-light",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#bfc1c5",
         "oklch": "oklch(81.1% 0.006 265)",
         "tonalRamp": [
@@ -1044,7 +1439,7 @@
         "role": "creature",
         "displayName": "Creature Pale Highlight",
         "cssVar": "--sg-overview-creature-pale-highlight",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#e1e2e5",
         "oklch": "oklch(91.3% 0.004 271)",
         "tonalRamp": [
@@ -1062,7 +1457,7 @@
         "role": "creature",
         "displayName": "Creature Lit Shade",
         "cssVar": "--sg-overview-creature-lit-shade",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#56585d",
         "oklch": "oklch(46.0% 0.008 268)",
         "tonalRamp": [
@@ -1080,7 +1475,7 @@
         "role": "creature",
         "displayName": "Creature Lit Base",
         "cssVar": "--sg-overview-creature-lit-base",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#85878c",
         "oklch": "oklch(62.3% 0.008 269)",
         "tonalRamp": [
@@ -1098,7 +1493,7 @@
         "role": "creature",
         "displayName": "Creature Lit Light",
         "cssVar": "--sg-overview-creature-lit-light",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#a9abaf",
         "oklch": "oklch(74.1% 0.006 265)",
         "tonalRamp": [
@@ -1116,7 +1511,7 @@
         "role": "creature",
         "displayName": "Creature Lit Highlight",
         "cssVar": "--sg-overview-creature-lit-highlight",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#d3d4d7",
         "oklch": "oklch(87.0% 0.004 271)",
         "tonalRamp": [
@@ -1134,7 +1529,7 @@
         "role": "creature",
         "displayName": "Creature Dusk Shade",
         "cssVar": "--sg-overview-creature-dusk-shade",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#3f4145",
         "oklch": "oklch(37.5% 0.007 264)",
         "tonalRamp": [
@@ -1152,7 +1547,7 @@
         "role": "creature",
         "displayName": "Creature Dusk Base",
         "cssVar": "--sg-overview-creature-dusk-base",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#66686d",
         "oklch": "oklch(51.7% 0.008 268)",
         "tonalRamp": [
@@ -1170,7 +1565,7 @@
         "role": "creature",
         "displayName": "Creature Dusk Light",
         "cssVar": "--sg-overview-creature-dusk-light",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#86888c",
         "oklch": "oklch(62.6% 0.006 265)",
         "tonalRamp": [
@@ -1188,7 +1583,7 @@
         "role": "creature",
         "displayName": "Creature Dusk Highlight",
         "cssVar": "--sg-overview-creature-dusk-highlight",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#a9abaf",
         "oklch": "oklch(74.1% 0.006 265)",
         "tonalRamp": [
@@ -1206,7 +1601,7 @@
         "role": "creature",
         "displayName": "Creature Dim Shade",
         "cssVar": "--sg-overview-creature-dim-shade",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#38393d",
         "oklch": "oklch(34.5% 0.007 275)",
         "tonalRamp": [
@@ -1224,7 +1619,7 @@
         "role": "creature",
         "displayName": "Creature Dim Base",
         "cssVar": "--sg-overview-creature-dim-base",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#515357",
         "oklch": "oklch(44.2% 0.007 264)",
         "tonalRamp": [
@@ -1242,7 +1637,7 @@
         "role": "creature",
         "displayName": "Creature Dim Light",
         "cssVar": "--sg-overview-creature-dim-light",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#626468",
         "oklch": "oklch(50.3% 0.007 265)",
         "tonalRamp": [
@@ -1260,7 +1655,7 @@
         "role": "creature",
         "displayName": "Creature Dim Highlight",
         "cssVar": "--sg-overview-creature-dim-highlight",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#75777b",
         "oklch": "oklch(56.9% 0.007 265)",
         "tonalRamp": [
@@ -1278,7 +1673,7 @@
         "role": "creature",
         "displayName": "Slab Asleep Rim",
         "cssVar": "--sg-overview-slab-asleep-rim",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#3b3c3f",
         "oklch": "oklch(35.6% 0.005 271)",
         "tonalRamp": [
@@ -1296,7 +1691,7 @@
         "role": "creature",
         "displayName": "Slab Run Cursor",
         "cssVar": "--sg-overview-slab-run-cursor",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#5a5c60",
         "oklch": "oklch(47.4% 0.007 265)",
         "tonalRamp": [
@@ -1314,7 +1709,7 @@
         "role": "creature",
         "displayName": "Slab Err Crack",
         "cssVar": "--sg-overview-slab-err-crack",
-        "source": "@barrymind/signal 0.1.1 extensions/overview.css",
+        "source": "@barrymind/signal 0.1.2 extensions/overview.css",
         "canonical": "#5c211a",
         "oklch": "oklch(33.5% 0.088 29)",
         "tonalRamp": [
@@ -1363,32 +1758,22 @@
       "sg-type-control": {
         "displayName": "Type Control",
         "cssVar": "--sg-type-control",
-        "purpose": "Buttons, tabs, chips, breadcrumb, zoom."
+        "purpose": "Buttons, tabs, filter chips, breadcrumb, clock, zoom values and card status lines."
       },
       "sg-type-status": {
         "displayName": "Type Status",
         "cssVar": "--sg-type-status",
         "purpose": "Status bar."
       },
-      "sg-type-map-label": {
-        "displayName": "Type Map Label",
-        "cssVar": "--sg-type-map-label",
-        "purpose": "Island labels on the canvas (plots 11px, bridges 10.5px)."
-      },
       "sg-type-meta": {
         "displayName": "Type Meta",
         "cssVar": "--sg-type-meta",
-        "purpose": "Agent lines, ages, summaries, graticule, callouts, popover rows."
+        "purpose": "Agent lines, ages, row summaries, graticule numbers, map callouts, edge markers, popover rows and the minimap header."
       },
       "sg-type-section": {
         "displayName": "Type Section",
         "cssVar": "--sg-type-section",
         "purpose": "Uppercase list heads with counts."
-      },
-      "sg-type-badge": {
-        "displayName": "Type Badge",
-        "cssVar": "--sg-type-badge",
-        "purpose": "Waiting count on island labels."
       }
     },
     "shadows": [
@@ -1471,11 +1856,6 @@
         "purpose": "Eye blink."
       },
       {
-        "name": "speech-cycle",
-        "value": "1.4s visible of a 2.8s cycle, sine fade",
-        "purpose": "Chat bubbles alternate between partners."
-      },
-      {
         "name": "walk-speed",
         "value": "2.4 cells/s to desk, 1.3 free, x energy (0.7 to 1.4)",
         "purpose": "A* path following."
@@ -1485,6 +1865,26 @@
         "cssVar": "--sg-overview-motion-reduced-redraw",
         "value": "400ms",
         "purpose": "Under reduced motion the simulation settles and the frame redraws every 400ms."
+      },
+      {
+        "name": "speech-turn",
+        "value": "line visible 2.6s; next speaker after 2.8 to 3.6s",
+        "purpose": "Conversation turns in a group."
+      },
+      {
+        "name": "emote",
+        "value": "1.2 to 2.2s, fade in and out, rise 3 sprite px",
+        "purpose": "Glyph bubbles."
+      },
+      {
+        "name": "celebrate-hop",
+        "value": "up to 7 sprite px, 2.4s",
+        "purpose": "A session that just finished."
+      },
+      {
+        "name": "night-ramp",
+        "value": "0 from 07:30 to 18:00; ramps to 0.5 by 20:30; back from 05:30",
+        "purpose": "World shading toward --sg-overview-hood-shared-night."
       }
     ],
     "breakpoints": [
@@ -1495,35 +1895,48 @@
       }
     ],
     "geometry": {
-      "projection": "2:1 iso, 16 x 8 px per u at 1x",
+      "projection": "2:1 iso, 16 x 8 px per u at 1x; height unit 10 x z px",
       "zoomLevels": "k/dpr, k in {1,2,3,4,5,6,8}, 0.3x to 4x",
-      "islandGap": "6 u",
-      "islandWidth": "2 x widest plate + 4 u",
-      "plateDepth": "4 u",
-      "plateWidth": "max(4, 2n + 2) u",
-      "deskPitch": "2 u from 1.5 u",
-      "lotRowGap": "2 u",
-      "benchesPerCommons": 2,
-      "islandThickness": "max(4, round(10z)) px",
+      "legibleFloor": "0.66x (opening frame falls back to urgent agents)",
+      "neighbourhoodGap": "6 u water, two columns",
+      "skylineStrip": "3 u",
+      "nameStrip": "3 u along front-right edge",
+      "roomDepth": "6 u",
+      "streetWidth": "2 u",
+      "officeWidth": "max(6, 2n + 3) u",
+      "amenityWidth": "8 u",
+      "deskPitch": "2 u from 2.5 u in",
+      "wallHeight": "1.4 units, back and left only",
+      "buildings": "2-4 u wide, 2-3 u deep, 2-6 storeys; roof none/ac/antenna/tank",
+      "slabThickness": "max(4, round(10z)) px",
       "bridgeThickness": "max(2, round(3z)) px",
-      "textures": {
-        "macbook": "dots",
-        "arch-workstation": "hatch",
-        "home-server": "grid"
-      }
+      "floorThickness": "3z px",
+      "territoryName": "~80% of front edge, max 4.2 u, Ink 9%, weight 600",
+      "litWindows": "~20% of cells when night > 0.15, window-lit at 50%",
+      "labelClearance": "6px; screen inset 2px; reserved bands top 26px, left 52px",
+      "textures": [
+        "dots 0.5u 12%",
+        "stipple 0.34u 7%",
+        "hatch 0.5u 8%",
+        "grid 1u 7%",
+        "lines 0.5u 7%"
+      ]
     },
     "drift": [
+      "Decorative status colour (defect, not canonized): the heart emote glyph is drawn in --sg-status-err-fg, and the café coffee machine carries a --sg-status-done-fg pixel that is not night-shaded. Both break Muted World, Loud Status.",
+      "Tree shadow is a literal rgba(0,0,0,0.3); no Signal token (creature shadow is 0.38).",
+      "Ground-lettering alphas (9%, 45%, 50%, 30%, needs-you 95%), café checker (3.5%), lit-window alpha (50%), lit fraction (20%) and lit threshold (night > 0.15) are literals with no Signal tokens.",
+      "Textures stipple and lines have no --sg-overview-opacity-texture-* token; they fall back to a literal 0.07.",
+      "Speech type (mono 400 10.5px, 18px tall) has no Signal type or size token; --sg-type-badge is 500/lh 1 and --sg-size-map-label is 18px but is not referenced.",
+      "Popover shadow literal 0 10px 28px rgb(0 0 0 / 0.55) differs from --sg-shadow-popover (0 8px 24px -8px rgb(0 0 0 / 0.5)).",
+      "Tooltip and toast shadows, durations, layout insets, zoom constants, label gap and callout limit are written as literals equal to Signal values instead of var(--sg-*)/getComputedStyle.",
+      "Edge markers use --sg-status-*-border (40%); Signal --sg-overview-opacity-edge-marker-border is 45%. Failed hover uses --sg-status-err-bg; Signal has no overview err wash to match --sg-overview-wait-wash-hover.",
+      "Label clearance is 6px in the build; Signal --sg-overview-layout-label-gap is 7px.",
+      "Minimap viewport is Dim at full opacity, 1.5px; Signal --sg-overview-opacity-viewport describes 70%.",
       "Rail tab bar is 34px; Signal --sg-size-tab-bar is 32px.",
-      "Popover shadow literal 0 10px 28px rgb(0 0 0 / 0.55) differs from --sg-shadow-popover.",
-      "Tooltip and toast shadows, body type, kbd and focus ring are re-declared as literals rather than var(--sg-*); values match Signal.",
-      "Edge-marker border uses --sg-status-wait-border (40%); Signal extension --sg-overview-opacity-edge-marker-border says 45%.",
-      "Minimap viewport is Dim at full opacity, 1.5px; Signal --sg-overview-opacity-viewport describes Ink at 70%.",
-      "Plate geometry: build uses desk inset 1.5 u, pitch 2 u, width max(4, 2n+2); Signal --sg-overview-plate-session-inset 1.75 and -pitch 2.5 are stale.",
-      "Signal extension tokens unused by v3: district-edge, district-padding, district-dash, hud-readout, slab-done-mark (done slabs no longer show a check).",
-      "Off-scale values: task checkbox radius 4px and 1.5px border; tracker input height 30px; scrollbar thumb radius 4px (Signal: --sg-radius-full) with no thumb hover.",
-      "Commons edge dash (3px) and graticule clearance bands (60/230/34/160px) are not tokenised.",
-      "Canvas fallback colours and the task check stroke (#1a1b1c) are hard-coded copies of Signal values.",
-      "Signal package: signal.css header comment reads \"Signal 0.1.0\" while package.json is 0.1.1 (same in source)."
+      "Signal extension tokens no longer used by v4: terrain-island-top, terrain-commons, prop-bench-*, plate-session-inset/-pitch, district-*, hud-readout, slab-done-mark, opacity-commons-edge (read but unused), opacity-slab-*, opacity-callout-border, opacity-leader-line; --sg-overlay-label is read at boot but unused; GLYPH.sun is defined but unused.",
+      "Off-scale values: task checkbox radius 4px and 1.5px border; tracker input 30px; scrollbar thumb radius 4px.",
+      "Canvas fallback hexes in core.js/creatures.js and the task check stroke duplicate Signal values."
     ]
   },
   "components": [
@@ -1595,39 +2008,54 @@
       "name": "Edge Marker",
       "kind": "custom",
       "refersTo": "edge-marker",
-      "description": "Off-screen waiting agent pinned to the stage edge; click glides to it.",
-      "html": "<button class=\"ds-edge\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"var(--sg-status-wait-fg)\"/></svg><span>hangar-roadmap</span> 4m</button>",
-      "css": ".ds-edge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px 0 6px;border-radius:var(--sg-radius-md);background:var(--sg-surface-raised);border:1px solid var(--sg-status-wait-border);font:var(--sg-type-meta);color:var(--sg-text-primary);cursor:pointer}.ds-edge span{color:var(--sg-status-wait-fg)}.ds-edge:hover{background:var(--sg-overview-wait-wash-hover)}.ds-edge:focus-visible{outline:2px solid var(--sg-border-focus);outline-offset:1px}"
+      "description": "Off-screen waiting or failed session pinned to the stage edge; yellow diamond for waiting, coral cross for failed.",
+      "html": "<div class=\"ds-edges\"><button class=\"ds-edge\" type=\"button\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" aria-hidden=\"true\"><path d=\"M6 1 11 6 6 11 1 6Z\" fill=\"var(--sg-status-wait-fg)\"/></svg><span>gramly</span> 18m<svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" style=\"transform:rotate(30deg)\" aria-hidden=\"true\"><path d=\"M2 5h6M5.5 2.5 8 5 5.5 7.5\" fill=\"none\" stroke=\"var(--sg-text-secondary)\" stroke-width=\"1.2\"/></svg></button><button class=\"ds-edge ds-edge-err\" type=\"button\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 12 12\" aria-hidden=\"true\"><path d=\"M3 3l6 6M9 3 3 9\" stroke=\"var(--sg-status-err-fg)\" stroke-width=\"1.5\"/></svg><span>flow</span> 9m<svg width=\"10\" height=\"10\" viewBox=\"0 0 10 10\" style=\"transform:rotate(150deg)\" aria-hidden=\"true\"><path d=\"M2 5h6M5.5 2.5 8 5 5.5 7.5\" fill=\"none\" stroke=\"var(--sg-text-secondary)\" stroke-width=\"1.2\"/></svg></button></div>",
+      "css": ".ds-edges{display:flex;gap:8px}.ds-edge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px 0 6px;border-radius:var(--sg-radius-md);background:var(--sg-surface-raised);border:1px solid var(--sg-status-wait-border);font:var(--sg-type-meta);color:var(--sg-text-primary);cursor:pointer;white-space:nowrap}.ds-edge span{color:var(--sg-status-wait-fg)}.ds-edge:hover{background:var(--sg-overview-wait-wash-hover)}.ds-edge-err{border-color:var(--sg-status-err-border)}.ds-edge-err span{color:var(--sg-status-err-fg)}.ds-edge-err:hover{background:var(--sg-status-err-bg)}.ds-edge:focus-visible{outline:2px solid var(--sg-accent-fg);outline-offset:1px}"
     },
     {
-      "name": "Map Label",
+      "name": "Map Callout and Speech",
       "kind": "custom",
-      "refersTo": "map-label",
-      "description": "Canvas label on Label Scrim; island labels carry a border and a yellow count badge.",
-      "html": "<span class=\"ds-ml\"><b>macbook</b><span>local · 5 agents</span><i>1</i></span>",
-      "css": ".ds-ml{display:inline-flex;align-items:center;gap:6px;height:18px;padding:0 5px;border-radius:var(--sg-radius-sm);background:var(--sg-overlay-label);border:1px solid var(--sg-border-default);font:var(--sg-type-map-label)}.ds-ml b{font-weight:500;color:var(--sg-text-primary)}.ds-ml span{font-weight:400;color:var(--sg-text-subtle)}.ds-ml i{font:var(--sg-type-badge);font-style:normal;width:15px;height:12px;display:inline-grid;place-items:center;border-radius:var(--sg-radius-hair);background:var(--sg-status-wait-fg);color:var(--sg-text-on-accent)}.ds-ml:hover{border-color:var(--sg-border-strong)}"
+      "refersTo": "map-callout",
+      "description": "The only floating labels: a status callout (20 chars, status border at 70%) and creature speech (22 chars, Dim on Hairline Strong).",
+      "html": "<div class=\"ds-float\"><div class=\"ds-callout\">run pnpm db:migrate?</div><div class=\"ds-speech\">nice grid today</div></div>",
+      "css": ".ds-float{display:flex;gap:16px;align-items:flex-start;padding:8px 0 10px}.ds-callout,.ds-speech{position:relative;display:inline-flex;align-items:center;padding:0 7px;border-radius:var(--sg-radius-md);background:var(--sg-surface-raised);font-family:var(--sg-font-mono);white-space:nowrap}.ds-callout{height:20px;font-size:11px;color:var(--sg-text-primary);border:1px solid rgb(254 192 74 / 0.7)}.ds-speech{height:18px;font-size:10.5px;color:var(--sg-text-secondary);border:1px solid var(--sg-border-default)}.ds-callout::after,.ds-speech::after{content:\"\";position:absolute;left:50%;bottom:-5px;margin-left:-4px;border:4px solid transparent;border-top-color:var(--sg-surface-raised);border-bottom:0}"
+    },
+    {
+      "name": "Title Clock",
+      "kind": "custom",
+      "refersTo": "clock",
+      "description": "Real-clock readout that drives day and night on the map.",
+      "html": "<span class=\"ds-clock\">19:12 · dusk</span>",
+      "css": ".ds-clock{font:var(--sg-type-control);color:var(--sg-text-subtle);font-variant-numeric:tabular-nums;white-space:nowrap}"
     }
   ],
   "narrative": {
     "northStar": "The Inhabited Survey",
-    "overview": "Overview is a measured plane that something lives on. The fleet of agent sessions sits on a 2:1 isometric lattice with a graticule at the stage edges. Each machine is a terrain island with its own monochrome ground texture. Each project is a flat plate at integer grid coordinates, laid out automatically in a two-column lot. Each session is a small grey pixel creature, generated from its session id, that works at its desk while it is needed and lives on the island when it is free. Survey precision still governs: coordinates, integer pixels and the lattice. Within it, terrain, a commons with benches and bridges carrying SSH latency give the owner a small world with lore. It still refuses the dashboard of cards and any colour that is not status.\n\nEvery colour, face, radius and duration comes from Signal (@barrymind/signal 0.1.1). Signal's core tokens (`--sg-surface-*`, `--sg-text-*`, `--sg-border-*`, `--sg-accent-*`, `--sg-status-*`, `--sg-font-*`) dress the chrome, and Signal's Overview extension (`--sg-overview-*`) dresses the plane: terrain, props, lattice, creature coats, slabs and textures. The build aliases them to short local names (`--bg`, `--panel`, `--wait` and so on), and the canvas reads them through `getComputedStyle` at boot. Overview owns layout, geometry and behaviour, not values. The density is that of an instrument panel: 13px body, 11px metadata, 24 to 40px bars and 12px insets. Everything stays quiet until something needs the owner. Then yellow appears in several places at once: on the map, at the stage edge, in the rail and in the status bar.\n\nColour carries meaning only. Four status hues name what a session is doing. A single periwinkle accent marks the owner's own hand: selection, focus, the primary action and a pressed filter. Everything else is graphite, down to the creatures' coats, the speech glyphs and the ball.",
+    "overview": "Overview is a measured plane that a small society lives on. The fleet of agent sessions sits on a 2:1 isometric lattice with a graticule at the stage edges. Each machine is a neighbourhood generated from its id: a tinted ground with its own texture, a skyline of closed buildings along the back, project offices as low open-front rooms, a café, a canteen or a park, streets between the lots, and bridges to its neighbours that carry the SSH latency. Each session is a small grey pixel creature, seeded from its session id, that works at its office desk while it is needed and otherwise lives in the neighbourhood: it gets coffee, eats lunch at the real lunch hour, naps in the park, greets and comforts friends, and talks about the real sessions. Names are painted on the ground like a country on a map. Only what needs the owner floats.\n\nEvery colour, face, radius and duration comes from Signal (@barrymind/signal 0.1.2). Core tokens (`--sg-surface-*`, `--sg-text-*`, `--sg-border-*`, `--sg-accent-*`, `--sg-status-*`, `--sg-font-*`) dress the chrome. The Overview extension (`--sg-overview-*`) dresses the plane: neighbourhood tints (`--sg-overview-hood-*`), terrain, lattice, creature coats and slabs. The CSS aliases them to short local names (`--bg`, `--panel`, `--wait` and so on), and the canvas reads them through `getComputedStyle` at boot. Overview owns layout, geometry and behaviour, not values. The chrome has instrument-panel density: 13px body, 11px metadata, 24 to 40px bars and 12px insets.\n\nThe world is muted and the signals are loud. Each neighbourhood carries one low-chroma tint on its ground, walls and roofs. Day and night follow the owner's clock and darken only the world. Status hues and the periwinkle accent are never shaded and never decorative, so a raised hand reads the same at noon and at midnight.",
     "keyCharacteristics": [
-      "Signal 0.1.1 is the token source; Overview references `--sg-*` variables and owns none of the values",
+      "Signal 0.1.2 is the token source; Overview references `--sg-*` variables and owns none of the values",
       "2:1 isometric projection, 16 x 8 px per grid unit at 1x, integer device-pixel zoom steps",
-      "Machines as textured monochrome islands joined by latency-carrying bridges; projects in auto-laid-out two-column lots",
-      "Seeded pixel creatures with a monochrome genome and an ambient life simulation that desk states override",
+      "Machines as generated neighbourhoods (tint, texture, skyline, offices, café, canteen or park, streets, bridges)",
+      "Names painted on the ground in perspective; only callouts and speech float",
+      "Seeded pixel creatures with a monochrome genome, expressions, emotes and a social life that desk states override",
+      "Day and night from the real clock, shading terrain and buildings only",
       "Mono for data, controls and the map; sans for human sentences",
-      "Hairlines (1px) and small radii (2 to 6px); flat chrome, soft shadows only on floating overlays"
+      "Hairlines (1px) and small radii (3 to 6px); flat chrome, soft shadows only on floating overlays"
     ],
     "rules": [
       {
-        "name": "The Status-Only Colour Rule",
-        "body": "Hue is spent only on the four statuses and on the accent. Terrain, props, creatures, speech glyphs and the ball are graphite. If a new element is not a status and not the owner's own selection or action, it is grey.",
+        "name": "The Muted World, Loud Status Rule",
+        "body": "Each neighbourhood gets one low-chroma tint, and it lands only on terrain, walls and roofs. Saturated hue is spent on the four statuses and the accent and nowhere else: never on creatures, furniture, emotes, speech or signage. If a new element is not a status and not the owner's own selection or action, it is graphite or its neighbourhood's tint.",
         "section": "colors"
       },
       {
         "name": "The Loudest Yellow Rule",
-        "body": "Needs-you yellow outranks everything. Only a waiting session gets the diamond, the ground ring, the hop, the edge marker and the island count badge; no other state may borrow those devices.",
+        "body": "Needs-you yellow outranks everything. Only a waiting session gets the diamond, the ground ring, the hop, a yellow edge marker, a yellow callout and a place in the painted needs-you count. Failed sessions get the coral callout, the coral edge marker and the melt; no other state may borrow these devices.",
+        "section": "colors"
+      },
+      {
+        "name": "The Night Spares Status Rule",
+        "body": "Night shades the world (terrain, slabs, floors, walls, buildings, furniture, trees, bridges) toward `--sg-overview-hood-shared-night`. Creatures, slabs, status colours, the accent, ground lettering and every floating label are never shaded.",
         "section": "colors"
       },
       {
@@ -1641,45 +2069,54 @@
         "section": "typography"
       },
       {
-        "name": "The Tabular Rule",
-        "body": "Every number that updates (ages, counts, zoom, coordinates, latency) uses tabular figures. Coordinates are zero-padded to two digits with a true minus sign (−08).",
+        "name": "The Painted Names Rule",
+        "body": "Places are named on the ground, in perspective, never on floating labels. Machine names are territory-sized and faint; project and amenity names sit on their floors. Only callouts (why a hand is raised or a session failed) and speech float above the plane.",
         "section": "typography"
       },
       {
-        "name": "The Survey Rule",
-        "body": "Every plate stands at integer grid coordinates and is labelled with them. Terrain is ground the coordinates sit on, never decoration that hides them.",
+        "name": "The Tabular Rule",
+        "body": "Every number that updates (ages, counts, zoom, coordinates, latency, the clock) uses tabular figures. Graticule coordinates are zero-padded to two digits with a true minus sign (−08).",
+        "section": "typography"
+      },
+      {
+        "name": "The Generated Neighbourhood Rule",
+        "body": "A neighbourhood's tint, texture, skyline and amenities come from its machine id, so the same machine always looks the same. Rooms stand at integer grid coordinates and are placed automatically; nothing is dragged.",
         "section": "layout"
       },
       {
         "name": "The Integer Pixel Rule",
-        "body": "Creatures, terrain, plates and the lattice share one integer device-pixel scale. Never smooth a sprite or offer a zoom between levels.",
+        "body": "Creatures, terrain, rooms and the lattice share one integer device-pixel scale. Never smooth a sprite or offer a zoom between levels.",
         "section": "layout"
       },
       {
         "name": "The Label Priority Rule",
-        "body": "Labels are placed in a fixed order: callouts first, island labels second, plot labels third, bridge latency labels last. Each tries its candidate spots in order and takes the first that is on screen (2px inset), clear of the HUD and of other labels by 7px, and, for plot labels, clear of other plates. Only callouts are forced on screen. Island labels drop their sub-text and then step aside. A plot label degrades from \"n agents · coord\" to the coordinate to the name alone. Any label that finds no spot is hidden.",
+        "body": "Only two things float, placed in order: callouts first, speech last. Each tries its candidate spots in order and takes the first one that is on screen (2px inset) and clear by 6px of the HUD, the edge markers, the graticule bands (top 26px, left 52px), other creatures and labels already placed. Callouts try above, then right with a leader line, then left, and are forced on screen if their creature is. Speech that finds no spot falls back to a glyph bubble and never covers a callout.",
         "section": "layout"
       },
       {
         "name": "The Flat Chrome Rule",
         "body": "Bars, rail, cards, chips, rows and buttons are flat. A shadow appears only on something floating above the stage, and state is shown with rings, borders and washes, never lift.",
-        "section": "elevation & depth"
+        "section": "elevation"
       }
     ],
     "dos": [
       "Do reference every colour, face, radius and size through a `--sg-*` variable, and add missing values to Signal rather than to Overview.",
-      "Do keep plates at integer grid coordinates in their auto-laid-out lot and label them with their coordinate (`01·08`).",
+      "Do give each neighbourhood exactly one tint from `--sg-overview-hood-*` and apply it only to its ground, walls and roofs.",
+      "Do paint place names on the ground: the machine name territory-sized at 9% Ink, projects and amenities on their floors.",
       "Do keep zoom on the integer levels (k / devicePixelRatio, k in 1 to 8) and draw sprites with image smoothing off.",
-      "Do reserve yellow for sessions that need the owner, and give every waiting session all of its signals: diamond, ring, callout, edge marker when off screen, card in the rail and island count badge.",
+      "Do reserve yellow for sessions that need the owner, and give every waiting session all of its signals: diamond, ring, callout, edge marker when off screen, card in the rail and the painted count.",
       "Do keep callouts to 20 characters or fewer and say why the hand is raised (\"run pnpm db:migrate?\").",
-      "Do keep ambient life (speech glyphs, ball, \"z\" marks, path previews) in neutral greys and let it fade, so status always reads first.",
+      "Do place speech at the lowest label priority, as words from 1.5x and a glyph below.",
+      "Do shade only the world toward night; leave creatures, slabs, status, accent and labels at full value.",
       "Do let desk states override the simulation: a session that needs the owner, runs or fails goes back to its desk.",
+      "Do open on the urgent agents when the whole world will not fit at a legible zoom.",
       "Do give every creature on the map a matching row or card in the rail."
     ],
     "donts": [
       "Don't write a literal colour or font into Overview when a Signal token exists.",
-      "Don't colour terrain, props, creatures or ambient devices; only statuses and the owner's own selection or action carry hue.",
-      "Don't let terrain textures or props compete with the lattice and labels; textures stay at or below 12% Ink.",
+      "Don't use a status hue or the accent for decoration (emote glyphs, furniture lights, signage); the world is graphite and muted tints.",
+      "Don't bring back floating machine or project labels; only callouts and speech float.",
+      "Don't let textures, lettering or tints compete with status; textures stay at or below 12% Ink and territory names at 9%.",
       "Don't smooth, rotate or fractionally scale creature sprites.",
       "Don't add drop shadows or lift to bars, cards, chips, rows or buttons; only floating overlays above the stage get a shadow.",
       "Don't set readable text in Faint; it is for the \"$\" prompt and ambient marks only.",

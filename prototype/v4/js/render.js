@@ -177,7 +177,7 @@ function furnitureThing(f, room, list) {
   const top = f.kind === 'bench' ? C.furnitureTop : C.furnitureTop;
   list.push({ d: f.u + f.w - 1 + f.v + f.d - 1 + 0.5, draw: () => {
     box(f.u + 0.08, f.v + 0.12, f.w - 0.16, f.d - 0.24, f.h, N(top), N(C.furniture), N(shade(C.furniture, 0.25)), null);
-    if (f.machine) { const p = up(toS(f.u + 0.6, f.v + 0.6), f.h), k = P(); R(p[0] - 3 * k, p[1] - 7 * k, 6 * k, 7 * k, N(C.creatureInk)); R(p[0] + k, p[1] - 5 * k, k, k, C.done); }
+    if (f.machine) { const p = up(toS(f.u + 0.6, f.v + 0.6), f.h), k = P(); R(p[0] - 3 * k, p[1] - 7 * k, 6 * k, 7 * k, N(C.creatureInk)); R(p[0] + k, p[1] - 5 * k, k, k, N(C.faint)); }
     if (f.food) { const k = P(); for (let i = 0; i < 2; i++) { const p = up(toS(f.u + 0.6 + i, f.v + 0.5), f.h); R(p[0] - 3 * k, p[1] - 2 * k, 6 * k, 2 * k, N(C.dim)); } }
   } });
 }
@@ -217,7 +217,7 @@ function bubble(X, Y, glyph, k, alpha) {
   ctx.globalAlpha = alpha;
   R(x + k, y, w - 2 * k, h, C.line2); R(x, y + k, w, h - 2 * k, C.line2); R(x + 3 * k, y + h, 2 * k, k, C.line2); R(x + 2 * k, y + h + k, k, k, C.line2);
   R(x + 2 * k, y + k, w - 4 * k, h - 2 * k, C.panel); R(x + k, y + 2 * k, w - 2 * k, h - 4 * k, C.panel); R(x + 3 * k, y + h - k, 2 * k, k, C.panel);
-  const gm = GLYPH[glyph] || GLYPH.dots; for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) if (gm[r][c] === 'x') R(x + (2 + c) * k, y + (2 + r) * k, k, k, glyph === 'heart' ? C.err : C.dim);
+  const gm = GLYPH[glyph] || GLYPH.dots; for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) if (gm[r][c] === 'x') R(x + (2 + c) * k, y + (2 + r) * k, k, k, C.dim);
   ctx.globalAlpha = 1;
 }
 function faceFor(s, b, t, seed) {
