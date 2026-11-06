@@ -238,7 +238,20 @@ pub fn local(home: &Path) -> HashMap<String, Run> {
     if files.is_empty() {
         return HashMap::new();
     }
-    let mut runs = from_parts(&files, &ps_now());
+    let ps = ps_now();
+    // Linux lets a process rename itself ("MainThread"); its executable, from /proc, says what it is
+    let exe: HashMap<u32, String> = if cfg!(target_os = "linux") {
+        parse_ps(&ps)
+            .keys()
+            .filter_map(|pid| {
+                let path = std::fs::read_link(format!("/proc/{pid}/exe")).ok()?;
+                Some((*pid, path.to_string_lossy().into_owned()))
+            })
+            .collect()
+    } else {
+        HashMap::new()
+    };
+    let mut runs = from_parts_with(&files, &ps, &exe);
     if cfg!(target_os = "macos") {
         let dirs = [
             std::path::PathBuf::from("/Applications"),
