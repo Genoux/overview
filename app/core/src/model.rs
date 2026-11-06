@@ -89,17 +89,28 @@ pub fn infer(seen: &Seen, quiet: u64) -> (State, Option<String>) {
     if seen.api_error {
         return (State::Err, None);
     }
-    let asking: Vec<&str> = seen.pending.iter()
+    let asking: Vec<&str> = seen
+        .pending
+        .iter()
         .filter(|p| p.ask == Ask::Always || (p.ask == Ask::Maybe && quiet >= APPROVAL_SECS))
-        .map(|p| p.what.as_str()).collect();
+        .map(|p| p.what.as_str())
+        .collect();
     if !asking.is_empty() {
         return (State::Wait, Some(asking.join(", ")));
     }
     if !seen.pending.is_empty() {
-        return if quiet < STALL_SECS { (State::Run, None) } else { (State::Done, None) };
+        return if quiet < STALL_SECS {
+            (State::Run, None)
+        } else {
+            (State::Done, None)
+        };
     }
     if seen.in_turn {
-        return if quiet < ACTIVE_SECS { (State::Run, None) } else { (State::Done, None) };
+        return if quiet < ACTIVE_SECS {
+            (State::Run, None)
+        } else {
+            (State::Done, None)
+        };
     }
     match &seen.final_reply {
         Some(r) if r.trim_end().ends_with('?') => (State::Wait, Some(clip(r, 160))),
@@ -126,11 +137,18 @@ pub fn project_of(cwd: &str) -> String {
         if p.join(".git").exists() {
             return name_of(&p.to_string_lossy());
         }
-        match p.parent() { Some(up) if up.as_os_str().len() > 1 => p = up, _ => return name_of(cwd) }
+        match p.parent() {
+            Some(up) if up.as_os_str().len() > 1 => p = up,
+            _ => return name_of(cwd),
+        }
     }
 }
 fn name_of(path: &str) -> String {
-    path.trim_end_matches('/').rsplit('/').next().unwrap_or(path).to_string()
+    path.trim_end_matches('/')
+        .rsplit('/')
+        .next()
+        .unwrap_or(path)
+        .to_string()
 }
 
 #[cfg(test)]
@@ -138,24 +156,42 @@ mod tests {
     use super::*;
     #[test]
     fn states() {
-        let mut s = Seen::default();
-        s.final_reply = Some("All done, tests pass.".into());
+        let mut s = Seen {
+            final_reply: Some("All done, tests pass.".into()),
+            ..Default::default()
+        };
         assert_eq!(infer(&s, 10).0, State::Done);
         s.final_reply = Some("Electron or Tauri for P0?".into());
         assert_eq!(infer(&s, 10).0, State::Wait);
         assert_eq!(infer(&s, ASLEEP_SECS).0, State::Idle);
-        let call = |ask| Seen { in_turn: true, pending: vec![Pending { what: "Bash: pnpm db:migrate".into(), ask }], ..Default::default() };
+        let call = |ask| Seen {
+            in_turn: true,
+            pending: vec![Pending {
+                what: "Bash: pnpm db:migrate".into(),
+                ask,
+            }],
+            ..Default::default()
+        };
         assert_eq!(infer(&call(Ask::Maybe), 5).0, State::Run);
-        assert_eq!(infer(&call(Ask::Maybe), 45), (State::Wait, Some("Bash: pnpm db:migrate".into())));
+        assert_eq!(
+            infer(&call(Ask::Maybe), 45),
+            (State::Wait, Some("Bash: pnpm db:migrate".into()))
+        );
         // a long build in a mode that never asks keeps running, until it has clearly stopped
         assert_eq!(infer(&call(Ask::Never), 600).0, State::Run);
         assert_eq!(infer(&call(Ask::Never), STALL_SECS).0, State::Done);
         // a question to the owner waits at once
         assert_eq!(infer(&call(Ask::Always), 1).0, State::Wait);
-        let t = Seen { in_turn: true, ..Default::default() };
+        let t = Seen {
+            in_turn: true,
+            ..Default::default()
+        };
         assert_eq!(infer(&t, 20).0, State::Run);
         assert_eq!(infer(&t, 600).0, State::Done);
-        let e = Seen { api_error: true, ..Default::default() };
+        let e = Seen {
+            api_error: true,
+            ..Default::default()
+        };
         assert_eq!(infer(&e, 20).0, State::Err);
     }
     #[test]

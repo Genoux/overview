@@ -34,7 +34,10 @@ pub struct Endpoint {
 }
 impl Default for Endpoint {
     fn default() -> Self {
-        Endpoint { base_url: "https://openrouter.ai/api/v1".into(), model: "openai/gpt-oss-120b".into() }
+        Endpoint {
+            base_url: "https://openrouter.ai/api/v1".into(),
+            model: "openai/gpt-oss-120b".into(),
+        }
     }
 }
 
@@ -45,8 +48,18 @@ fn text_of(content: &Value) -> Option<String> {
     match content {
         Value::String(s) => Some(s.clone()),
         Value::Array(items) => {
-            let t: Vec<&str> = items.iter().filter(|i| i["type"] == "text" || i["type"] == "input_text" || i["type"] == "output_text").filter_map(|i| i["text"].as_str()).collect();
-            if t.is_empty() { None } else { Some(t.join(" ")) }
+            let t: Vec<&str> = items
+                .iter()
+                .filter(|i| {
+                    i["type"] == "text" || i["type"] == "input_text" || i["type"] == "output_text"
+                })
+                .filter_map(|i| i["text"].as_str())
+                .collect();
+            if t.is_empty() {
+                None
+            } else {
+                Some(t.join(" "))
+            }
         }
         _ => None,
     }
@@ -59,15 +72,30 @@ pub fn excerpt(path: &Path, agent: &str) -> String {
         match agent {
             "claude" => match r["type"].as_str().unwrap_or("") {
                 "user" if r["isMeta"].as_bool() != Some(true) => {
-                    if let Some(t) = text_of(&r["message"]["content"]) { if !t.starts_with('<') { lines.push(format!("OWNER: {}", one_line(&t, 1200))); } }
+                    if let Some(t) = text_of(&r["message"]["content"]) {
+                        if !t.starts_with('<') {
+                            lines.push(format!("OWNER: {}", one_line(&t, 1200)));
+                        }
+                    }
                 }
                 "assistant" => {
                     if let Value::Array(items) = &r["message"]["content"] {
                         for i in items {
-                            if i["type"] == "text" { if let Some(t) = i["text"].as_str() { lines.push(format!("AGENT: {}", one_line(t, 1500))); } }
+                            if i["type"] == "text" {
+                                if let Some(t) = i["text"].as_str() {
+                                    lines.push(format!("AGENT: {}", one_line(t, 1500)));
+                                }
+                            }
                             if i["type"] == "tool_use" {
-                                let d = i["input"]["command"].as_str().or_else(|| i["input"]["file_path"].as_str()).unwrap_or("");
-                                lines.push(format!("TOOL: {} {}", i["name"].as_str().unwrap_or("tool"), one_line(d, 160)));
+                                let d = i["input"]["command"]
+                                    .as_str()
+                                    .or_else(|| i["input"]["file_path"].as_str())
+                                    .unwrap_or("");
+                                lines.push(format!(
+                                    "TOOL: {} {}",
+                                    i["name"].as_str().unwrap_or("tool"),
+                                    one_line(d, 160)
+                                ));
                             }
                         }
                     }
@@ -76,15 +104,28 @@ pub fn excerpt(path: &Path, agent: &str) -> String {
             },
             _ => {
                 let p = &r["payload"];
-                match (r["type"].as_str().unwrap_or(""), p["type"].as_str().unwrap_or("")) {
+                match (
+                    r["type"].as_str().unwrap_or(""),
+                    p["type"].as_str().unwrap_or(""),
+                ) {
                     ("response_item", "message") => {
                         if let Some(t) = text_of(&p["content"]) {
-                            if t.trim_start().starts_with('<') { continue; }
-                            let who = if p["role"] == "user" { "OWNER" } else if p["role"] == "assistant" { "AGENT" } else { continue };
+                            if t.trim_start().starts_with('<') {
+                                continue;
+                            }
+                            let who = if p["role"] == "user" {
+                                "OWNER"
+                            } else if p["role"] == "assistant" {
+                                "AGENT"
+                            } else {
+                                continue;
+                            };
                             lines.push(format!("{}: {}", who, one_line(&t, 1500)));
                         }
                     }
-                    ("response_item", "function_call") | ("response_item", "custom_tool_call") => lines.push(format!("TOOL: {}", p["name"].as_str().unwrap_or("tool"))),
+                    ("response_item", "function_call") | ("response_item", "custom_tool_call") => {
+                        lines.push(format!("TOOL: {}", p["name"].as_str().unwrap_or("tool")))
+                    }
                     _ => {}
                 }
             }
@@ -92,7 +133,9 @@ pub fn excerpt(path: &Path, agent: &str) -> String {
     }
     let mut out = String::new();
     for l in lines.iter().rev() {
-        if out.len() + l.len() > MAX_EXCERPT { break; }
+        if out.len() + l.len() > MAX_EXCERPT {
+            break;
+        }
         out = format!("{}\n{}", l, out);
     }
     redact(out.trim())
@@ -127,7 +170,9 @@ fn patterns() -> &'static Vec<(Regex, &'static str)> {
 }
 pub fn redact(text: &str) -> String {
     let mut t = text.to_string();
-    for (re, with) in patterns() { t = re.replace_all(&t, *with).into_owned(); }
+    for (re, with) in patterns() {
+        t = re.replace_all(&t, *with).into_owned();
+    }
     t
 }
 
@@ -143,7 +188,13 @@ Read the transcript excerpt (OWNER = the person, AGENT = the coding agent, TOOL 
 Plain words, no markdown, no file contents, never repeat secrets.";
 
 /// Asks the endpoint for a summary of `excerpt`. `state` and `project` give the model the context the files already know.
-pub fn summarize(ep: &Endpoint, key: &str, project: &str, state: &str, excerpt: &str) -> Result<Summary, String> {
+pub fn summarize(
+    ep: &Endpoint,
+    key: &str,
+    project: &str,
+    state: &str,
+    excerpt: &str,
+) -> Result<Summary, String> {
     let body = json!({
         "model": ep.model,
         "temperature": 0.2,
@@ -162,11 +213,16 @@ pub fn summarize(ep: &Endpoint, key: &str, project: &str, state: &str, excerpt: 
         .timeout(std::time::Duration::from_secs(60))
         .send_json(body)
         .map_err(|e| match e {
-            ureq::Error::Status(code, r) => format!("HTTP {code}: {}", crate::model::clip(&r.into_string().unwrap_or_default(), 200)),
+            ureq::Error::Status(code, r) => format!(
+                "HTTP {code}: {}",
+                crate::model::clip(&r.into_string().unwrap_or_default(), 200)
+            ),
             other => other.to_string(),
         })?;
     let v: Value = resp.into_json().map_err(|e| e.to_string())?;
-    let content = v["choices"][0]["message"]["content"].as_str().ok_or("no answer in the response")?;
+    let content = v["choices"][0]["message"]["content"]
+        .as_str()
+        .ok_or("no answer in the response")?;
     parse(content)
 }
 
@@ -174,22 +230,58 @@ pub fn summarize(ep: &Endpoint, key: &str, project: &str, state: &str, excerpt: 
 pub fn parse(content: &str) -> Result<Summary, String> {
     let start = content.find('{').ok_or("no JSON in the answer")?;
     let end = content.rfind('}').ok_or("no JSON in the answer")?;
-    let v: Value = serde_json::from_str(&content[start..=end]).map_err(|e| format!("bad JSON: {e}"))?;
-    let f = |k: &str| v[k].as_str().map(|s| crate::model::clip(s, 300)).unwrap_or_default();
-    let s = Summary { title: f("title"), done: f("done"), left: f("left"), needs: f("needs"), next: f("next"), priority: match v["priority"].as_str() { Some("high") => "high", Some("low") => "low", _ => "normal" }.into() };
-    if s.title.is_empty() { return Err("the answer has no title".into()); }
+    let v: Value =
+        serde_json::from_str(&content[start..=end]).map_err(|e| format!("bad JSON: {e}"))?;
+    let f = |k: &str| {
+        v[k].as_str()
+            .map(|s| crate::model::clip(s, 300))
+            .unwrap_or_default()
+    };
+    let s = Summary {
+        title: f("title"),
+        done: f("done"),
+        left: f("left"),
+        needs: f("needs"),
+        next: f("next"),
+        priority: match v["priority"].as_str() {
+            Some("high") => "high",
+            Some("low") => "low",
+            _ => "normal",
+        }
+        .into(),
+    };
+    if s.title.is_empty() {
+        return Err("the answer has no title".into());
+    }
     Ok(s)
 }
 
 /// The API key from the OS keychain (macOS: `security`, Linux: `secret-tool`). Never logged, never written to disk.
 pub fn key_from_keychain(account: &str) -> Option<String> {
     let out = if cfg!(target_os = "macos") {
-        std::process::Command::new("security").args(["find-generic-password", "-s", "overview", "-a", account, "-w"]).output().ok()?
+        std::process::Command::new("security")
+            .args([
+                "find-generic-password",
+                "-s",
+                "overview",
+                "-a",
+                account,
+                "-w",
+            ])
+            .output()
+            .ok()?
     } else {
-        std::process::Command::new("secret-tool").args(["lookup", "service", "overview", "account", account]).output().ok()?
+        std::process::Command::new("secret-tool")
+            .args(["lookup", "service", "overview", "account", account])
+            .output()
+            .ok()?
     };
     let k = String::from_utf8_lossy(&out.stdout).trim().to_string();
-    if out.status.success() && !k.is_empty() { Some(k) } else { None }
+    if out.status.success() && !k.is_empty() {
+        Some(k)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]
@@ -198,15 +290,31 @@ mod tests {
     #[test]
     fn secrets_never_leave() {
         let t = redact("OPENROUTER_API_KEY=sk-or-v1-abcdefghijklmnopqrstuvwx and ghp_abcdefghijklmnopqrstuvwxyz0123 then postgres://me:hunter2@db:5432/x and Bearer abcdefghijklmnopqrstuv");
-        for leak in ["sk-or-v1", "ghp_abc", "hunter2", "abcdefghijklmnopqrstuv"] { assert!(!t.contains(leak), "{leak} leaked: {t}"); }
-        assert!(redact("-----BEGIN RSA PRIVATE KEY-----\nMIIabc\n-----END RSA PRIVATE KEY-----").contains("[private key]"));
-        assert_eq!(redact("run pnpm test in src/app"), "run pnpm test in src/app");
+        for leak in ["sk-or-v1", "ghp_abc", "hunter2", "abcdefghijklmnopqrstuv"] {
+            assert!(!t.contains(leak), "{leak} leaked: {t}");
+        }
+        assert!(
+            redact("-----BEGIN RSA PRIVATE KEY-----\nMIIabc\n-----END RSA PRIVATE KEY-----")
+                .contains("[private key]")
+        );
+        assert_eq!(
+            redact("run pnpm test in src/app"),
+            "run pnpm test in src/app"
+        );
     }
     #[test]
     fn answers_are_read_strictly() {
         let s = parse("```json\n{\"title\":\"Fix sync\",\"done\":\"Patched it.\",\"left\":\"\",\"needs\":\"Approve the migration.\",\"next\":\"Run pnpm db:migrate.\",\"priority\":\"high\"}\n```").unwrap();
-        assert_eq!((s.title.as_str(), s.priority.as_str(), s.needs.as_str()), ("Fix sync", "high", "Approve the migration."));
-        assert_eq!(parse("{\"title\":\"x\",\"priority\":\"urgent\"}").unwrap().priority, "normal");
+        assert_eq!(
+            (s.title.as_str(), s.priority.as_str(), s.needs.as_str()),
+            ("Fix sync", "high", "Approve the migration.")
+        );
+        assert_eq!(
+            parse("{\"title\":\"x\",\"priority\":\"urgent\"}")
+                .unwrap()
+                .priority,
+            "normal"
+        );
         assert!(parse("no json here").is_err());
         assert!(parse("{\"done\":\"x\"}").is_err());
     }

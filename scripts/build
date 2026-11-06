@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Builds the release packages into dist/ (R5). The release workflow runs it on
+# Ubuntu, so a tag ships Linux packages (.deb, .AppImage); on macOS it builds
+# the .app bundle and zips it.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+mkdir -p dist
+version=$(.toolkit/version)
+
+case "$(uname -s)" in
+  Linux)
+    (cd app/src-tauri && npx --yes @tauri-apps/cli@2.12.4 build --bundles deb,appimage)
+    cp target/release/bundle/deb/*.deb target/release/bundle/appimage/*.AppImage dist/
+    ;;
+  Darwin)
+    (cd app/src-tauri && npx --yes @tauri-apps/cli@2.12.4 build --bundles app)
+    ditto -c -k --keepParent target/release/bundle/macos/Overview.app "dist/Overview_${version}_$(uname -m).app.zip"
+    ;;
+  *) echo "no build for $(uname -s)" >&2; exit 1 ;;
+esac
+ls -l dist

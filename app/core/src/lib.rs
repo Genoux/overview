@@ -3,8 +3,8 @@
 pub mod model;
 pub mod procs;
 pub mod remote;
-pub mod summary;
 pub mod sources;
+pub mod summary;
 pub mod tail;
 
 use model::Session;
@@ -18,16 +18,33 @@ type Reader = fn(&Path, u64, u64) -> Option<Session>;
 
 /// Every recent session of every supported agent under `home`, most recently active first.
 pub fn scan(home: &Path) -> Vec<Session> {
-    let now = SystemTime::now().duration_since(UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
-    let groups: [(Vec<PathBuf>, Reader); 2] = [(sources::claude::files(home), sources::claude::read), (sources::codex::files(home), sources::codex::read)];
+    let now = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| d.as_secs())
+        .unwrap_or(0);
+    let groups: [(Vec<PathBuf>, Reader); 2] = [
+        (sources::claude::files(home), sources::claude::read),
+        (sources::codex::files(home), sources::codex::read),
+    ];
     let mut out = vec![];
     for (files, read) in groups {
         for f in files {
-            let Ok(meta) = std::fs::metadata(&f) else { continue };
-            let updated = meta.modified().ok().and_then(|m| m.duration_since(UNIX_EPOCH).ok()).map(|d| d.as_secs()).unwrap_or(0);
+            let Ok(meta) = std::fs::metadata(&f) else {
+                continue;
+            };
+            let updated = meta
+                .modified()
+                .ok()
+                .and_then(|m| m.duration_since(UNIX_EPOCH).ok())
+                .map(|d| d.as_secs())
+                .unwrap_or(0);
             let quiet = now.saturating_sub(updated);
-            if quiet > RECENT_DAYS * 86400 { continue; }
-            if let Some(s) = read(&f, quiet, updated) { out.push(s); }
+            if quiet > RECENT_DAYS * 86400 {
+                continue;
+            }
+            if let Some(s) = read(&f, quiet, updated) {
+                out.push(s);
+            }
         }
     }
     attach_runs(&mut out, &procs::local(home));
@@ -41,7 +58,10 @@ pub fn attach_runs(sessions: &mut [Session], runs: &std::collections::HashMap<St
     for s in sessions.iter_mut() {
         s.run = runs.get(&s.id).cloned();
         if let Some(r) = &s.run {
-            if r.busy && matches!(s.state, model::State::Done | model::State::Idle) { s.state = model::State::Run; s.waiting_on = None; }
+            if r.busy && matches!(s.state, model::State::Done | model::State::Idle) {
+                s.state = model::State::Run;
+                s.waiting_on = None;
+            }
         }
     }
 }

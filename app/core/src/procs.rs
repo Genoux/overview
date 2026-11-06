@@ -37,7 +37,9 @@ pub struct Proc {
     pub path: String,
 }
 impl Proc {
-    fn name(&self) -> &str { self.path.rsplit('/').next().unwrap_or(&self.path) }
+    fn name(&self) -> &str {
+        self.path.rsplit('/').next().unwrap_or(&self.path)
+    }
 }
 
 /// `ps axo pid=,ppid=,tty=,comm=` output (macOS and Linux) into pid -> process.
@@ -45,16 +47,31 @@ pub fn parse_ps(text: &str) -> HashMap<u32, Proc> {
     let mut out = HashMap::new();
     for line in text.lines() {
         let mut it = line.split_whitespace();
-        let (Some(pid), Some(ppid), Some(tty)) = (it.next(), it.next(), it.next()) else { continue };
+        let (Some(pid), Some(ppid), Some(tty)) = (it.next(), it.next(), it.next()) else {
+            continue;
+        };
         let path: Vec<&str> = it.collect();
-        let (Ok(pid), Ok(ppid)) = (pid.parse(), ppid.parse()) else { continue };
-        out.insert(pid, Proc { ppid, tty: tty.to_string(), path: path.join(" ") });
+        let (Ok(pid), Ok(ppid)) = (pid.parse(), ppid.parse()) else {
+            continue;
+        };
+        out.insert(
+            pid,
+            Proc {
+                ppid,
+                tty: tty.to_string(),
+                path: path.join(" "),
+            },
+        );
     }
     out
 }
 
 /// Processes that are never the host: shells, login and privilege wrappers, script runtimes, and the agents themselves.
-const NOT_A_HOST: &[&str] = &["sh", "bash", "zsh", "fish", "dash", "ksh", "tcsh", "csh", "nu", "elvish", "xonsh", "login", "sudo", "su", "doas", "env", "script", "nohup", "timeout", "claude", "codex", "node", "bun", "deno", "npm", "npx", "pnpm", "python", "python3"];
+const NOT_A_HOST: &[&str] = &[
+    "sh", "bash", "zsh", "fish", "dash", "ksh", "tcsh", "csh", "nu", "elvish", "xonsh", "login",
+    "sudo", "su", "doas", "env", "script", "nohup", "timeout", "claude", "codex", "node", "bun",
+    "deno", "npm", "npx", "pnpm", "python", "python3",
+];
 
 fn skip(name: &str) -> bool {
     let n = name.trim_start_matches('-').to_lowercase();
@@ -63,61 +80,96 @@ fn skip(name: &str) -> bool {
 
 /// The outermost `.app` bundle in a path: "/Applications/Editor.app/Contents/Frameworks/Editor Helper.app/..." -> "/Applications/Editor.app".
 fn bundle_of(path: &str) -> Option<String> {
-    let i = path.find(".app/").or_else(|| path.strip_suffix(".app").map(|p| p.len()))?;
+    let i = path
+        .find(".app/")
+        .or_else(|| path.strip_suffix(".app").map(|p| p.len()))?;
     Some(path[..i + 4].to_string())
 }
 
 /// A name for a process whose own name says nothing: the hidden folder its executable lives in, if any.
 fn name_from_exe(exe: &str) -> Option<String> {
-    exe.split('/').find(|c| c.len() > 1 && c.starts_with('.')).map(|c| c.trim_start_matches('.').to_string())
+    exe.split('/')
+        .find(|c| c.len() > 1 && c.starts_with('.'))
+        .map(|c| c.trim_start_matches('.').to_string())
 }
 
 /// The host of a process: the nearest app bundle (macOS), else the nearest ancestor that is not a shell or the agent.
-pub fn host_of(pid: u32, procs: &HashMap<u32, Proc>, exe: &HashMap<u32, String>) -> (String, Option<String>) {
+pub fn host_of(
+    pid: u32,
+    procs: &HashMap<u32, Proc>,
+    exe: &HashMap<u32, String>,
+) -> (String, Option<String>) {
     let mut first: Option<String> = None;
     let mut p = procs.get(&pid).map(|x| x.ppid).unwrap_or(0);
     for _ in 0..40 {
         let Some(pr) = procs.get(&p) else { break };
         if let Some(b) = bundle_of(&pr.path) {
-            let name = b.rsplit('/').next().unwrap_or(&b).trim_end_matches(".app").to_string();
+            let name = b
+                .rsplit('/')
+                .next()
+                .unwrap_or(&b)
+                .trim_end_matches(".app")
+                .to_string();
             return (name, Some(b));
         }
         if first.is_none() && !skip(pr.name()) {
             // Linux cuts names to 15 characters and lets threads rename them ("MainThread", "tmux: server")
             let own = pr.name().split(':').next().unwrap_or("").trim().to_string();
             // a process that renamed itself (its name is not its executable's) is named by where its executable lives
-            let renamed = exe.get(&p).filter(|e| { let base = e.rsplit('/').next().unwrap_or(e); !base.starts_with(own.as_str()) });
-            first = renamed.and_then(|e| name_from_exe(e).or_else(|| e.rsplit('/').next().map(String::from))).or(Some(own));
+            let renamed = exe.get(&p).filter(|e| {
+                let base = e.rsplit('/').next().unwrap_or(e);
+                !base.starts_with(own.as_str())
+            });
+            first = renamed
+                .and_then(|e| name_from_exe(e).or_else(|| e.rsplit('/').next().map(String::from)))
+                .or(Some(own));
         }
-        if pr.ppid <= 1 || pr.ppid == p { break; }
+        if pr.ppid <= 1 || pr.ppid == p {
+            break;
+        }
         p = pr.ppid;
     }
     (first.unwrap_or_else(|| "a terminal".into()), None)
 }
 
 /// Session id -> how it runs, from the pid files' text and `ps` output. A pid file whose process is gone is ignored.
-pub fn from_parts(pid_files: &[String], ps: &str) -> HashMap<String, Run> { from_parts_with(pid_files, ps, &HashMap::new()) }
+pub fn from_parts(pid_files: &[String], ps: &str) -> HashMap<String, Run> {
+    from_parts_with(pid_files, ps, &HashMap::new())
+}
 
 /// The same, with executable paths (pid -> path) for processes whose name says nothing.
-pub fn from_parts_with(pid_files: &[String], ps: &str, exe: &HashMap<u32, String>) -> HashMap<String, Run> {
+pub fn from_parts_with(
+    pid_files: &[String],
+    ps: &str,
+    exe: &HashMap<u32, String>,
+) -> HashMap<String, Run> {
     let procs = parse_ps(ps);
     let mut out = HashMap::new();
     for text in pid_files {
-        let Ok(v) = serde_json::from_str::<Value>(text) else { continue };
-        let (Some(id), Some(pid)) = (v["sessionId"].as_str(), v["pid"].as_u64()) else { continue };
+        let Ok(v) = serde_json::from_str::<Value>(text) else {
+            continue;
+        };
+        let (Some(id), Some(pid)) = (v["sessionId"].as_str(), v["pid"].as_u64()) else {
+            continue;
+        };
         let pid = pid as u32;
         // the pid must still be alive and still an agent-like process (a recycled pid could be anything)
         let Some(pr) = procs.get(&pid) else { continue };
-        if !skip(pr.name()) { continue; }
+        if !skip(pr.name()) {
+            continue;
+        }
         let (app, bundle) = host_of(pid, &procs, exe);
-        out.insert(id.to_string(), Run {
-            pid,
-            tty: pr.tty.clone(),
-            app,
-            bundle,
-            started: v["startedAt"].as_u64().map(|ms| ms / 1000).unwrap_or(0),
-            busy: v["status"].as_str() == Some("busy"),
-        });
+        out.insert(
+            id.to_string(),
+            Run {
+                pid,
+                tty: pr.tty.clone(),
+                app,
+                bundle,
+                started: v["startedAt"].as_u64().map(|ms| ms / 1000).unwrap_or(0),
+                busy: v["status"].as_str() == Some("busy"),
+            },
+        );
     }
     out
 }
@@ -128,10 +180,16 @@ fn installed_bundle(name: &str, dirs: &[std::path::PathBuf]) -> Option<String> {
     let want = name.to_lowercase();
     let stem = want.split(['-', '_']).next().unwrap_or(&want).to_string();
     for d in dirs {
-        let Ok(rd) = std::fs::read_dir(d) else { continue };
+        let Ok(rd) = std::fs::read_dir(d) else {
+            continue;
+        };
         for e in rd.flatten() {
             let f = e.file_name().to_string_lossy().to_lowercase();
-            if let Some(app) = f.strip_suffix(".app") { if app == want || app == stem { return Some(e.path().to_string_lossy().to_string()); } }
+            if let Some(app) = f.strip_suffix(".app") {
+                if app == want || app == stem {
+                    return Some(e.path().to_string_lossy().to_string());
+                }
+            }
         }
     }
     None
@@ -144,18 +202,38 @@ pub fn local(home: &Path) -> HashMap<String, Run> {
         for e in dir.flatten() {
             let p = e.path();
             if p.extension().map(|x| x == "json").unwrap_or(false) {
-                if let Ok(t) = std::fs::read_to_string(&p) { files.push(t); }
+                if let Ok(t) = std::fs::read_to_string(&p) {
+                    files.push(t);
+                }
             }
         }
     }
-    if files.is_empty() { return HashMap::new(); }
-    let ps = std::process::Command::new("ps").args(["axo", "pid=,ppid=,tty=,comm="]).output().map(|o| String::from_utf8_lossy(&o.stdout).to_string()).unwrap_or_default();
+    if files.is_empty() {
+        return HashMap::new();
+    }
+    let ps = std::process::Command::new("ps")
+        .args(["axo", "pid=,ppid=,tty=,comm="])
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
+        .unwrap_or_default();
     let mut runs = from_parts(&files, &ps);
     if cfg!(target_os = "macos") {
-        let dirs = [std::path::PathBuf::from("/Applications"), std::path::PathBuf::from("/Applications/Utilities"), home.join("Applications")];
+        let dirs = [
+            std::path::PathBuf::from("/Applications"),
+            std::path::PathBuf::from("/Applications/Utilities"),
+            home.join("Applications"),
+        ];
         for r in runs.values_mut() {
             if r.bundle.is_none() {
-                if let Some(b) = installed_bundle(&r.app, &dirs) { r.app = b.rsplit('/').next().unwrap_or(&b).trim_end_matches(".app").to_string(); r.bundle = Some(b); }
+                if let Some(b) = installed_bundle(&r.app, &dirs) {
+                    r.app = b
+                        .rsplit('/')
+                        .next()
+                        .unwrap_or(&b)
+                        .trim_end_matches(".app")
+                        .to_string();
+                    r.bundle = Some(b);
+                }
             }
         }
     }
@@ -168,20 +246,51 @@ mod tests {
     #[test]
     fn the_host_comes_from_the_tree_not_from_a_list() {
         let ps = "  1     0 ??       /sbin/launchd\n 100     1 ??       /Applications/Some Editor.app/Contents/Frameworks/Some Editor Helper.app/Contents/MacOS/Some Editor Helper\n 200   100 ttys019  login\n 300   200 ttys019  -zsh\n 400   300 ttys019  claude\n 500     1 ?        tmux: server\n 600   500 pts/3    bash\n 700   600 pts/3    claude\n 900     1 ?        MainThread\n 910   900 pts/4    zsh\n 920   910 pts/4    claude\n";
-        let files = vec![r#"{"pid":400,"sessionId":"s1","startedAt":1700000000000,"status":"busy"}"#.to_string(), r#"{"pid":700,"sessionId":"s2","status":"idle"}"#.to_string(), r#"{"pid":920,"sessionId":"s3"}"#.to_string(), r#"{"pid":999,"sessionId":"gone"}"#.to_string()];
-        let exe: HashMap<u32, String> = [(900, "/home/john/.some-remote/runtimes/node-1/bin/node".to_string())].into();
+        let files = vec![
+            r#"{"pid":400,"sessionId":"s1","startedAt":1700000000000,"status":"busy"}"#.to_string(),
+            r#"{"pid":700,"sessionId":"s2","status":"idle"}"#.to_string(),
+            r#"{"pid":920,"sessionId":"s3"}"#.to_string(),
+            r#"{"pid":999,"sessionId":"gone"}"#.to_string(),
+        ];
+        let exe: HashMap<u32, String> = [(
+            900,
+            "/home/john/.some-remote/runtimes/node-1/bin/node".to_string(),
+        )]
+        .into();
         let runs = from_parts_with(&files, ps, &exe);
-        assert_eq!(runs["s1"], Run { pid: 400, tty: "ttys019".into(), app: "Some Editor".into(), bundle: Some("/Applications/Some Editor.app".into()), started: 1_700_000_000, busy: true });
-        assert_eq!((runs["s2"].app.as_str(), runs["s2"].bundle.is_none()), ("tmux", true));
+        assert_eq!(
+            runs["s1"],
+            Run {
+                pid: 400,
+                tty: "ttys019".into(),
+                app: "Some Editor".into(),
+                bundle: Some("/Applications/Some Editor.app".into()),
+                started: 1_700_000_000,
+                busy: true
+            }
+        );
+        assert_eq!(
+            (runs["s2"].app.as_str(), runs["s2"].bundle.is_none()),
+            ("tmux", true)
+        );
         assert_eq!(runs["s3"].app, "some-remote");
         assert!(!runs.contains_key("gone"));
         // a process named like its executable keeps its own name, even when that executable sits in a hidden folder
         let ps2 = "1 0 ? init\n50 1 ? tool-core\n60 50 pts/1 zsh\n70 60 pts/1 claude\n";
-        let exe2: HashMap<u32, String> = [(50, "/home/john/.local/bin/tool-core".to_string())].into();
-        assert_eq!(from_parts_with(&[r#"{"pid":70,"sessionId":"s4"}"#.to_string()], ps2, &exe2)["s4"].app, "tool-core");
+        let exe2: HashMap<u32, String> =
+            [(50, "/home/john/.local/bin/tool-core".to_string())].into();
+        assert_eq!(
+            from_parts_with(&[r#"{"pid":70,"sessionId":"s4"}"#.to_string()], ps2, &exe2)["s4"].app,
+            "tool-core"
+        );
         // a daemon outside its bundle finds the installed app of the same name
-        let apps = std::env::temp_dir().join("ov-apps"); std::fs::create_dir_all(apps.join("Tool.app")).unwrap();
-        assert_eq!(installed_bundle("tool-core", &[apps.clone()]).map(|b| b.ends_with("Tool.app")), Some(true));
+        let apps = std::env::temp_dir().join("ov-apps");
+        std::fs::create_dir_all(apps.join("Tool.app")).unwrap();
+        assert_eq!(
+            installed_bundle("tool-core", std::slice::from_ref(&apps))
+                .map(|b| b.ends_with("Tool.app")),
+            Some(true)
+        );
         assert_eq!(installed_bundle("tmux", &[apps]), None);
     }
 }

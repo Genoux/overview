@@ -8,19 +8,31 @@ pub fn files(home: &Path) -> Vec<PathBuf> {
     let mut out = vec![];
     let mut stack = vec![home.join(".codex/sessions")];
     while let Some(d) = stack.pop() {
-        let Ok(rd) = std::fs::read_dir(&d) else { continue };
+        let Ok(rd) = std::fs::read_dir(&d) else {
+            continue;
+        };
         for e in rd.flatten() {
             let p = e.path();
-            if p.is_dir() { stack.push(p); } else if p.extension().map(|x| x == "jsonl").unwrap_or(false) { out.push(p); }
+            if p.is_dir() {
+                stack.push(p);
+            } else if p.extension().map(|x| x == "jsonl").unwrap_or(false) {
+                out.push(p);
+            }
         }
     }
     out
 }
 
 fn text_of(content: &Value) -> Option<String> {
-    let Value::Array(items) = content else { return None };
+    let Value::Array(items) = content else {
+        return None;
+    };
     let t: Vec<&str> = items.iter().filter_map(|i| i["text"].as_str()).collect();
-    if t.is_empty() { None } else { Some(t.join(" ")) }
+    if t.is_empty() {
+        None
+    } else {
+        Some(t.join(" "))
+    }
 }
 
 /// Whether the turn's approval policy can stop a command to ask the owner: "never" does not; the granular policy asks
@@ -28,7 +40,10 @@ fn text_of(content: &Value) -> Option<String> {
 fn policy_asks(policy: &Value) -> bool {
     match policy {
         Value::String(p) => p != "never",
-        Value::Object(o) => o.get("granular").map(|g| g["sandbox_approval"] == true || g["rules"] == true).unwrap_or(true),
+        Value::Object(o) => o
+            .get("granular")
+            .map(|g| g["sandbox_approval"] == true || g["rules"] == true)
+            .unwrap_or(true),
         _ => true,
     }
 }
@@ -40,8 +55,16 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
             cwd = r["payload"]["cwd"].as_str().map(String::from);
             id = r["payload"]["id"].as_str().map(String::from);
         }
-        if title.is_none() && r["type"] == "response_item" && r["payload"]["type"] == "message" && r["payload"]["role"] == "user" {
-            if let Some(t) = text_of(&r["payload"]["content"]) { if !t.trim_start().starts_with('<') { title = Some(clip(&t, 80)); } }
+        if title.is_none()
+            && r["type"] == "response_item"
+            && r["payload"]["type"] == "message"
+            && r["payload"]["role"] == "user"
+        {
+            if let Some(t) = text_of(&r["payload"]["content"]) {
+                if !t.trim_start().starts_with('<') {
+                    title = Some(clip(&t, 80));
+                }
+            }
         }
     }
     let (mut last_prompt, mut last_reply) = (None::<String>, None::<String>);
@@ -50,34 +73,88 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
     let mut asks = true;
     for r in last_lines(path, 384 * 1024) {
         let p = &r["payload"];
-        match (r["type"].as_str().unwrap_or(""), p["type"].as_str().unwrap_or("")) {
-            ("turn_context", _) => { if let Some(c) = p["cwd"].as_str() { cwd = Some(c.to_string()); } if !p["approval_policy"].is_null() { asks = policy_asks(&p["approval_policy"]); } }
-            ("event_msg", "task_started") => { seen.in_turn = true; seen.final_reply = None; seen.api_error = false; }
+        match (
+            r["type"].as_str().unwrap_or(""),
+            p["type"].as_str().unwrap_or(""),
+        ) {
+            ("turn_context", _) => {
+                if let Some(c) = p["cwd"].as_str() {
+                    cwd = Some(c.to_string());
+                }
+                if !p["approval_policy"].is_null() {
+                    asks = policy_asks(&p["approval_policy"]);
+                }
+            }
+            ("event_msg", "task_started") => {
+                seen.in_turn = true;
+                seen.final_reply = None;
+                seen.api_error = false;
+            }
             ("event_msg", "task_complete") => {
                 seen.in_turn = false;
                 pending.clear();
-                if let Some(m) = p["last_agent_message"].as_str() { last_reply = Some(clip(m, 400)); }
+                if let Some(m) = p["last_agent_message"].as_str() {
+                    last_reply = Some(clip(m, 400));
+                }
                 seen.final_reply = last_reply.clone();
             }
-            ("event_msg", "error") | ("event_msg", "stream_error") => { seen.api_error = true; seen.in_turn = false; }
+            ("event_msg", "error") | ("event_msg", "stream_error") => {
+                seen.api_error = true;
+                seen.in_turn = false;
+            }
             ("response_item", "message") => {
                 let t = text_of(&p["content"]);
                 match p["role"].as_str() {
-                    Some("user") => if let Some(t) = t { if !t.trim_start().starts_with('<') { last_prompt = Some(clip(&t, 400)); } },
-                    Some("assistant") => if let Some(t) = t { last_reply = Some(clip(&t, 400)); },
+                    Some("user") => {
+                        if let Some(t) = t {
+                            if !t.trim_start().starts_with('<') {
+                                last_prompt = Some(clip(&t, 400));
+                            }
+                        }
+                    }
+                    Some("assistant") => {
+                        if let Some(t) = t {
+                            last_reply = Some(clip(&t, 400));
+                        }
+                    }
                     _ => {}
                 }
             }
             ("response_item", "function_call") | ("response_item", "custom_tool_call") => {
                 let name = p["name"].as_str().unwrap_or("tool");
-                let args = p["arguments"].as_str().or_else(|| p["input"].as_str()).unwrap_or("");
-                let cmd = serde_json::from_str::<Value>(args).ok().and_then(|a| a["command"].as_array().map(|c| c.iter().filter_map(|x| x.as_str()).collect::<Vec<_>>().join(" ")).or_else(|| a["cmd"].as_str().map(String::from)));
-                let what = match cmd { Some(c) => format!("{}: {}", name, clip(&c, 80)), None => name.to_string() };
-                let ask = if asks && name != "update_plan" { Ask::Maybe } else { Ask::Never };
-                if let Some(cid) = p["call_id"].as_str() { pending.push((cid.to_string(), Pending { what, ask })); }
+                let args = p["arguments"]
+                    .as_str()
+                    .or_else(|| p["input"].as_str())
+                    .unwrap_or("");
+                let cmd = serde_json::from_str::<Value>(args).ok().and_then(|a| {
+                    a["command"]
+                        .as_array()
+                        .map(|c| {
+                            c.iter()
+                                .filter_map(|x| x.as_str())
+                                .collect::<Vec<_>>()
+                                .join(" ")
+                        })
+                        .or_else(|| a["cmd"].as_str().map(String::from))
+                });
+                let what = match cmd {
+                    Some(c) => format!("{}: {}", name, clip(&c, 80)),
+                    None => name.to_string(),
+                };
+                let ask = if asks && name != "update_plan" {
+                    Ask::Maybe
+                } else {
+                    Ask::Never
+                };
+                if let Some(cid) = p["call_id"].as_str() {
+                    pending.push((cid.to_string(), Pending { what, ask }));
+                }
             }
-            ("response_item", "function_call_output") | ("response_item", "custom_tool_call_output") => {
-                if let Some(cid) = p["call_id"].as_str() { pending.retain(|(c, _)| c != cid); }
+            ("response_item", "function_call_output")
+            | ("response_item", "custom_tool_call_output") => {
+                if let Some(cid) = p["call_id"].as_str() {
+                    pending.retain(|(c, _)| c != cid);
+                }
             }
             _ => {}
         }
@@ -86,7 +163,11 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
     let cwd = cwd?;
     let (state, waiting_on) = infer(&seen, quiet);
     Some(Session {
-        id: id.unwrap_or_else(|| path.file_stem().map(|s| s.to_string_lossy().to_string()).unwrap_or_default()),
+        id: id.unwrap_or_else(|| {
+            path.file_stem()
+                .map(|s| s.to_string_lossy().to_string())
+                .unwrap_or_default()
+        }),
         agent: "codex",
         project: project_of(&cwd),
         cwd,
@@ -115,10 +196,16 @@ mod tests {
         let user = r#"{"type":"response_item","payload":{"type":"message","role":"user","content":[{"type":"input_text","text":"Keyboard map"}]}}"#;
         std::fs::write(&p, [meta, user, r#"{"type":"event_msg","payload":{"type":"task_started"}}"#, r#"{"type":"event_msg","payload":{"type":"task_complete","last_agent_message":"Done: 14 of 20 shortcuts."}}"#].join("\n") + "\n").unwrap();
         let s = read(&p, 30, 0).unwrap();
-        assert_eq!((s.state, s.project.as_str(), s.title.as_deref()), (State::Done, "flow", Some("Keyboard map")));
+        assert_eq!(
+            (s.state, s.project.as_str(), s.title.as_deref()),
+            (State::Done, "flow", Some("Keyboard map"))
+        );
         std::fs::write(&p, [meta, user, r#"{"type":"event_msg","payload":{"type":"task_started"}}"#, r#"{"type":"response_item","payload":{"type":"function_call","name":"shell","call_id":"k1","arguments":"{\"command\":[\"pnpm\",\"test\"]}"}}"#].join("\n") + "\n").unwrap();
         let s = read(&p, 60, 0).unwrap();
-        assert_eq!((s.state, s.waiting_on.as_deref()), (State::Wait, Some("shell: pnpm test")));
+        assert_eq!(
+            (s.state, s.waiting_on.as_deref()),
+            (State::Wait, Some("shell: pnpm test"))
+        );
         // a policy that never asks for commands: the same open call is just a long command
         let ctx = r#"{"type":"turn_context","payload":{"cwd":"/w/flow","approval_policy":{"granular":{"sandbox_approval":false,"rules":false,"request_permissions":true}}}}"#;
         std::fs::write(&p, [meta, user, ctx, r#"{"type":"event_msg","payload":{"type":"task_started"}}"#, r#"{"type":"response_item","payload":{"type":"function_call","name":"shell","call_id":"k1","arguments":"{\"command\":[\"pnpm\",\"test\"]}"}}"#].join("\n") + "\n").unwrap();
