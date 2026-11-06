@@ -418,15 +418,22 @@ fn focus_local(run: &overview_core::procs::Run) -> Result<(), String> {
     };
     let clients: serde_json::Value = serde_json::from_slice(&hyprctl(&["clients", "-j"])?.stdout)
         .map_err(|e| format!("hyprctl clients: {e}"))?;
-    let windows: Vec<u32> = clients
+    let windows: Vec<(u32, String)> = clients
         .as_array()
         .into_iter()
         .flatten()
-        .filter_map(|c| c["pid"].as_u64().map(|p| p as u32))
+        .filter_map(|c| {
+            let pid = c["pid"].as_u64()? as u32;
+            Some((pid, c["class"].as_str().unwrap_or("").to_string()))
+        })
         .collect();
+    let pids: Vec<u32> = windows.iter().map(|(p, _)| *p).collect();
     let procs = overview_core::procs::parse_ps(&overview_core::procs::ps_now());
-    let owner =
-        overview_core::procs::window_owner(run.pid, &procs, &windows).ok_or_else(no_window)?;
+    // the window in the agent's own process tree, else (a session kept by a background helper) the window named
+    // like its host
+    let owner = overview_core::procs::window_owner(run.pid, &procs, &pids)
+        .or_else(|| overview_core::procs::window_by_name(&run.app, &windows))
+        .ok_or_else(no_window)?;
     // Hyprland with a Lua config reads `dispatch` as Lua (0.56 and later); a classic config takes the dispatcher name.
     let lua = format!("hl.dsp.focus({{ window = \"pid:{owner}\" }})");
     let classic = format!("pid:{owner}");

@@ -174,11 +174,27 @@ pub fn from_parts_with(
     out
 }
 
+/// A host and an app are the same program when their names match, ignoring case, or the host's first word before a
+/// dash or underscore is the app's name (a daemon `tool-core` or `tool-remote` beside its app `Tool`).
+fn same_app(host: &str, app: &str) -> bool {
+    let want = host.to_lowercase();
+    let stem = want.split(['-', '_']).next().unwrap_or(&want);
+    let app = app.to_lowercase();
+    app == want || app == stem
+}
+
+/// The window of a host that runs outside any window's process tree (a background helper the app talks to): the
+/// window whose class names the same program. Classes may be reverse-DNS (`com.example.Tool`): the last part counts.
+pub fn window_by_name(host: &str, windows: &[(u32, String)]) -> Option<u32> {
+    windows
+        .iter()
+        .find(|(_, class)| same_app(host, class.rsplit('.').next().unwrap_or(class)))
+        .map(|(pid, _)| *pid)
+}
+
 /// An installed app whose name matches a host that runs outside its bundle (a daemon such as `tool` or `tool-core`
 /// next to its `Tool.app`): same name, ignoring case, or the same first word before a dash or underscore.
 fn installed_bundle(name: &str, dirs: &[std::path::PathBuf]) -> Option<String> {
-    let want = name.to_lowercase();
-    let stem = want.split(['-', '_']).next().unwrap_or(&want).to_string();
     for d in dirs {
         let Ok(rd) = std::fs::read_dir(d) else {
             continue;
@@ -186,7 +202,7 @@ fn installed_bundle(name: &str, dirs: &[std::path::PathBuf]) -> Option<String> {
         for e in rd.flatten() {
             let f = e.file_name().to_string_lossy().to_lowercase();
             if let Some(app) = f.strip_suffix(".app") {
-                if app == want || app == stem {
+                if same_app(name, app) {
                     return Some(e.path().to_string_lossy().to_string());
                 }
             }
@@ -339,5 +355,13 @@ mod tests {
         assert_eq!(window_owner(83, &procs, &windows), Some(80));
         assert_eq!(window_owner(700, &procs, &windows), None);
         assert_eq!(window_owner(12345, &procs, &windows), None);
+        // a helper started outside the app's tree finds the app's window by name
+        let classes = [
+            (50, "com.example.Term".to_string()),
+            (80, "tool".to_string()),
+        ];
+        assert_eq!(window_by_name("tool-remote", &classes), Some(80));
+        assert_eq!(window_by_name("term", &classes), Some(50));
+        assert_eq!(window_by_name("tmux", &classes), None);
     }
 }
