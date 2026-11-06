@@ -43,54 +43,121 @@ struct Snapshot {
 }
 
 #[derive(Serialize, Clone, Default)]
-struct LlmStatus { model: String, error: Option<String>, pending: usize }
+struct LlmStatus {
+    model: String,
+    error: Option<String>,
+    pending: usize,
+}
 
-fn home() -> PathBuf { std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default() }
+fn home() -> PathBuf {
+    std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .unwrap_or_default()
+}
 fn hostname() -> String {
-    Command::new("hostname").arg("-s").output().ok().map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string()).filter(|h| !h.is_empty()).unwrap_or_else(|| "this computer".into())
+    Command::new("hostname")
+        .arg("-s")
+        .output()
+        .ok()
+        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
+        .filter(|h| !h.is_empty())
+        .unwrap_or_else(|| "this computer".into())
 }
 
 /* ---------------- app data: small JSON files in the app's data folder ---------------- */
-fn data_file(app: &tauri::AppHandle, name: &str) -> Option<PathBuf> { app.path().app_data_dir().ok().map(|d| d.join(name)) }
+fn data_file(app: &tauri::AppHandle, name: &str) -> Option<PathBuf> {
+    app.path().app_data_dir().ok().map(|d| d.join(name))
+}
 fn load<T: for<'a> Deserialize<'a> + Default>(app: &tauri::AppHandle, name: &str) -> T {
-    data_file(app, name).and_then(|p| std::fs::read_to_string(p).ok()).and_then(|t| serde_json::from_str(&t).ok()).unwrap_or_default()
+    data_file(app, name)
+        .and_then(|p| std::fs::read_to_string(p).ok())
+        .and_then(|t| serde_json::from_str(&t).ok())
+        .unwrap_or_default()
 }
 fn store<T: Serialize>(app: &tauri::AppHandle, name: &str, v: &T) -> Result<(), String> {
     let p = data_file(app, name).ok_or("no app data folder")?;
-    if let Some(d) = p.parent() { std::fs::create_dir_all(d).map_err(|e| e.to_string())?; }
+    if let Some(d) = p.parent() {
+        std::fs::create_dir_all(d).map_err(|e| e.to_string())?;
+    }
     std::fs::write(p, serde_json::to_string_pretty(v).unwrap()).map_err(|e| e.to_string())
 }
 
 /// Sessions hidden from Overview (closed or cleared). Their files stay untouched: the agent's history and resume keep working.
-fn archived(app: &tauri::AppHandle) -> BTreeSet<String> { load(app, "archive.json") }
+fn archived(app: &tauri::AppHandle) -> BTreeSet<String> {
+    load(app, "archive.json")
+}
 
 /* ---------------- machines: the owner's other computers, reached over their ssh ---------------- */
 #[derive(Serialize, Deserialize, Clone)]
-struct MachineCfg { alias: String, #[serde(default)] name: String }
+struct MachineCfg {
+    alias: String,
+    #[serde(default)]
+    name: String,
+}
 
 #[derive(Serialize, Clone)]
-struct MachineView { alias: String, name: String, status: String, error: Option<String>, latency_ms: u64, sessions: usize }
+struct MachineView {
+    alias: String,
+    name: String,
+    status: String,
+    error: Option<String>,
+    latency_ms: u64,
+    sessions: usize,
+}
 
 #[derive(Default, Clone)]
-struct MachineState { status: String, error: Option<String>, latency_ms: u64, sessions: Vec<Session> }
+struct MachineState {
+    status: String,
+    error: Option<String>,
+    latency_ms: u64,
+    sessions: Vec<Session>,
+}
 
 static MACHINES: OnceLock<Mutex<BTreeMap<String, MachineState>>> = OnceLock::new();
 static KICK: AtomicBool = AtomicBool::new(false);
-fn machines_state() -> &'static Mutex<BTreeMap<String, MachineState>> { MACHINES.get_or_init(|| Mutex::new(BTreeMap::new())) }
+fn machines_state() -> &'static Mutex<BTreeMap<String, MachineState>> {
+    MACHINES.get_or_init(|| Mutex::new(BTreeMap::new()))
+}
 
 /// Every 10 seconds (or right after a machine is added), each machine is refreshed in parallel. Only changed files travel.
 fn remote_worker(app: tauri::AppHandle) {
-    let cache_root = app.path().app_cache_dir().map(|d| d.join("machines")).unwrap_or_else(|_| std::env::temp_dir().join("overview-machines"));
+    let cache_root = app
+        .path()
+        .app_cache_dir()
+        .map(|d| d.join("machines"))
+        .unwrap_or_else(|_| std::env::temp_dir().join("overview-machines"));
     let mut remotes: HashMap<String, Remote> = HashMap::new();
     loop {
         let cfg: Vec<MachineCfg> = load(&app, "machines.json");
         remotes.retain(|a, _| cfg.iter().any(|m| &m.alias == a));
-        machines_state().lock().unwrap().retain(|a, _| cfg.iter().any(|m| &m.alias == a));
+        machines_state()
+            .lock()
+            .unwrap()
+            .retain(|a, _| cfg.iter().any(|m| &m.alias == a));
         for m in &cfg {
             if !remotes.contains_key(&m.alias) {
                 match Remote::new(&m.alias, &cache_root) {
-                    Ok(r) => { remotes.insert(m.alias.clone(), r); machines_state().lock().unwrap().entry(m.alias.clone()).or_insert(MachineState { status: "connecting".into(), ..Default::default() }); }
-                    Err(e) => { machines_state().lock().unwrap().insert(m.alias.clone(), MachineState { status: "offline".into(), error: Some(e), ..Default::default() }); }
+                    Ok(r) => {
+                        remotes.insert(m.alias.clone(), r);
+                        machines_state()
+                            .lock()
+                            .unwrap()
+                            .entry(m.alias.clone())
+                            .or_insert(MachineState {
+                                status: "connecting".into(),
+                                ..Default::default()
+                            });
+                    }
+                    Err(e) => {
+                        machines_state().lock().unwrap().insert(
+                            m.alias.clone(),
+                            MachineState {
+                                status: "offline".into(),
+                                error: Some(e),
+                                ..Default::default()
+                            },
+                        );
+                    }
                 }
             }
         }
@@ -101,60 +168,144 @@ fn remote_worker(app: tauri::AppHandle) {
                     let mut st = machines_state().lock().unwrap();
                     let e = st.entry(alias.clone()).or_default();
                     match res {
-                        Ok(c) => { e.status = "connected".into(); e.error = None; e.latency_ms = c.latency_ms; e.sessions = c.sessions; }
-                        Err(err) => { e.status = "offline".into(); e.error = Some(err); }
+                        Ok(c) => {
+                            e.status = "connected".into();
+                            e.error = None;
+                            e.latency_ms = c.latency_ms;
+                            e.sessions = c.sessions;
+                        }
+                        Err(err) => {
+                            e.status = "offline".into();
+                            e.error = Some(err);
+                        }
                     }
                 });
             }
         });
-        for _ in 0..40 { if KICK.swap(false, Ordering::SeqCst) { break; } std::thread::sleep(Duration::from_millis(250)); }
+        for _ in 0..40 {
+            if KICK.swap(false, Ordering::SeqCst) {
+                break;
+            }
+            std::thread::sleep(Duration::from_millis(250));
+        }
     }
 }
 
 /// Every session Overview knows: this machine's, then each connected machine's last refresh.
 fn all_sessions() -> Vec<Session> {
     let mut all = overview_core::scan(&home());
-    for st in machines_state().lock().unwrap().values() { all.extend(st.sessions.iter().cloned()); }
+    for st in machines_state().lock().unwrap().values() {
+        all.extend(st.sessions.iter().cloned());
+    }
     all
 }
-fn find(id: &str) -> Result<Session, String> { all_sessions().into_iter().find(|s| s.id == id).ok_or_else(|| format!("no session {id}")) }
+fn find(id: &str) -> Result<Session, String> {
+    all_sessions()
+        .into_iter()
+        .find(|s| s.id == id)
+        .ok_or_else(|| format!("no session {id}"))
+}
 
 #[tauri::command]
 fn sessions(app: tauri::AppHandle) -> Snapshot {
     let hidden = archived(&app);
     let all = all_sessions();
     let archived_count = all.iter().filter(|s| hidden.contains(&s.id)).count();
-    let cache = CACHE.get_or_init(|| Mutex::new(BTreeMap::new())).lock().unwrap().clone();
-    let views = all.into_iter().filter(|s| !hidden.contains(&s.id)).map(|s| { let summary = cache.get(&s.id).map(|c| c.summary.clone()); View { session: s, summary } }).collect();
+    let cache = CACHE
+        .get_or_init(|| Mutex::new(BTreeMap::new()))
+        .lock()
+        .unwrap()
+        .clone();
+    let views = all
+        .into_iter()
+        .filter(|s| !hidden.contains(&s.id))
+        .map(|s| {
+            let summary = cache.get(&s.id).map(|c| c.summary.clone());
+            View {
+                session: s,
+                summary,
+            }
+        })
+        .collect();
     let cfg: Vec<MachineCfg> = load(&app, "machines.json");
     let st = machines_state().lock().unwrap().clone();
-    let machines = cfg.iter().map(|m| {
-        let s = st.get(&m.alias).cloned().unwrap_or(MachineState { status: "connecting".into(), ..Default::default() });
-        MachineView { alias: m.alias.clone(), name: if m.name.is_empty() { m.alias.clone() } else { m.name.clone() }, status: s.status, error: s.error, latency_ms: s.latency_ms, sessions: s.sessions.len() }
-    }).collect();
-    let llm = STATUS.get_or_init(|| Mutex::new(LlmStatus::default())).lock().unwrap().clone();
-    Snapshot { version: VERSION, host: hostname(), home: home().to_string_lossy().to_string(), sessions: views, machines, archived: archived_count, llm }
+    let machines = cfg
+        .iter()
+        .map(|m| {
+            let s = st.get(&m.alias).cloned().unwrap_or(MachineState {
+                status: "connecting".into(),
+                ..Default::default()
+            });
+            MachineView {
+                alias: m.alias.clone(),
+                name: if m.name.is_empty() {
+                    m.alias.clone()
+                } else {
+                    m.name.clone()
+                },
+                status: s.status,
+                error: s.error,
+                latency_ms: s.latency_ms,
+                sessions: s.sessions.len(),
+            }
+        })
+        .collect();
+    let llm = STATUS
+        .get_or_init(|| Mutex::new(LlmStatus::default()))
+        .lock()
+        .unwrap()
+        .clone();
+    Snapshot {
+        version: VERSION,
+        host: hostname(),
+        home: home().to_string_lossy().to_string(),
+        sessions: views,
+        machines,
+        archived: archived_count,
+        llm,
+    }
 }
 
 /// The hosts in ~/.ssh/config, each marked when it is already added.
 #[tauri::command]
 fn ssh_hosts(app: tauri::AppHandle) -> Vec<(String, String, bool)> {
     let cfg: Vec<MachineCfg> = load(&app, "machines.json");
-    remote::ssh_config_hosts(&home()).into_iter().map(|(a, to)| { let added = cfg.iter().any(|m| m.alias == a); (a, to, added) }).collect()
+    remote::ssh_config_hosts(&home())
+        .into_iter()
+        .map(|(a, to)| {
+            let added = cfg.iter().any(|m| m.alias == a);
+            (a, to, added)
+        })
+        .collect()
 }
 #[tauri::command]
 fn machine_add(app: tauri::AppHandle, alias: String) -> Result<(), String> {
     let alias = alias.trim().to_string();
-    if !remote::valid_alias(&alias) { return Err("That is not an ssh destination. Use an alias from your ssh config or user@host.".into()); }
+    if !remote::valid_alias(&alias) {
+        return Err(
+            "That is not an ssh destination. Use an alias from your ssh config or user@host."
+                .into(),
+        );
+    }
     let mut cfg: Vec<MachineCfg> = load(&app, "machines.json");
-    if cfg.iter().any(|m| m.alias == alias) { return Err(format!("{alias} is already added")); }
-    cfg.push(MachineCfg { alias, name: String::new() });
-    store(&app, "machines.json", &cfg)?; KICK.store(true, Ordering::SeqCst); Ok(())
+    if cfg.iter().any(|m| m.alias == alias) {
+        return Err(format!("{alias} is already added"));
+    }
+    cfg.push(MachineCfg {
+        alias,
+        name: String::new(),
+    });
+    store(&app, "machines.json", &cfg)?;
+    KICK.store(true, Ordering::SeqCst);
+    Ok(())
 }
 #[tauri::command]
 fn machine_rename(app: tauri::AppHandle, alias: String, name: String) -> Result<(), String> {
     let mut cfg: Vec<MachineCfg> = load(&app, "machines.json");
-    let m = cfg.iter_mut().find(|m| m.alias == alias).ok_or("no such machine")?;
+    let m = cfg
+        .iter_mut()
+        .find(|m| m.alias == alias)
+        .ok_or("no such machine")?;
     m.name = overview_core::model::clip(name.trim(), 40);
     store(&app, "machines.json", &cfg)
 }
@@ -162,25 +313,48 @@ fn machine_rename(app: tauri::AppHandle, alias: String, name: String) -> Result<
 fn machine_remove(app: tauri::AppHandle, alias: String) -> Result<(), String> {
     let mut cfg: Vec<MachineCfg> = load(&app, "machines.json");
     cfg.retain(|m| m.alias != alias);
-    store(&app, "machines.json", &cfg)?; machines_state().lock().unwrap().remove(&alias); KICK.store(true, Ordering::SeqCst); Ok(())
+    store(&app, "machines.json", &cfg)?;
+    machines_state().lock().unwrap().remove(&alias);
+    KICK.store(true, Ordering::SeqCst);
+    Ok(())
 }
 
 /* ---------------- the owner's actions on a session ---------------- */
 /// Quotes a value for a POSIX shell.
-fn sh_quote(v: &str) -> String { format!("'{}'", v.replace('\'', "'\\''")) }
+fn sh_quote(v: &str) -> String {
+    format!("'{}'", v.replace('\'', "'\\''"))
+}
 
 /// Runs `line` in a new window of the owner's terminal: on macOS a one-off `.command` script opened with whatever app
 /// handles those (Terminal unless the owner chose another); elsewhere the desktop's default terminal.
 fn terminal(line: &str) -> Result<(), String> {
     if cfg!(target_os = "macos") {
-        let f = std::env::temp_dir().join(format!("overview-{}.command", std::process::id() as u64 * 1000 + (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.subsec_millis()).unwrap_or(0) as u64)));
+        let f = std::env::temp_dir().join(format!(
+            "overview-{}.command",
+            std::process::id() as u64 * 1000
+                + (std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.subsec_millis())
+                    .unwrap_or(0) as u64)
+        ));
         // the script removes itself first, then runs the line in a login shell
-        std::fs::write(&f, format!("#!/bin/sh\nrm -f \"$0\"\n{line}\nexec \"${{SHELL:-/bin/zsh}}\" -l\n")).map_err(|e| e.to_string())?;
+        std::fs::write(
+            &f,
+            format!("#!/bin/sh\nrm -f \"$0\"\n{line}\nexec \"${{SHELL:-/bin/zsh}}\" -l\n"),
+        )
+        .map_err(|e| e.to_string())?;
         use std::os::unix::fs::PermissionsExt;
-        std::fs::set_permissions(&f, std::fs::Permissions::from_mode(0o700)).map_err(|e| e.to_string())?;
-        Command::new("open").arg(&f).spawn().map_err(|e| e.to_string())?;
+        std::fs::set_permissions(&f, std::fs::Permissions::from_mode(0o700))
+            .map_err(|e| e.to_string())?;
+        Command::new("open")
+            .arg(&f)
+            .spawn()
+            .map_err(|e| e.to_string())?;
     } else {
-        Command::new("x-terminal-emulator").args(["-e", "sh", "-c", line]).spawn().map_err(|e| e.to_string())?;
+        Command::new("x-terminal-emulator")
+            .args(["-e", "sh", "-c", line])
+            .spawn()
+            .map_err(|e| e.to_string())?;
     }
     Ok(())
 }
@@ -195,10 +369,25 @@ fn resume_line(s: &Session) -> Result<String, String> {
 
 /// Brings the app hosting a local session to the front: the `.app` bundle found in its process tree.
 fn focus_local(run: &overview_core::procs::Run) -> Result<(), String> {
-    let Some(bundle) = &run.bundle else { return Err(format!("it runs in {}, which has no window to bring forward", run.app)) };
-    if !cfg!(target_os = "macos") { return Err("bringing a window forward works on macOS for now".into()); }
-    let ok = Command::new("open").arg(bundle).status().map_err(|e| e.to_string())?.success();
-    if ok { Ok(()) } else { Err(format!("could not open {}", run.app)) }
+    let Some(bundle) = &run.bundle else {
+        return Err(format!(
+            "it runs in {}, which has no window to bring forward",
+            run.app
+        ));
+    };
+    if !cfg!(target_os = "macos") {
+        return Err("bringing a window forward works on macOS for now".into());
+    }
+    let ok = Command::new("open")
+        .arg(bundle)
+        .status()
+        .map_err(|e| e.to_string())?
+        .success();
+    if ok {
+        Ok(())
+    } else {
+        Err(format!("could not open {}", run.app))
+    }
 }
 
 /// The one way to get to a session. Open somewhere: bring that window forward. Not open: resume it in a new terminal.
@@ -207,25 +396,50 @@ fn focus_local(run: &overview_core::procs::Run) -> Result<(), String> {
 fn go(id: String) -> Result<String, String> {
     let s = find(&id)?;
     if s.machine == "local" {
-        if let Some(r) = &s.run { focus_local(r)?; return Ok(format!("focus:{}", r.app)); }
-        if !std::path::Path::new(&s.cwd).is_dir() { return Err(format!("its folder {} is not on this machine", s.cwd)); }
+        if let Some(r) = &s.run {
+            focus_local(r)?;
+            return Ok(format!("focus:{}", r.app));
+        }
+        if !std::path::Path::new(&s.cwd).is_dir() {
+            return Err(format!("its folder {} is not on this machine", s.cwd));
+        }
         terminal(&format!("cd {} && {}", sh_quote(&s.cwd), resume_line(&s)?))?;
         return Ok("resume".into());
     }
-    if !remote::valid_alias(&s.machine) { return Err("bad machine".into()); }
-    let inner = match &s.run { Some(_) => format!("cd {} && exec \"$SHELL\" -l", sh_quote(&s.cwd)), None => format!("cd {} && {}", sh_quote(&s.cwd), resume_line(&s)?) };
+    if !remote::valid_alias(&s.machine) {
+        return Err("bad machine".into());
+    }
+    let inner = match &s.run {
+        Some(_) => format!("cd {} && exec \"$SHELL\" -l", sh_quote(&s.cwd)),
+        None => format!("cd {} && {}", sh_quote(&s.cwd), resume_line(&s)?),
+    };
     terminal(&format!("ssh -t {} {}", s.machine, sh_quote(&inner)))?;
-    Ok(if s.run.is_some() { "shell".into() } else { "resume".into() })
+    Ok(if s.run.is_some() {
+        "shell".into()
+    } else {
+        "resume".into()
+    })
 }
 
 /// Shows the session's folder in Finder (this machine only).
 #[tauri::command]
 fn reveal(id: String) -> Result<(), String> {
     let s = find(&id)?;
-    if s.machine != "local" { return Err(format!("its folder is on {}", s.machine)); }
-    if !std::path::Path::new(&s.cwd).is_dir() { return Err(format!("its folder {} is not on this machine", s.cwd)); }
-    let opener = if cfg!(target_os = "macos") { "open" } else { "xdg-open" };
-    Command::new(opener).arg(&s.cwd).spawn().map_err(|e| e.to_string())?;
+    if s.machine != "local" {
+        return Err(format!("its folder is on {}", s.machine));
+    }
+    if !std::path::Path::new(&s.cwd).is_dir() {
+        return Err(format!("its folder {} is not on this machine", s.cwd));
+    }
+    let opener = if cfg!(target_os = "macos") {
+        "open"
+    } else {
+        "xdg-open"
+    };
+    Command::new(opener)
+        .arg(&s.cwd)
+        .spawn()
+        .map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -234,34 +448,58 @@ fn reveal(id: String) -> Result<(), String> {
 #[tauri::command]
 fn close(app: tauri::AppHandle, id: String) -> Result<(), String> {
     let s = find(&id)?;
-    if s.state == State::Run || s.run.as_ref().map(|r| r.busy).unwrap_or(false) { return Err("it is working; close it when it has finished".into()); }
+    if s.state == State::Run || s.run.as_ref().map(|r| r.busy).unwrap_or(false) {
+        return Err("it is working; close it when it has finished".into());
+    }
     if let Some(r) = &s.run {
         if s.machine == "local" {
             // only if that pid is still this session's agent
-            let pidfile = home().join(".claude/sessions").join(format!("{}.json", r.pid));
-            let ours = std::fs::read_to_string(&pidfile).map(|t| t.contains(&s.id)).unwrap_or(false);
-            if !ours { return Err("that agent is no longer running".into()); }
-            Command::new("kill").args(["-TERM", &r.pid.to_string()]).status().map_err(|e| e.to_string())?;
+            let pidfile = home()
+                .join(".claude/sessions")
+                .join(format!("{}.json", r.pid));
+            let ours = std::fs::read_to_string(&pidfile)
+                .map(|t| t.contains(&s.id))
+                .unwrap_or(false);
+            if !ours {
+                return Err("that agent is no longer running".into());
+            }
+            Command::new("kill")
+                .args(["-TERM", &r.pid.to_string()])
+                .status()
+                .map_err(|e| e.to_string())?;
         } else {
             remote::kill(&s.machine, r.pid, &s.id)?;
         }
     }
-    let mut set = archived(&app); set.insert(id); store(&app, "archive.json", &set)
+    let mut set = archived(&app);
+    set.insert(id);
+    store(&app, "archive.json", &set)
 }
 
 /// Brings every closed or cleared session back.
 #[tauri::command]
-fn restore_all(app: tauri::AppHandle) -> Result<(), String> { store(&app, "archive.json", &BTreeSet::<String>::new()) }
+fn restore_all(app: tauri::AppHandle) -> Result<(), String> {
+    store(&app, "archive.json", &BTreeSet::<String>::new())
+}
 
 /* ---------------- summaries: a background worker, a cache, and the settings ---------------- */
 #[derive(Serialize, Deserialize, Clone)]
-struct Cached { updated: u64, state: String, summary: Summary }
+struct Cached {
+    updated: u64,
+    state: String,
+    summary: Summary,
+}
 static CACHE: OnceLock<Mutex<BTreeMap<String, Cached>>> = OnceLock::new();
 static STATUS: OnceLock<Mutex<LlmStatus>> = OnceLock::new();
 
 /// The owner's settings (app data `settings.json`): which endpoint and model, and projects whose transcripts never leave.
 #[derive(Serialize, Deserialize, Default)]
-struct Settings { #[serde(default)] endpoint: Endpoint, #[serde(default)] never_send: Vec<String> }
+struct Settings {
+    #[serde(default)]
+    endpoint: Endpoint,
+    #[serde(default)]
+    never_send: Vec<String>,
+}
 
 /// Every 20 seconds: summarize the sessions that changed since their last summary and have settled (quiet for 45 s,
 /// or a new state), a few at a time, on every machine. Sessions asleep for a day are summarized once, then left alone.
@@ -272,16 +510,25 @@ fn summarizer(app: tauri::AppHandle) {
         let settings: Settings = load(&app, "settings.json");
         status.lock().unwrap().model = settings.endpoint.model.clone();
         let hidden = archived(&app);
-        let all: Vec<Session> = all_sessions().into_iter().filter(|s| !hidden.contains(&s.id) && !settings.never_send.contains(&s.project)).collect();
+        let all: Vec<Session> = all_sessions()
+            .into_iter()
+            .filter(|s| !hidden.contains(&s.id) && !settings.never_send.contains(&s.project))
+            .collect();
         let todo: Vec<Session> = {
             let c = cache.lock().unwrap();
-            all.into_iter().filter(|s| {
-                let st = format!("{:?}", s.state).to_lowercase();
-                match c.get(&s.id) {
-                    None => true,
-                    Some(prev) => s.updated > prev.updated && (s.quiet_secs >= 45 || prev.state != st) && st != "idle",
-                }
-            }).collect()
+            all.into_iter()
+                .filter(|s| {
+                    let st = format!("{:?}", s.state).to_lowercase();
+                    match c.get(&s.id) {
+                        None => true,
+                        Some(prev) => {
+                            s.updated > prev.updated
+                                && (s.quiet_secs >= 45 || prev.state != st)
+                                && st != "idle"
+                        }
+                    }
+                })
+                .collect()
         };
         status.lock().unwrap().pending = todo.len();
         if !todo.is_empty() {
@@ -309,11 +556,23 @@ fn summarizer(app: tauri::AppHandle) {
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
-            let h1 = app.handle().clone(); std::thread::spawn(move || summarizer(h1));
-            let h2 = app.handle().clone(); std::thread::spawn(move || remote_worker(h2));
+            let h1 = app.handle().clone();
+            std::thread::spawn(move || summarizer(h1));
+            let h2 = app.handle().clone();
+            std::thread::spawn(move || remote_worker(h2));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![sessions, go, reveal, close, restore_all, ssh_hosts, machine_add, machine_rename, machine_remove])
+        .invoke_handler(tauri::generate_handler![
+            sessions,
+            go,
+            reveal,
+            close,
+            restore_all,
+            ssh_hosts,
+            machine_add,
+            machine_rename,
+            machine_remove
+        ])
         .run(tauri::generate_context!())
         .expect("Overview failed to start");
 }

@@ -1,0 +1,40 @@
+# Created by jb-toolkit; owned by the project. Keep the contract: CI runs
+# scripts/check and nothing else decides whether the project is healthy (R5).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Tauri compiles against the system webview and GTK on Linux.
+      - name: Linux libraries for Tauri
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf
+
+      - if: hashFiles('Cargo.toml') != ''
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - if: hashFiles('Cargo.toml') != ''
+        uses: Swatinem/rust-cache@v2
+
+      - if: hashFiles('bun.lock', 'bun.lockb') != ''
+        uses: oven-sh/setup-bun@v2
+      - if: hashFiles('package.json') != '' && hashFiles('bun.lock', 'bun.lockb') == ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - if: hashFiles('pnpm-lock.yaml') != ''
+        run: corepack enable
+
+      - name: Check
+        run: scripts/check
