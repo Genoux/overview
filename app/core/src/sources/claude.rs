@@ -1,5 +1,5 @@
 //! Claude Code: one JSONL file per session in `~/.claude/projects/<folder>/<session>.jsonl`.
-use crate::model::{clip, infer, project_of, Seen, Session};
+use crate::model::{clip, infer, project_of, Ask, Pending, Seen, Session};
 use crate::tail::{first_lines, last_lines};
 use serde_json::Value;
 use std::collections::HashSet;
@@ -42,6 +42,32 @@ fn describe_tool(item: &Value) -> String {
     }
 }
 
+/// Tools that never ask for approval, in any mode (reading, searching, planning, subagents, background shells).
+const NEVER_ASKS: &[&str] = &["Read", "Glob", "Grep", "LS", "NotebookRead", "TodoWrite", "TodoRead", "Task", "Agent", "ToolSearch",
+    "TaskCreate", "TaskUpdate", "TaskList", "TaskGet", "TaskOutput", "TaskStop", "BashOutput", "KillShell", "Monitor", "ScheduleWakeup"];
+/// Tools that `acceptEdits` runs without asking.
+const EDITS: &[&str] = &["Edit", "MultiEdit", "Write", "NotebookEdit"];
+
+/// Whether a tool call can be waiting on the owner, given the session's permission mode.
+fn ask_of(item: &Value, mode: &str) -> Ask {
+    let name = item["name"].as_str().unwrap_or("");
+    // a question or a plan is addressed to the owner whatever the mode
+    if name == "AskUserQuestion" || name == "ExitPlanMode" { return Ask::Always; }
+    // these modes never stop for approval ("auto" lets a classifier decide, "dontAsk" refuses instead of asking)
+    if matches!(mode, "bypassPermissions" | "auto" | "dontAsk") { return Ask::Never; }
+    if NEVER_ASKS.contains(&name) || item["input"]["run_in_background"] == true || (mode == "acceptEdits" && EDITS.contains(&name)) { return Ask::Never; }
+    Ask::Maybe
+}
+
+/// What the owner is asked: the question itself, or "approve the plan".
+fn what_of(item: &Value) -> String {
+    match item["name"].as_str() {
+        Some("AskUserQuestion") => item["input"]["questions"][0]["question"].as_str().map(|q| clip(q, 160)).unwrap_or_else(|| "A question for you".into()),
+        Some("ExitPlanMode") => "Approve the plan?".into(),
+        _ => describe_tool(item),
+    }
+}
+
 /// Reads one session file. `quiet` is the seconds since it last changed; `updated` its unix time.
 pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
     let tail = last_lines(path, 384 * 1024);
@@ -51,14 +77,15 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
     let (mut cwd, mut branch, mut title, mut id) = (None::<String>, None::<String>, None::<String>, None::<String>);
     let (mut last_prompt, mut last_reply) = (None::<String>, None::<String>);
     let mut seen = Seen::default();
-    let mut pending: Vec<(String, String)> = vec![];
+    let mut pending: Vec<(String, Pending)> = vec![];
+    let mut mode = String::from("default");
     for r in &tail {
         if let Some(c) = r["cwd"].as_str() { cwd = Some(c.to_string()); }
         if let Some(b) = r["gitBranch"].as_str() { if !b.is_empty() { branch = Some(b.to_string()); } }
         if let Some(s) = r["sessionId"].as_str() { id = Some(s.to_string()); }
         match r["type"].as_str().unwrap_or("") {
             "ai-title" => { if let Some(t) = r["aiTitle"].as_str().or_else(|| r["title"].as_str()) { title = Some(t.to_string()); } }
-            "permission-mode" => { seen.auto_approve = r["permissionMode"].as_str() == Some("bypassPermissions"); }
+            "permission-mode" => { if let Some(m) = r["permissionMode"].as_str() { mode = m.to_string(); } }
             "user" => {
                 if r["isMeta"].as_bool() == Some(true) { continue; }
                 let content = &r["message"]["content"];
@@ -83,7 +110,7 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
                 if r["isApiErrorMessage"].as_bool() == Some(true) { seen.api_error = true; seen.in_turn = false; continue; }
                 if let Value::Array(items) = &m["content"] {
                     for i in items.iter().filter(|i| i["type"] == "tool_use") {
-                        if let Some(tid) = i["id"].as_str() { pending.push((tid.to_string(), describe_tool(i))); }
+                        if let Some(tid) = i["id"].as_str() { pending.push((tid.to_string(), Pending { what: what_of(i), ask: ask_of(i, &mode) })); }
                     }
                 }
                 if let Some(t) = text_of(&m["content"]) { last_reply = Some(clip(&t, 400)); }
@@ -106,7 +133,7 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
             }
         }
     }
-    seen.pending = pending.into_iter().map(|(_, d)| d).collect();
+    seen.pending = pending.into_iter().map(|(_, p)| p).collect();
     let cwd = cwd?;
     let (state, waiting_on) = infer(&seen, quiet);
     Some(Session {
@@ -123,6 +150,8 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
         last_reply,
         waiting_on,
         path: path.to_string_lossy().to_string(),
+        machine: "local".into(),
+        run: None,
     })
 }
 
@@ -148,5 +177,17 @@ mod tests {
         assert_eq!(read(&ran, 5, 0).unwrap().state, State::Run);
         let q = write(&[base, r#"{"type":"assistant","message":{"stop_reason":"end_turn","content":[{"type":"text","text":"Electron or Tauri?"}]}}"#]);
         assert_eq!(read(&q, 60, 0).unwrap().state, State::Wait);
+    }
+    #[test]
+    fn a_long_command_in_auto_mode_runs_and_a_question_waits() {
+        let base = r#"{"type":"user","cwd":"/w/gramly","sessionId":"s2","message":{"role":"user","content":"Run the build"}}"#;
+        let auto = r#"{"type":"permission-mode","permissionMode":"auto"}"#;
+        let build = write(&[auto, base, r#"{"type":"assistant","message":{"stop_reason":"tool_use","content":[{"type":"tool_use","id":"b1","name":"Bash","input":{"command":"cargo build --release"}}]}}"#]);
+        assert_eq!(read(&build, 300, 0).unwrap().state, State::Run);
+        let ask = write(&[auto, base, r#"{"type":"assistant","message":{"stop_reason":"tool_use","content":[{"type":"tool_use","id":"q1","name":"AskUserQuestion","input":{"questions":[{"question":"Which database, Postgres or SQLite?"}]}}]}}"#]);
+        let s = read(&ask, 2, 0).unwrap();
+        assert_eq!((s.state, s.waiting_on.as_deref()), (State::Wait, Some("Which database, Postgres or SQLite?")));
+        let edit = write(&[r#"{"type":"permission-mode","permissionMode":"acceptEdits"}"#, base, r#"{"type":"assistant","message":{"stop_reason":"tool_use","content":[{"type":"tool_use","id":"e1","name":"Write","input":{"file_path":"/w/a.rs"}}]}}"#]);
+        assert_eq!(read(&edit, 90, 0).unwrap().state, State::Run);
     }
 }

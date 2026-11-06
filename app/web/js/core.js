@@ -127,3 +127,41 @@ export function projOf(s) { return PROJECTS.find((p) => p.id === s.plot); }
 export function hostOf(s) { return HOSTS.find((h) => h.id === projOf(s).host); }
 export function wantsDesk(s) { return s.state === 'run' || s.state === 'wait' || s.state === 'err'; }
 export function waiting() { return G.S.filter((s) => s.state === 'wait').sort((a, b) => a.prio - b.prio || b.since - a.since); }
+
+/* ---------------- direction mock: what the summarizer writes per session, and the project roll-up (P4) ---------------- */
+const SUMS = {
+  g1: { done: 'Patched the reconnect handler so offline edits merge instead of overwriting.', left: 'Verify against real data.', needs: 'Approve pnpm db:migrate so the fix can be verified.', next: 'Run the migration, then the sync tests.', priority: 'high' },
+  g2: { done: 'Moved 4 of 7 call sites to the new rank().', left: '3 call sites in search.', needs: '', next: 'Finish the search call sites.', priority: 'normal' },
+  o1: { done: 'Neighborhood generator draws islands side by side.', left: 'Label placement.', needs: '', next: 'Place machine flags.', priority: 'normal' },
+  c1: { done: 'Rewrote the hero and FAQ copy, 3 files.', left: '', needs: '', next: 'Review the diff and merge.', priority: 'low' },
+  c2: { done: 'Alt text for 9 images.', left: '', needs: '', next: 'Spot-check and merge.', priority: 'low' },
+  j1: { done: 'Picked a 12-column grid for case studies.', left: 'Build the layout.', needs: '', next: 'Resume or archive.', priority: 'low' },
+  h1: { done: 'Compared Electron and Tauri on Wayland: memory, startup, tray.', left: 'P0 shell.', needs: 'Pick Electron or Tauri for P0.', next: 'Scaffold the chosen shell.', priority: 'high' },
+  h2: { done: 'Checked every roadmap link, none dead.', left: '', needs: '', next: 'Nothing; can be archived.', priority: 'low' },
+  f1: { done: '14 of 20 shortcuts mapped.', left: '6 shortcuts and the help overlay.', needs: '', next: 'Help overlay.', priority: 'normal' },
+  f2: { done: 'Timeline view refactor.', left: '3 failing tests in Timeline.test.tsx.', needs: 'Look at the failing timeline tests; it stopped after three retries.', next: 'Fix the date math in the fixtures.', priority: 'high' },
+  m1: { done: 'Alert schema done.', left: 'Push delivery.', needs: '', next: 'Wire the push service.', priority: 'normal' },
+  m2: { done: '12 readings tests pass.', left: '', needs: '', next: 'Review and merge.', priority: 'low' },
+  l1: { done: 'Reproduced the RTSP reconnect bug.', left: 'The fix.', needs: '', next: 'Resume when you are back on it.', priority: 'low' }
+};
+INITIAL.forEach((s) => { if (SUMS[s.id]) s.sum = SUMS[s.id]; });
+export const PSUM = {
+  gramly: { at: 'Offline sync is fixed in code; ranking rewrite is half done.', next: 'Approve the migration. Everything else in gramly waits on it.' },
+  overview: { at: 'The world draws; labels are being placed.', next: 'Keep going, nothing needed from you.' },
+  culture: { at: 'Copy pass and alt text are both finished.', next: 'Review two diffs and merge.' },
+  'jb-site': { at: 'Grid picked, layout not started. Quiet a day.', next: 'Resume or archive.' },
+  'hangar-roadmap': { at: 'Shell comparison done, links checked.', next: 'Pick Electron or Tauri to unblock P0.' },
+  flow: { at: 'Shortcuts 14 of 20; timeline tests broke.', next: 'Fix the 3 timeline tests first.' },
+  'monotub-api': { at: 'Alerts half wired, readings tested.', next: 'Merge the tests while push is wired.' },
+  'live-cam': { at: 'Reconnect bug reproduced, not fixed. Quiet 2 days.', next: 'Resume when you pick it back up.' }
+};
+
+// where each session runs right now (from ~/.claude/sessions/<pid>.json + the process tree); null = not open in any app
+export const RUNS = {
+  g1: { app: 'Orca', tty: 'ttys019', pid: 10130, open: '2h' }, g2: { app: 'Herdr', tty: 'ttys001', pid: 39695, open: '40m' },
+  o1: { app: 'Ghostty', tty: 'ttys007', pid: 36911, open: '3h' }, c1: { app: 'Orca', tty: 'ttys017', pid: 27474, open: '5h' },
+  h1: { app: 'Orca · ssh', tty: 'ttys014', pid: 20400, open: '1h' }, f1: { app: 'tmux · ssh', tty: 'pts/3', pid: 4412, open: '6h' },
+  f2: { app: 'Orca · ssh', tty: 'ttys021', pid: 72496, open: '1h' }, m1: { app: 'tmux · ssh', tty: 'pts/1', pid: 911, open: '1d' },
+  c2: null, j1: null, h2: null, m2: null, l1: null
+};
+INITIAL.forEach((s) => { s.run = RUNS[s.id] || null; });

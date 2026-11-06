@@ -1,6 +1,6 @@
 // UI and boot: input, camera follow, the info panel (machine, project), rail (now / tasks / brief), status bar, popovers, toast, demo, frame loop.
 // The tracker only tracks: nothing here ever writes to an agent.
-import { G, C, reduce, readSignal, clone, INITIAL, EVENTS, HOSTS, byId, hostOf, fmt, esc, wantsDesk, waiting, hourNow, nightFactor } from './core.js';
+import { G, C, reduce, readSignal, clone, INITIAL, EVENTS, HOSTS, PROJECTS, PSUM, byId, hostOf, fmt, esc, wantsDesk, waiting, hourNow, nightFactor } from './core.js';
 import { gene } from './creatures.js';
 import { buildWorld } from './world.js';
 import { body, simulate, settle, onStateChange, activity, resetLife } from './life.js';
@@ -16,7 +16,9 @@ G.S = clone(INITIAL); G.world = buildWorld(); G.S.forEach(body);
 resize();
 if (window.ResizeObserver) new ResizeObserver(resize).observe(stage); else window.addEventListener('resize', resize);
 fit(true);
-document.getElementById('crumb-n').textContent = ' · ' + G.S.length + ' agents on ' + HOSTS.length + ' machines';
+const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+function crumb() { document.getElementById('crumb-n').textContent = ' · ' + plural(G.S.length, 'agent', 'agents') + ' on ' + plural(HOSTS.length, 'machine', 'machines'); }
+crumb();
 
 /* ---------------- frame loop ---------------- */
 let last = 0, drag = null;
@@ -62,7 +64,7 @@ function endPointer(e) {
   delete pointers[e.pointerId];
   if (pinch) { if (Object.keys(pointers).length < 2) { let best = G.levels[0]; for (const l of G.levels) if (Math.abs(l - G.tgt.z) < Math.abs(best - G.tgt.z)) best = l; G.tgt.z = best; zval(); pinch = null; } drag = null; return; }
   if (!drag) return;
-  if (!drag.moved) { if (drag.agent) select(drag.agent, true); else if (drag.area) openInfo(drag.area); else { select(null); openInfo(null); } }
+  if (!drag.moved) { if (drag.agent) { openInfo(null); revealSession(drag.agent); } else if (drag.area) openInfo(drag.area); else clearReveal(); }
   drag = null; stage.classList.remove('panning');
 }
 stage.addEventListener('pointerup', endPointer); stage.addEventListener('pointercancel', endPointer);
@@ -78,7 +80,7 @@ stage.addEventListener('keydown', (e) => {
   if (e.key === 'Tab') { const w = waiting(); if (!w.length) return; const i = G.selId ? w.findIndex((s) => s.id === G.selId) : -1, n = e.shiftKey ? i - 1 : i + 1; if (n < 0 || n >= w.length) return; e.preventDefault(); locate(w[n].id); return; }
   const map = { ArrowUp: [-1, -1], ArrowDown: [1, 1], ArrowLeft: [-1, 1], ArrowRight: [1, -1] };
   if (map[e.key]) { e.preventDefault(); G.tgt.u += map[e.key][0]; G.tgt.v += map[e.key][1]; if (reduce) Object.assign(G.cam, G.tgt); return; }
-  if (e.key === '+' || e.key === '=') { stepZoom(1); zval(); } else if (e.key === '-') { stepZoom(-1); zval(); } else if (e.key === 'f' || e.key === 'F') { fit(); zval(); } else if (e.key === 'Enter' && G.selId) openInOrca(G.selId); else if (e.key === 'Escape') { if (G.sel.area) openInfo(null); else select(null); closePop(); }
+  if (e.key === '+' || e.key === '=') { stepZoom(1); zval(); } else if (e.key === '-') { stepZoom(-1); zval(); } else if (e.key === 'f' || e.key === 'F') { fit(); zval(); } else if (e.key === 'Enter' && G.selId) go(G.selId); else if (e.key === 'Escape') { if (G.sel.area) openInfo(null); else select(null); closePop(); }
 });
 function zval() { document.getElementById('zval').textContent = (Math.round(G.tgt.z * 100) / 100) + '×'; }
 document.getElementById('zin').addEventListener('click', () => { stepZoom(1); zval(); });
@@ -124,7 +126,8 @@ function renderInfo() {
 infoEl.addEventListener('click', (e) => {
   if (e.target.closest('.x')) { openInfo(null); return; }
   const rv = e.target.closest('[data-reveal]'); if (rv) { revealFolder(rv.getAttribute('data-reveal')); return; }
-  const loc = e.target.closest('[data-loc]'); if (loc) { locate(loc.getAttribute('data-loc')); return; }
+  // a session here works like clicking its blob: the map flies to it and the side panel opens its row; this panel stays open
+  const loc = e.target.closest('[data-loc]'); if (loc) { const id = loc.getAttribute('data-loc'); revealSession(id); locate(id); return; }
   const pl = e.target.closest('[data-plot]'); if (pl) { const r = G.world.offices[pl.getAttribute('data-plot')]; openInfo({ kind: 'plot', id: r.project }); frameTo([{ u0: r.u0, v0: r.v0, u1: r.u0 + r.w, v1: r.v0 + r.d }]); zval(); }
 });
 infoEl.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -139,18 +142,18 @@ function openPop(anchor, html, where) {
   popEl.style.left = Math.max(8, Math.min(window.innerWidth - pw - 8, where === 'below' ? r.right - pw : r.left)) + 'px';
   popEl.style.top = Math.max(8, (where === 'below' ? r.bottom + 6 : r.top - ph - 6) + window.scrollY) + 'px';
   anchor.setAttribute('aria-expanded', 'true'); popFor = anchor;
-  popEl.addEventListener('click', (e) => { const el = e.target.closest('[data-loc]'); if (el) { locate(el.getAttribute('data-loc')); closePop(); } });
+  popEl.addEventListener('click', (e) => { const el = e.target.closest('[data-loc]'); if (el) { const id = el.getAttribute('data-loc'); closePop(); revealSession(id); locate(id); } });
 }
 document.addEventListener('pointerdown', (e) => { if (popEl && !popEl.contains(e.target) && !(popFor && popFor.contains(e.target))) closePop(); });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closePop();
+  if (e.key === 'Escape') { if (!setEl.hidden) { if (addOpen) { addOpen = false; renderSettings(); } else closeSettings(); } else if (popEl) closePop(); else clearReveal(); }
   if ((e.key === 'l' || e.key === 'L') && G.selId && !e.defaultPrevented && !e.metaKey && !e.ctrlKey && !(e.target.closest && e.target.closest('input, textarea'))) { e.preventDefault(); locate(G.selId); }
 });
 document.getElementById('help').addEventListener('click', (e) => {
   openPop(e.currentTarget, '<h4>on the map</h4>' +
     '<div class="lg">' + icon('run') + 'typing at its slab: running</div><div class="lg">' + icon('wait') + 'hopping under a diamond: needs you</div><div class="lg">' + icon('err') + 'melted by a cracked slab: failed</div><div class="lg">' + icon('done') + 'free: lives by its needs</div><div class="lg">' + icon('idle') + 'asleep: quiet a day or more</div>' +
-    '<div class="sep"></div><h4>the world</h4><div class="lg">each machine is an island of project plots; each desk has its slab</div><div class="lg">click a machine or a project for details</div><div class="lg">finished agents nap or play by their slab, and visit friends; work always calls them back</div><div class="lg">zoom in to read speech</div>' +
-    '<div class="sep"></div><h4>keys</h4><div class="keys"><kbd>Tab</kbd><span>next agent that needs you</span><kbd>l</kbd><span>go to the selected agent</span><kbd>Enter</kbd><span>open the selected agent</span><kbd>f</kbd><span>fit every neighborhood</span><kbd>+ −</kbd><span>zoom</span><kbd>Esc</kbd><span>clear selection</span></div>', 'below');
+    '<div class="sep"></div><h4>the world</h4><div class="lg">each machine is an island of project plots; each desk has its slab</div><div class="lg">click an agent to open it in the side panel; click a project or a machine for its details</div><div class="lg">finished agents nap or play by their slab, and visit friends; work always calls them back</div><div class="lg">zoom in to read speech</div>' +
+    '<div class="sep"></div><h4>keys</h4><div class="keys"><kbd>Tab</kbd><span>next agent that needs you</span><kbd>Enter</kbd><span>open or close the focused row</span><kbd>f</kbd><span>fit every neighborhood</span><kbd>+ −</kbd><span>zoom</span><kbd>Esc</kbd><span>clear selection</span></div>', 'below');
 });
 function flyTo(hid) { const h = G.world.hoods.find((x) => x.h.id === hid); if (h) { frameTo([h]); zval(); } }
 function listPop(anchor, state, title) {
@@ -173,7 +176,7 @@ export function icon(st, still) {
 const TRACKED = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.2 6.4 4.8 9 9.8 3" fill="none" stroke="var(--dim)" stroke-width="1.5"/></svg>';
 const CHECK = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M2.2 6.4 4.8 9 9.8 3" fill="none" stroke="var(--side)" stroke-width="2"/></svg>';
 const GROUPS = [['wait', 'needs you'], ['err', 'failed'], ['run', 'running'], ['done', 'done'], ['idle', 'asleep']];
-let filter = null, tab = 'now';
+let filter = null, tab = 'brief';
 const pNow = document.getElementById('p-now'), pTasks = document.getElementById('p-tasks'), pBrief = document.getElementById('p-brief'), chips = document.getElementById('chips');
 function renderChips() { chips.innerHTML = GROUPS.map((g) => { const n = G.S.filter((s) => s.state === g[0]).length; return '<button class="chip' + (n ? '' : ' zero') + '" type="button" data-f="' + g[0] + '" aria-pressed="' + (filter === g[0]) + '">' + icon(g[0], !n) + '<b>' + n + '</b>' + g[1] + '</button>'; }).join(''); }
 chips.addEventListener('click', (e) => { const c = e.target.closest('[data-f]'); if (!c) return; const f = c.getAttribute('data-f'); filter = filter === f ? null : f; renderNow(); });
@@ -213,36 +216,44 @@ function renderNow() {
 
 /* tracker */
 let TASKS = [];
-try { TASKS = JSON.parse(localStorage.getItem('overview.tasks.v4') || '[]') || []; } catch (e) { TASKS = []; }
-function saveTasks() { try { localStorage.setItem('overview.tasks.v4', JSON.stringify(TASKS)); } catch (e) { /* storage blocked: tasks live for this visit only */ } }
-function taskForSession(id) { return TASKS.find((t) => t.src === id && !t.doneAt) || null; }
+const SEED = [
+  { title: 'Write the gramly release notes', proj: 'gramly' }, { title: 'Reply to Max about the Hangar shell', proj: 'hangar-roadmap' },
+  { title: 'Book an hour to review the culture diffs', proj: 'culture' }, { title: 'Renew the home-server TLS certificate', proj: null }
+];
+const TASKS_KEY = live ? 'overview.tasks.v1' : 'overview.tasks.mock2';
+try { TASKS = JSON.parse(localStorage.getItem(TASKS_KEY) || 'null'); } catch (e) { TASKS = null; }
+if (!Array.isArray(TASKS)) TASKS = live ? [] : SEED.map((t, i) => ({ id: 'seed' + i, title: t.title, proj: t.proj, at: Date.now() - (i + 1) * 47 * 60000, doneAt: null }));
+function saveTasks() { try { localStorage.setItem(TASKS_KEY, JSON.stringify(TASKS)); } catch (e) { /* storage blocked: tasks live for this visit only */ } }
+function taskForSession() { return null; }
 const short = (t, n) => (t.length > n ? t.slice(0, n - 1) + '…' : t);
-function taskTitle(s) { return short(s.sum && s.sum.needs ? s.sum.needs : s.state === 'err' ? 'Fix: ' + s.title : s.cmd ? 'Approve ' + s.cmd : 'Answer: ' + (s.bubble || s.title), 64); }
-function addTask(title, src, from, extra) { TASKS.unshift(Object.assign({ id: 't' + Date.now().toString(36) + Math.floor(Math.random() * 1e4), title, src: src || null, from: from || 'you', at: Date.now(), doneAt: null }, extra || {})); saveTasks(); renderAll(); }
-function autoTasks() { for (const s of G.S) { const sig = s.state + '|' + (s.cmd || s.bubble || ''); if ((s.state === 'wait' || s.state === 'err') && !taskForSession(s.id) && !TASKS.some((t) => t.src === s.id && t.sig === sig)) TASKS.unshift({ id: 't-' + s.id + '-' + Date.now().toString(36), title: taskTitle(s) + ' (' + s.plot + ')', src: s.id, from: s.state === 'err' ? 'failed' : 'needs you', at: Date.now(), doneAt: null, sig }); } saveTasks(); }
+// "#gramly" anywhere in the text links the task to that project and is taken out of the title
+function addTask(text) {
+  const m = text.match(/#([\w-]+)/), proj = m && PROJECTS.some((p) => p.id === m[1]) ? m[1] : null;
+  const title = (proj ? text.replace(m[0], '') : text).replace(/\s+/g, ' ').trim(); if (!title) return;
+  TASKS.unshift({ id: 't' + Date.now().toString(36), title, proj, at: Date.now(), doneAt: null }); saveTasks(); renderTasks();
+}
+function autoTasks() { /* tasks are the owner's own; what agents need lives in Today */ }
 const hhmm = (ms) => { const d = new Date(ms); return (d.getHours() < 10 ? '0' : '') + d.getHours() + ':' + (d.getMinutes() < 10 ? '0' : '') + d.getMinutes(); };
+const RM = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M3.5 3.5l5 5M8.5 3.5l-5 5" stroke="currentColor" stroke-width="1.3"/></svg>';
 function renderTasks() {
   const open = TASKS.filter((t) => !t.doneAt), done = TASKS.filter((t) => t.doneAt).sort((a, b) => b.doneAt - a.doneAt);
   document.getElementById('tcount').textContent = open.length || '';
-  let h = '<form class="add" id="addf"><input id="addi" type="text" placeholder="Add a task, then press Enter" aria-label="New task" autocomplete="off"><button class="btn plain" type="submit">add</button></form>';
-  h += '<div class="sh"><span>to do</span><span class="n">' + open.length + '</span></div>';
-  if (!open.length) h += '<div class="empty fill">Nothing to do.<br>Tasks appear here when an agent needs you, or when you track a brief item.</div>';
-  for (const t of open) {
-    const s = t.src && byId(t.src), moved = s && t.sig && s.state + '|' + (s.cmd || s.bubble || '') !== t.sig;
-    h += '<div class="task"><button class="box" type="button" data-check="' + t.id + '" aria-label="Mark done: ' + esc(t.title) + '">' + CHECK + '</button><span class="tt"' + (s ? ' data-loc="' + s.id + '"' : '') + '>' + esc(t.title) + '</span><span class="ta">' + fmt(Math.floor((Date.now() - t.at) / 60000)) + '</span>' +
-      '<span class="tm">' + (s ? icon(s.state) + '<span>' + s.plot + ' · ' + esc(gene(s.id).name) + '</span>' : '') + '<span>from ' + esc(t.from) + '</span><button class="rm" type="button" data-rm="' + t.id + '">remove</button></span>' +
-      (moved ? '<span class="hint">' + icon('done') + 'agent moved on · <button type="button" data-check="' + t.id + '">mark done</button></span>' : '') + '</div>';
-  }
-  if (done.length) { h += '<div class="sh done">' + icon('done') + '<span>done</span><span class="n">' + done.length + '</span></div>'; for (const t of done.slice(0, 12)) h += '<div class="task done"><button class="box" type="button" data-uncheck="' + t.id + '" aria-label="Reopen: ' + esc(t.title) + '">' + CHECK + '</button><span class="tt">' + esc(t.title) + '</span><span class="ta">done ' + hhmm(t.doneAt) + '</span></div>'; }
+  const meta = (t) => { const p = t.proj && PROJECTS.find((x) => x.id === t.proj); return p ? '<span class="s m">' + PROJ + esc(p.id) + ' · ' + esc((HOSTS.find((h) => h.id === p.host) || {}).name || '') + '</span>' : ''; };
+  const row = (t) => '<div class="it tk' + (t.proj ? ' linked' : '') + '"' + (t.proj ? ' data-tproj="' + esc(t.proj) + '" title="Open ' + esc(t.proj) + '"' : '') + '><button class="box" type="button" data-check="' + t.id + '" aria-label="Mark done: ' + esc(t.title) + '">' + CHECK + '</button><span class="t">' + esc(t.title) + '</span>' +
+    '<span class="w"><span class="age">' + fmt(Math.floor((Date.now() - t.at) / 60000)) + '</span><button class="rm" type="button" data-rm="' + t.id + '" aria-label="Remove task: ' + esc(t.title) + '" title="Remove task">' + RM + '</button></span>' + meta(t) + '</div>';
+  let h = '<form class="add" id="addf"><input id="addi" type="text" placeholder="Add a task · #project links it" aria-label="New task" autocomplete="off"><button class="btn plain" type="submit">add</button></form>';
+  h += group('todo', '', '', 'to do', open.length, '', open.length ? open.map(row).join('') : '<div class="it"><span></span><span class="s">Nothing to do.</span></div>');
+  if (done.length) h += group('tdone', '', icon('done'), 'done', done.length, '', done.slice(0, 12).map((t) => '<div class="it tk done"><button class="box" type="button" data-uncheck="' + t.id + '" aria-label="Reopen: ' + esc(t.title) + '">' + CHECK + '</button><span class="t">' + esc(t.title) + '</span><span class="w">' + hhmm(t.doneAt) + '</span></div>').join(''));
   pTasks.innerHTML = h;
 }
-pTasks.addEventListener('submit', (e) => { e.preventDefault(); const v = document.getElementById('addi').value.trim(); if (v) { addTask(v, null, 'you'); const ni = document.getElementById('addi'); if (ni) ni.focus(); } });
+pTasks.addEventListener('submit', (e) => { e.preventDefault(); const i = document.getElementById('addi'), v = i.value.trim(); if (v) { addTask(v); const ni = document.getElementById('addi'); if (ni) ni.focus(); } });
 pTasks.addEventListener('click', (e) => {
-  const c = e.target.closest('[data-check]'), u = e.target.closest('[data-uncheck]'), r = e.target.closest('[data-rm]'), l = e.target.closest('[data-loc]');
-  if (c) { const t = TASKS.find((x) => x.id === c.getAttribute('data-check')); if (t) { t.doneAt = Date.now(); saveTasks(); renderAll(); toast('Done: ' + t.title); } return; }
-  if (u) { const t = TASKS.find((x) => x.id === u.getAttribute('data-uncheck')); if (t) { t.doneAt = null; saveTasks(); renderAll(); } return; }
-  if (r) { TASKS = TASKS.filter((x) => x.id !== r.getAttribute('data-rm')); saveTasks(); renderAll(); return; }
-  if (l) locate(l.getAttribute('data-loc'));
+  const sh = e.target.closest('[data-shut]'); if (sh) { const k = sh.getAttribute('data-shut'); toggleGroup(sh, k); return; }
+  const c = e.target.closest('[data-check]'), u = e.target.closest('[data-uncheck]'), r = e.target.closest('[data-rm]');
+  if (c) { const t = TASKS.find((x) => x.id === c.getAttribute('data-check')); if (t) { t.doneAt = Date.now(); saveTasks(); renderTasks(); toast('Done: ' + t.title); } return; }
+  if (u) { const t = TASKS.find((x) => x.id === u.getAttribute('data-uncheck')); if (t) { t.doneAt = null; saveTasks(); renderTasks(); } return; }
+  if (r) { TASKS = TASKS.filter((x) => x.id !== r.getAttribute('data-rm')); saveTasks(); renderTasks(); return; }
+  const tp = e.target.closest('[data-tproj]'); if (tp) revealProject(tp.getAttribute('data-tproj'));   // a linked task opens its project
 });
 const BRIEF = [
   { id: 'b1', src: 'g1', title: 'Approve the gramly migration', body: 'The sync fix waits on pnpm db:migrate. Everything else in gramly is behind it.' },
@@ -265,8 +276,202 @@ function renderLiveBrief() {
   pBrief.innerHTML = h;
 }
 const briefTracked = (b) => TASKS.some((t) => !t.doneAt && (t.brief === b.id || (b.src && t.src === b.src)));
+// Today: what needs you, where each project stands, what is running, what finished, and what is stale
+let openId = (location.hash.match(/open=(\w+)/) || [])[1] || null; const CLOSED = [];   // #open=<id> opens one item (for screenshots)
+const inApp = (s) => (s.run ? 'in ' + s.run.app : 'not open');
+const ARROW = '<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4 8 8 4M4.5 4H8v3.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
+// the one way to get to a session, the same everywhere: bring its window to the front, or resume it when no app has it open
+function goBtn(s) { const tip = s.run ? 'Focus: bring its window to the front' : 'Resume: not open anywhere, opens it in a new terminal'; return '<button class="go" type="button" data-go="' + s.id + '" title="' + tip + '" aria-label="' + tip + '">' + ARROW + '</button>'; }
+async function go(id) {
+  const s = byId(id); if (!s) return;
+  if (!live) { toast(s.run ? 'Prototype: would bring ' + s.run.app + ' to the front, on the tab running ' + s.plot : 'Prototype: would resume ' + s.plot + ' in a new terminal'); return; }
+  const r = await act('go', id);
+  if (!r.ok) { toast('Could not open it: ' + r.error.replace(/^Error:\s*/, '')); return; }
+  const v = String(r.value || '');
+  toast(v.startsWith('focus:') ? 'Brought ' + v.slice(6) + ' to the front' : v === 'shell' ? 'Opened a shell on ' + hostOf(s).name + ' in its folder' : 'Resumed in a new terminal');
+}
+// the opened session: where it runs, where its files are (a link), what is done and left; closing is a quiet link
+function detail(s) {
+  const r = s.run;
+  return '<div class="dt"><div class="dl"><b>runs</b><span>' + (r ? esc(r.app) + ' · ' + esc(r.tty) + ' · pid ' + r.pid + ' · open ' + r.open : 'not open in any app · last active ' + fmt(s.since) + ' ago') + '</span></div>' +
+    '<div class="dl"><b>where</b><span>' + whereLine(s) + '</span></div>' +
+    (s.sum ? '<div class="dl"><b>done</b><span>' + esc(s.sum.done) + '</span></div>' + (s.sum.left ? '<div class="dl"><b>left</b><span>' + esc(s.sum.left) + '</span></div>' : '') : '') +
+    (s.state === 'run' ? '' : '<div class="dl"><b></b><span><button class="lnk dim" type="button" data-close="' + s.id + '">' + (r ? 'close session' : 'clear from Overview') + '</button></span></div>') + '</div>';
+}
+function whereLine(s) {
+  const folder = live ? (s.machine === 'local' ? where(s.cwd) : s.cwd) : '~/code/' + s.plot, branch = live ? s.branch : 'main';
+  const place = esc(hostOf(s).name) + ' · ' + esc(folder);
+  return (!live || s.machine === 'local' ? '<button class="lnk" type="button" data-dir="' + s.id + '" title="Open the folder">' + place + '</button>' : place) + (branch ? ' · ⎇ ' + esc(branch) : '');
+}
+// a session row: status · title · age · ↗, then a meta line and one summary line; a click opens it in place and shows it on the map
+function srow(s, title, line, lineKey) {
+  const meta = (s.state === 'err' ? '<span class="fl">failed</span> · ' : '') + esc(s.plot) + ' · ' + esc(hostOf(s).name) + ' · <span class="inapp">' + esc(inApp(s)) + '</span>';
+  return '<div class="it go-row' + (openId === s.id ? ' open' : '') + '" data-x="' + s.id + '" tabindex="0" aria-expanded="' + (openId === s.id) + '">' + icon(s.state) + '<span class="t">' + esc(title) + '</span><span class="w"><span class="age">' + fmt(s.since) + '</span>' + goBtn(s) + '</span>' +
+    '<span class="s m">' + meta + '</span>' + (line ? '<span class="s">' + (lineKey ? '<b>' + lineKey + '</b>' : '') + esc(line) + '</span>' : '') + (openId === s.id ? detail(s) : '') + '</div>';
+}
+const PROJ = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 6 6 3.5 10.5 6 6 8.5Z" fill="none" stroke="var(--subtle)" stroke-width="1.2"/></svg>';
+const CHEV = '<svg class="chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 4.5 6 7.5 9 4.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>';
+// fold or unfold one group in place: no re-render, so nothing else on the panel redraws or replays its fade
+function toggleGroup(btn, k) {
+  SHUT[k] = !SHUT[k]; saveShut();
+  const sec = btn.closest('.grp'); if (sec) sec.classList.toggle('shut', !!SHUT[k]);
+  btn.setAttribute('aria-expanded', String(!SHUT[k]));
+}
+function saveShut() { try { localStorage.setItem('overview.today.shut', JSON.stringify(SHUT)); } catch (e) { /* session only */ } }
+let SHUT = { stale: true }; try { SHUT = JSON.parse(localStorage.getItem('overview.today.shut')) || SHUT; } catch (e) { /* storage blocked: defaults */ }
+function group(key, cls, ico, label, n, action, body) {
+  const shut = !!SHUT[key];
+  return '<section class="grp ' + cls + (shut ? ' shut' : '') + '" id="g-' + key + '"><div class="gh"><button class="gt" type="button" data-shut="' + key + '" aria-expanded="' + !shut + '">' + CHEV + (ico || '') + '<span>' + label + '</span><span class="n">' + n + '</span></button>' + (action || '') + '</div><div class="gb">' + body + '</div></section>';
+}
+function llmLine() {
+  const l = live && meta.llm; if (!l) return '';
+  return l.error ? ' · <span class="fl" title="' + esc(l.error) + '">summaries paused</span>' : l.pending ? ' · summarizing ' + l.pending : '';
+}
+function renderToday() {
+  const S = G.S;
+  const need = S.filter((s) => s.state === 'wait' || s.state === 'err').sort((a, b) => (a.prio ?? 9) - (b.prio ?? 9));
+  const run = S.filter((s) => s.state === 'run'), done = S.filter((s) => s.state === 'done'), stale = S.filter((s) => s.state === 'idle');
+  const openN = S.filter((s) => s.run).length;
+  let h = '<div class="head"><h2>' + (need.length === 1 ? '1 thing needs you' : need.length ? need.length + ' things need you' : 'Nothing needs you') + '</h2><p class="by">' + (live ? '' : 'since yesterday 18:40 · ') + done.length + ' finished · ' + openN + ' open in apps · ' + HOSTS.length + (HOSTS.length > 1 ? ' machines' : ' machine') + llmLine() + '</p></div>';
+  const jumps = [['need', 'needs you', need.length, 'wait'], ['run', 'running', run.length], ['done', 'finished', done.length], ['stale', 'stale', stale.length]];
+  h += '<nav class="jump" aria-label="Jump to a group"><div class="seg5">' + jumps.map((j) => '<button type="button" data-jump="' + j[0] + '" class="' + (j[2] ? j[3] || '' : 'zero') + '"><b>' + j[2] + '</b><span>' + j[1] + '</span></button>').join('') + '</div></nav>';
+  h += group('need', 'wait', icon('wait'), 'needs you', need.length, '', need.length ? need.map((s) => srow(s, s.sum ? s.sum.needs : s.title, s.sum && s.sum.next, 'then')).join('') : '<div class="it"><span></span><span class="s">Nothing is waiting on you.</span></div>');
+  if (run.length) h += group('run', '', icon('run'), 'running', run.length, '', run.map((s) => srow(s, s.title, s.sum && s.sum.done)).join(''));
+  if (done.length) h += group('done', '', icon('done'), 'finished', done.length, '<button class="ga" type="button" data-closeall="done">close all</button>', done.map((s) => srow(s, s.title, s.sum && s.sum.next, 'next')).join(''));
+  if (stale.length) h += group('stale', '', icon('idle'), 'stale', stale.length, '<button class="ga" type="button" data-closeall="idle">clear all</button>', stale.map((s) => srow(s, s.title, s.sum && s.sum.done)).join(''));
+  const hidden = live ? meta.archived : CLOSED.length;
+  if (hidden) h += '<div class="arch">' + hidden + ' closed · transcripts kept · <button type="button" data-restore-m="1">bring back</button></div>';
+  const top = pBrief.scrollTop; pBrief.innerHTML = h; pBrief.scrollTop = top;
+}
+// Projects: where each project stands, grouped by machine; opening one lists its sessions
+const pProj = document.getElementById('p-proj'); let openProj = null;
+// a project's line: what was done most recently, and the most urgent next step (what it needs from you first)
+function projSum(pid, ss) {
+  if (!live) return PSUM[pid] || {};
+  const withSum = ss.filter((s) => s.sum), recent = withSum.slice().sort((a, b) => a.since - b.since)[0];
+  const ask = ss.find((s) => (s.state === 'wait' || s.state === 'err') && s.sum && s.sum.needs);
+  const nxt = ask ? ask.sum.needs : (withSum.find((s) => s.state === 'run' && s.sum.next) || recent || {}).sum;
+  return { at: recent ? recent.sum.done : '', next: typeof nxt === 'string' ? nxt : nxt ? nxt.next : '' };
+}
+function renderProjects() {
+  const S = G.S, ORD = ['wait', 'err', 'run', 'done', 'idle'], rank = (s) => ORD.indexOf(s.state);
+  const projs = PROJECTS.map((p) => ({ p, ss: S.filter((s) => s.plot === p.id).sort((a, b) => rank(a) - rank(b)) })).filter((x) => x.ss.length);
+  const blockedN = projs.filter((x) => rank(x.ss[0]) < 2).length;
+  let h = '<div class="head"><h2>' + projs.length + ' projects</h2><p class="by">' + (blockedN ? blockedN + ' waiting on you · ' : '') + S.length + ' sessions on ' + HOSTS.length + ' machines</p></div>';
+  for (const host of HOSTS) {
+    const mine = projs.filter((x) => hostOf(x.ss[0]).id === host.id).sort((a, b) => rank(a.ss[0]) - rank(b.ss[0]));
+    if (!mine.length) continue;
+    h += group('m-' + host.id, '', PROJ, host.name + (host.sub === 'ssh' ? ' · ssh' : ''), mine.length, '', mine.map(({ p, ss }) => {
+      const ps = projSum(p.id, ss), lead = ss[0], blocked = rank(lead) < 2, isOpen = openProj === p.id;
+      return '<div class="it' + (blocked ? ' blocked' : '') + (isOpen ? ' open' : '') + '" data-proj="' + p.id + '">' + icon(lead.state, true) + '<span class="t mono">' + esc(p.id) + '</span><span class="w"><span class="seg">' + ss.map((s) => '<i class="' + s.state + '"></i>').join('') + '</span>' + ss.length + (ss.length > 1 ? ' sessions' : ' session') + '</span>' +
+        (ps.at ? '<span class="s">' + esc(ps.at) + '</span>' : '') + (ps.next ? '<span class="s"><b>next</b>' + esc(ps.next) + '</span>' : '') +
+        (isOpen ? '<div class="sl">' + ss.map((s) => srow(s, s.title)).join('') + '</div>' : '') + '</div>';
+    }).join(''));
+  }
+  const top = pProj.scrollTop; pProj.innerHTML = h; pProj.scrollTop = top;
+}
+pProj.addEventListener('click', (e) => {
+  if (sessionClick(e, renderProjects)) return;
+  const sh = e.target.closest('[data-shut]'); if (sh) { const k = sh.getAttribute('data-shut'); toggleGroup(sh, k); return; }
+  const pr = e.target.closest('[data-proj]'); if (!pr) return;
+  const id = pr.getAttribute('data-proj'); openProj = openProj === id ? null : id; openId = null; renderProjects();
+});
+// what every session row does, wherever it is: ↗ goes to it, the folder link opens the folder, close closes, a click opens it in place
+function sessionClick(e, rerender) {
+  const g = e.target.closest('[data-go]'); if (g) { go(g.getAttribute('data-go')); return true; }
+  const d = e.target.closest('[data-dir]'); if (d) { const id = d.getAttribute('data-dir'); if (live) revealFolder(id); else toast('Prototype: would open ~/code/' + byId(id).plot + ' in Finder'); return true; }
+  const c = e.target.closest('[data-close]'); if (c) { const id = c.getAttribute('data-close'); if (armed(c, [id])) closeIds([id]); return true; }
+  if (e.target.closest('button')) return false;
+  const x = e.target.closest('[data-x]'); if (!x) return false;
+  const id = x.getAttribute('data-x'); openId = openId === id ? null : id; rerender(); if (openId) locate(id); else select(null);
+  return true;
+}
+function keyOpen(e, rerender) { if (e.key !== 'Enter' || e.target.closest('button')) return; const x = e.target.closest('[data-x]'); if (!x) return; e.preventDefault(); const id = x.getAttribute('data-x'); openId = openId === id ? null : id; rerender(); if (openId) locate(id); const again = document.querySelector('[data-x="' + id + '"]'); if (again) again.focus(); }
+
+// map -> panel: one rule. A click on the map opens the same thing in the side panel, in place, scrolled into view
+const GROUP_OF = { wait: 'need', err: 'need', run: 'run', done: 'done', idle: 'stale' };
+function flash(el) { if (!el || reduce) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+// scroll only when the item is not fully in view, instantly, landing just under the sticky jump bar (opened part included)
+function show(el) {
+  if (!el) return; const c = el.closest('.rbody'); if (!c) return;
+  const r = el.getBoundingClientRect(), cr = c.getBoundingClientRect(), bar = c.querySelector('.jump'), top = cr.top + (bar ? bar.offsetHeight : 0) + 8;
+  if (r.top < top || r.bottom > cr.bottom - 8) glideScroll(c, c.scrollTop + r.top - top);
+  flash(el);
+}
+// the map camera's easing, applied to the panel: each frame covers dt*10 of the remaining distance (exponential ease-out),
+// so the panel and the map arrive together. Instant under reduced motion; a wheel or touch by the user takes over at once.
+const glides = new Map();
+function glideScroll(c, to) {
+  to = Math.max(0, Math.min(to, c.scrollHeight - c.clientHeight));
+  if (reduce) { c.scrollTop = to; return; }
+  const run = { to, last: 0 }; glides.set(c, run);
+  const stop = () => { if (glides.get(c) === run) glides.delete(c); c.removeEventListener('wheel', stop); c.removeEventListener('touchstart', stop); };
+  c.addEventListener('wheel', stop, { passive: true }); c.addEventListener('touchstart', stop, { passive: true });
+  const step = (now) => {
+    if (glides.get(c) !== run) return;
+    const dt = run.last ? Math.min(0.1, (now - run.last) / 1000) : 1 / 60; run.last = now;
+    const d = run.to - c.scrollTop;
+    if (Math.abs(d) < 0.5) { c.scrollTop = run.to; stop(); return; }
+    c.scrollTop += d * Math.min(1, dt * 10);
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function revealSession(id) {
+  const s = byId(id); if (!s) return;
+  select(id); openId = id;
+  if (tab === 'proj') { SHUT['m-' + hostOf(s).id] = false; openProj = s.plot; renderProjects(); show(pProj.querySelector('[data-x="' + id + '"]')); return; }
+  showTab('brief'); const g = GROUP_OF[s.state]; if (SHUT[g]) SHUT[g] = false;
+  renderToday(); show(pBrief.querySelector('[data-x="' + id + '"]'));
+}
+function revealProject(pid) {
+  const first = G.S.find((s) => s.plot === pid); if (!first) return;
+  showTab('proj'); SHUT['m-' + hostOf(first).id] = false; openProj = pid; renderProjects(); show(pProj.querySelector('[data-proj="' + pid + '"]'));
+}
+function revealMachine(hid) {
+  showTab('proj'); SHUT['m-' + hid] = false; openProj = null; renderProjects(); show(document.getElementById('g-m-' + hid));
+}
+function clearReveal() { select(null); openInfo(null); if (openId || openProj) { openId = null; openProj = null; renderToday(); renderProjects(); } }
+
+// close: an open session's agent process ends (only when it is not working), and it leaves Overview; the transcript stays, so resume still works
+// a destructive click asks once: the button turns into "confirm" for 3 seconds
+function armed(btn, ids) {
+  const ends = ids.some((id) => { const x = byId(id); return x && x.run; });
+  if (!ends || btn.dataset.armed === '1') return true;
+  btn.dataset.armed = '1'; const was = btn.textContent; btn.textContent = ids.length > 1 ? 'confirm: end ' + ids.filter((id) => byId(id) && byId(id).run).length + ' agents' : 'confirm: end the agent';
+  btn.classList.add('armed'); setTimeout(() => { if (btn.isConnected) { btn.dataset.armed = ''; btn.textContent = was; btn.classList.remove('armed'); } }, 3000);
+  return false;
+}
+async function closeIds(ids) {
+  const list = ids.map((id) => byId(id)).filter(Boolean); if (!list.length) return;
+  const procs = list.filter((x) => x.run).length;
+  if (live) {
+    const errs = [];
+    for (const x of list) { const r = await act('close', x.id); if (!r.ok) errs.push(x.title + ': ' + r.error.replace(/^Error:\s*/, '')); }
+    openId = null; await refreshNow(G, null, rebuild);
+    toast(errs.length ? 'Could not close ' + errs.join('; ') : (list.length === 1 ? 'Closed ' + list[0].title : 'Closed ' + list.length + ' sessions') + (procs ? ' · ' + procs + (procs > 1 ? ' agents' : ' agent') + ' ended' : '') + ' · transcripts kept');
+    return;
+  }
+  for (const x of list) { const i = INITIAL.findIndex((y) => y.id === x.id); if (i >= 0) CLOSED.push(INITIAL.splice(i, 1)[0]); }
+  openId = null; rebuild();
+  toast((list.length === 1 ? 'Closed ' + list[0].title : 'Closed ' + list.length + ' sessions') + (procs ? ' · ' + procs + (procs > 1 ? ' agents' : ' agent') + ' ended' : '') + ' · transcripts kept');
+}
+pBrief.addEventListener('click', (e) => {
+  const stop = () => e.stopImmediatePropagation();
+  const ca = e.target.closest('[data-closeall]'); if (ca) { const ids = G.S.filter((s) => s.state === ca.getAttribute('data-closeall')).map((s) => s.id); if (armed(ca, ids)) closeIds(ids); stop(); return; }
+  const rs = e.target.closest('[data-restore-m]'); if (rs) { restoreClosed(); stop(); return; }
+  const sh = e.target.closest('[data-shut]'); if (sh) { const k = sh.getAttribute('data-shut'); toggleGroup(sh, k); stop(); return; }
+  const jp = e.target.closest('[data-jump]'); if (jp) { const k = jp.getAttribute('data-jump'); if (SHUT[k]) { SHUT[k] = false; renderToday(); } show(document.getElementById('g-' + k)); stop(); return; }
+  if (sessionClick(e, renderToday)) stop();
+}, true);
+async function restoreClosed() {
+  if (live) { const r = await act('restore_all'); if (r.ok) { await refreshNow(G, null, rebuild); toast('Closed sessions are back'); } else toast('Could not bring them back: ' + r.error); return; }
+  INITIAL.push(...CLOSED.splice(0)); rebuild(); toast('Closed sessions are back');
+}
+pBrief.addEventListener('keydown', (e) => keyOpen(e, renderToday));
+pProj.addEventListener('keydown', (e) => keyOpen(e, renderProjects));
 function renderBrief() {
-  if (live) { renderLiveBrief(); return; }
+  renderToday(); renderProjects(); return;
   let h = '<h2>Three things first</h2><p class="by">from ' + G.S.length + ' sessions on ' + HOSTS.length + ' machines · sample</p><div class="sh"><span>start here</span></div>';
   BRIEF.forEach((b, i) => {
     if (i === 3) h += '<div class="sh"><span>when you have a minute</span></div>';
@@ -282,6 +487,7 @@ pBrief.addEventListener('click', (e) => {
   if (l) locate(l.getAttribute('data-loc'));
 });
 function renderStatus() {
+  crumb();
   const n = (st) => G.S.filter((s) => s.state === st).length;
   document.getElementById('status').innerHTML = '<button class="sb brand" type="button" id="sb-fit" title="Fit every neighborhood">overview</button>' +
     '<button class="sb wait" type="button" id="sb-wait" title="Jump to the next agent that needs you">' + icon('wait') + n('wait') + ' needs you</button>' +
@@ -303,14 +509,11 @@ function select(id, fromMap) {
   G.selId = id || null; renderNow();
   if (id && fromMap && tab === 'now') { const el = pNow.querySelector('[data-id="' + id + '"]'); if (el && window.matchMedia('(min-width: 861px)').matches) el.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' }); }
 }
-async function openInOrca(id) {
-  const s = byId(id); if (!s) return;
-  if (!live) { toast('Prototype: would resume ' + s.plot + ' · ' + s.agent); return; }
-  const r = await act('resume', id); toast(r.ok ? 'Resuming ' + s.plot + ' in Terminal' : 'Could not resume: ' + r.error);
-}
+// the old "open" entry point: the same single action as ↗
+async function openInOrca(id) { return go(id); }
 async function revealFolder(id) { const s = byId(id); const r = await act('reveal', id); toast(r.ok ? 'Showing ' + where(s.cwd) : 'Could not open the folder: ' + r.error); }
 async function archiveSession(id) {
-  const s = byId(id); const r = await act('archive', id);
+  const s = byId(id); const r = await act('close', id);
   if (!r.ok) { toast('Could not archive: ' + r.error); return; }
   toast('Archived ' + s.title.slice(0, 40) + '. Its files are untouched.'); select(null); await refreshNow(G, null, rebuild);
 }
@@ -326,9 +529,78 @@ pNow.addEventListener('click', (e) => {
   locate(l.getAttribute('data-locate') || l.getAttribute('data-id'));
 });
 pNow.addEventListener('keydown', (e) => { const el = e.target.closest('[data-id]'); if (!el || e.target.closest('button')) return; if (e.key === 'Enter') { e.preventDefault(); openInOrca(el.getAttribute('data-id')); } else if (e.key === ' ') { e.preventDefault(); locate(el.getAttribute('data-id')); } });
-const TABS = { now: [document.getElementById('t-now'), document.getElementById('v-now')], tasks: [document.getElementById('t-tasks'), pTasks], brief: [document.getElementById('t-brief'), pBrief] };
-function showTab(w) { tab = w; for (const k in TABS) { TABS[k][0].setAttribute('aria-selected', k === w); if (k === 'now') TABS[k][1].style.display = k === w ? 'flex' : 'none'; else TABS[k][1].hidden = k !== w; } }
+const TABS = { proj: [document.getElementById('t-proj'), document.getElementById('p-proj')], tasks: [document.getElementById('t-tasks'), pTasks], brief: [document.getElementById('t-brief'), pBrief] };
+function showTab(w) { tab = w; for (const k in TABS) { TABS[k][0].setAttribute('aria-selected', k === w); TABS[k][1].hidden = k !== w; } }
 for (const k in TABS) TABS[k][0].addEventListener('click', () => showTab(k));
+
+/* ---------------- settings: machines (over the owner's ssh), summaries, about ---------------- */
+const setEl = document.getElementById('settings'); let addOpen = false, renaming = null, sshHosts = null;
+const SERVER = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><rect x="1.5" y="2" width="9" height="3.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/><rect x="1.5" y="6.5" width="9" height="3.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.1"/></svg>';
+const OKI = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M3.8 6.1 5.3 7.6 8.2 4.6" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>';
+function machines() {
+  if (live) return meta.machines;
+  return HOSTS.filter((h) => h.sub === 'ssh').map((h) => ({ alias: h.id, name: h.name, status: 'connected', latency_ms: parseInt(h.lat, 10) || 0, sessions: G.S.filter((x) => hostOf(x).id === h.id).length, error: null }));
+}
+const STATUS_WORD = { connected: 'connected', connecting: 'connecting…', offline: 'offline' };
+function renderSettings() {
+  const local = G.S.filter((x) => hostOf(x).id === (HOSTS[0] && HOSTS[0].id)).length;
+  let h = '<div class="set-in"><header class="set-h"><h2>Settings</h2><button class="esc" type="button" data-sclose="1" aria-label="Close settings">Esc</button></header>';
+  h += '<section class="set-s"><h3>machines</h3><p class="lead">Your other computers, reached over your own ssh. Overview only reads their agents\' session files; nothing is installed there.</p><div class="mlist">';
+  h += '<div class="mrow"><i class="dot connected" aria-hidden="true"></i><div class="mt"><b>This computer</b><span>' + esc((HOSTS[0] && HOSTS[0].name) || 'this computer') + ' · ' + local + (local === 1 ? ' session' : ' sessions') + '</span></div></div>';
+  for (const m of machines()) {
+    const sub = [m.alias !== m.name ? esc(m.alias) : '', STATUS_WORD[m.status] || esc(m.status), m.status === 'connected' && m.latency_ms ? m.latency_ms + ' ms' : '', m.status === 'connected' ? m.sessions + (m.sessions === 1 ? ' session' : ' sessions') : ''].filter(Boolean).join(' · ');
+    h += '<div class="mrow"><i class="dot ' + esc(m.status) + '" aria-hidden="true"></i><div class="mt">' +
+      (renaming === m.alias ? '<form data-mrenameform="' + esc(m.alias) + '"><input class="minput" value="' + esc(m.name) + '" aria-label="Name for ' + esc(m.alias) + '" maxlength="40"></form>' : '<b>' + esc(m.name) + '</b>') +
+      '<span>' + sub + '</span>' + (m.error && m.status !== 'connected' ? '<span class="merr">' + esc(m.error) + '</span>' : '') + '</div>' +
+      '<div class="mact"><button class="btn plain" type="button" data-mrename="' + esc(m.alias) + '">' + (renaming === m.alias ? 'save' : 'rename') + '</button><button class="btn plain" type="button" data-mremove="' + esc(m.alias) + '">remove</button></div></div>';
+  }
+  h += '</div><button class="btn plain addm" type="button" data-madd="1">Add a machine</button></section>';
+  const l = meta.llm;
+  h += '<section class="set-s"><h3>summaries</h3><p class="lead">A small model reads the end of each session, after anything that looks secret is removed, and writes what was done, what is left and what it needs from you. The key lives in the keychain.</p>' +
+    '<div class="kv"><span>model</span><b>' + esc((l && l.model) || (live ? 'openai/gpt-oss-120b' : 'sample')) + '</b><span>state</span><b>' + (l ? (l.error ? '<span class="fl">' + esc(l.error) + '</span>' : l.pending ? 'summarizing ' + l.pending : 'up to date') : 'sample data') + '</b></div></section>';
+  h += '<section class="set-s"><h3>about</h3><div class="kv"><span>version</span><b>Overview ' + esc(meta.version || '0.0.1') + ' alpha</b><span>reads</span><b>Claude Code and Codex sessions, on this computer and over ssh</b></div></section></div>';
+  if (addOpen) {
+    const hosts = sshHosts || [];
+    h += '<div class="dlg-back" data-dclose="1"></div><div class="dlg" role="dialog" aria-label="Add a machine"><header class="set-h"><h3>Add a machine</h3><button class="esc" type="button" data-dclose="1" aria-label="Close">Esc</button></header>' +
+      '<p class="lead">A workstation, a server, a box at home: Overview reaches it over your ssh and reads its agents\' sessions. Agents there keep running while your laptop sleeps.</p>' +
+      '<h4>from your ssh config</h4><div class="hlist">' + (sshHosts === null ? '<div class="hrow"><span class="s">reading ~/.ssh/config…</span></div>' : hosts.length ? hosts.map((x) => '<div class="hrow">' + SERVER + '<b>' + esc(x[0]) + '</b><span>' + esc(x[1]) + '</span>' + (x[2] ? '<em class="added">' + OKI + 'added</em>' : '<button class="btn plain" type="button" data-hadd="' + esc(x[0]) + '">add</button>') + '</div>').join('') : '<div class="hrow"><span class="s">No hosts in ~/.ssh/config.</span></div>') + '</div>' +
+      '<h4>or type how ssh reaches it</h4><form class="add" data-maddform="1"><input id="maddi" type="text" placeholder="user@host" aria-label="ssh destination" autocomplete="off" spellcheck="false"><button class="btn plain" type="submit">add</button></form></div>';
+  }
+  setEl.innerHTML = h;
+  const ri = setEl.querySelector('.minput'); if (ri) { ri.focus(); ri.select(); }
+}
+async function openSettings() { setEl.hidden = false; renderSettings(); setEl.querySelector('[data-sclose]').focus(); }
+function closeSettings() { setEl.hidden = true; addOpen = false; renaming = null; document.getElementById('settings-btn').focus(); }
+async function loadHosts() { sshHosts = null; renderSettings(); if (!live) { sshHosts = [['workstation', 'john@192.168.86.23', true], ['192.168.86.34', 'ubuntu@192.168.86.34', false]]; renderSettings(); return; } const r = await act('ssh_hosts'); sshHosts = r.ok ? r.value : []; renderSettings(); }
+async function addMachine(alias) {
+  if (!live) { toast('Prototype: would add ' + alias); return; }
+  const r = await act('machine_add', null, { alias });
+  if (!r.ok) { toast(r.error.replace(/^Error:\s*/, '')); return; }
+  toast('Added ' + alias + ' · connecting…'); await loadHosts(); setTimeout(() => refreshNow(G, null, rebuild).then(() => { if (!setEl.hidden) renderSettings(); }), 2500);
+}
+document.getElementById('settings-btn').addEventListener('click', () => (setEl.hidden ? openSettings() : closeSettings()));
+setEl.addEventListener('click', async (e) => {
+  if (e.target.closest('[data-sclose]')) { closeSettings(); return; }
+  if (e.target.closest('[data-dclose]')) { addOpen = false; renderSettings(); return; }
+  if (e.target.closest('[data-madd]')) { addOpen = true; loadHosts(); return; }
+  const ha = e.target.closest('[data-hadd]'); if (ha) { addMachine(ha.getAttribute('data-hadd')); return; }
+  const rn = e.target.closest('[data-mrename]'); if (rn) { const a = rn.getAttribute('data-mrename'); if (renaming === a) setEl.querySelector('[data-mrenameform]').requestSubmit(); else { renaming = a; renderSettings(); } return; }
+  const rm = e.target.closest('[data-mremove]'); if (rm) {
+    const a = rm.getAttribute('data-mremove');
+    if (rm.dataset.armed !== '1') { rm.dataset.armed = '1'; rm.textContent = 'confirm remove'; rm.classList.add('armed'); setTimeout(() => { if (rm.isConnected) { rm.dataset.armed = ''; rm.textContent = 'remove'; rm.classList.remove('armed'); } }, 3000); return; }
+    if (!live) { toast('Prototype: would remove ' + a); return; }
+    const r = await act('machine_remove', null, { alias: a }); toast(r.ok ? 'Removed ' + a + '. Nothing changed on it.' : r.error); if (r.ok) await refreshNow(G, null, rebuild); renderSettings();
+  }
+});
+setEl.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const rf = e.target.closest('[data-mrenameform]'); if (rf) { const a = rf.getAttribute('data-mrenameform'), v = rf.querySelector('input').value.trim(); renaming = null; if (live && v) { const r = await act('machine_rename', null, { alias: a, name: v }); if (!r.ok) toast(r.error); await refreshNow(G, null, rebuild); } renderSettings(); return; }
+  if (e.target.closest('[data-maddform]')) { const v = document.getElementById('maddi').value.trim(); if (v) addMachine(v); }
+});
+setEl.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return; e.stopPropagation();
+  if (renaming) { renaming = null; renderSettings(); } else if (addOpen) { addOpen = false; renderSettings(); } else closeSettings();
+});
 
 /* ---------------- toast + demo ---------------- */
 const toastEl = document.getElementById('toast'); let tt;
@@ -352,7 +624,12 @@ function rebuild() { resetLife(); G.S = clone(INITIAL); G.world = buildWorld(); 
 zval(); renderAll();
 if (live) {
   // real data: no demo; the tag says live; states update in place, and the world is rebuilt when sessions come or go
-  demoBtn.style.display = 'none'; const tag = document.querySelector('.tright .tag'); if (tag) tag.textContent = 'live';
-  watch(G, (s, prev) => { if (s) onStateChange(s, prev); renderAll(); }, rebuild);
-} else setDemo(!reduce);
+  demoBtn.style.display = 'none'; const tag = document.querySelector('.tright .tag'); if (tag) tag.textContent = 'v' + meta.version + ' alpha';
+  watch(G, (s, prev) => { if (s) onStateChange(s, prev); renderAll(); if (!setEl.hidden) renderSettings(); }, () => { rebuild(); if (!setEl.hidden) renderSettings(); });
+} else setDemo(false);
 requestAnimationFrame(frame);
+{ const j = (location.hash.match(/jump=(\w+)/) || [])[1]; if (j) setTimeout(() => { const b = pBrief.querySelector('[data-jump="' + j + '"]'); if (b) b.click(); const g = document.getElementById('g-' + j); if (g) g.scrollIntoView({ block: 'start' }); }, 300); }   // #jump=<group> (for screenshots)
+{ const t = (location.hash.match(/tab=(\w+)/) || [])[1]; if (t && TABS[t]) showTab(t); const p = (location.hash.match(/proj=([\w-]+)/) || [])[1]; if (p) { openProj = p; renderProjects(); } }   // #tab=<tab>&proj=<id> (for screenshots)
+{ const k = (location.hash.match(/pick=([\w:-]+)/) || [])[1]; if (k) setTimeout(() => { if (k.startsWith('proj:')) revealProject(k.slice(5)); else if (k.startsWith('host:')) revealMachine(k.slice(5)); else revealSession(k); }, 400); }   // #pick=... simulates a map click (for screenshots)
+{ const k = (location.hash.match(/info=(plot|island):([\w-]+)/) || []); if (k[1]) setTimeout(() => openInfo({ kind: k[1], id: k[2] }), 400); }   // #info=plot:<id> (for screenshots)
+{ const k = (location.hash.match(/hover=(\w+)/) || [])[1]; if (k) setTimeout(() => { document.querySelectorAll('[data-x="' + k + '"]').forEach((r) => r.classList.add('hov')); const g = document.querySelector('#g-done .gh'); if (g) g.classList.add('hov'); }, 500); }   // #hover=<id> shows the hover state (for screenshots)

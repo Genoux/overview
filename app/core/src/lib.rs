@@ -1,6 +1,8 @@
 //! Overview core: finds the coding-agent sessions on this machine and reads them into one normalized shape.
 //! Read-only by design: it never writes to an agent's files, never sends keystrokes, and never opens credential files.
 pub mod model;
+pub mod procs;
+pub mod remote;
 pub mod summary;
 pub mod sources;
 pub mod tail;
@@ -28,6 +30,18 @@ pub fn scan(home: &Path) -> Vec<Session> {
             if let Some(s) = read(&f, quiet, updated) { out.push(s); }
         }
     }
+    attach_runs(&mut out, &procs::local(home));
     out.sort_by_key(|s| s.quiet_secs);
     out
+}
+
+/// Gives each session its live process, if any. A session whose agent says it is working is running,
+/// even when its transcript has been quiet for a while (a long tool call); waiting and failed stay as they are.
+pub fn attach_runs(sessions: &mut [Session], runs: &std::collections::HashMap<String, procs::Run>) {
+    for s in sessions.iter_mut() {
+        s.run = runs.get(&s.id).cloned();
+        if let Some(r) = &s.run {
+            if r.busy && matches!(s.state, model::State::Done | model::State::Idle) { s.state = model::State::Run; s.waiting_on = None; }
+        }
+    }
 }

@@ -1,6 +1,6 @@
 # Overview: Product Plan
 
-As of 2026-11-05. Working name: "Overview".
+As of 2026-11-06 (alpha 0.0.1). Working name: "Overview".
 
 ## Vision
 
@@ -17,6 +17,15 @@ It answers three questions without opening a single tab:
 **What it is not (v1):** not an IDE, not a terminal, not a way to type into agents. Clicking a creature jumps to the session in Orca or the terminal where it lives.
 
 **The core bet:** the data already exists on disk. Overview reads it, so agents need no plugin and you change no habits.
+
+## Direction (decided 2026-11-06)
+
+Overview is the "where am I, across everything" layer. It watches every coding-agent session on every machine the owner uses and says what each project has done, what needs them and what comes next. Agents run wherever the owner likes (Terminal, Orca, Herdr, an editor); Overview never runs them. Herdr and Orca own running agents, panes and tabs; Overview owns summaries, the ranked "needs you", the per-project view and the brief, with the map as their face.
+
+- **Every session, read-only:** Claude Code and Codex now; Gemini, OpenCode, Kimi when the owner uses them (a current sample is needed to build each reader). Other machines over the owner's ssh with nothing installed there.
+- **One interaction model:** a row click opens it in place and shows its blob; ↗ (on hover, in the age's spot) goes to the session: it brings its window forward when an app has it open, otherwise resumes it; links (the folder) live in the opened details; close ends an idle agent and hides it, after one confirm.
+- **Tabs:** today (needs you, running, finished, stale), projects (where each stands, by machine), tasks (the owner's own, `#project` links one). Settings holds machines, summaries and about.
+- **The blobs stay** as the face; their life simulation is frozen (v10). New blob work must carry real data.
 
 ## What I found on this Mac (2026-11-05)
 
@@ -140,12 +149,11 @@ Next screens: session detail drawer, sources settings (add an SSH host), menu-ba
 
 ## Roadmap
 
-| Phase | Goal | Done when |
+| Step | Goal | Status |
 |---|---|---|
-| P0 Prototype | Visual direction approved | You approve the world + panel look |
-| P1 Local read | Real Orca + Claude + Codex data on this Mac, no LLM | Creatures match the real Orca states live |
-| P2 Summaries | LLM summaries + attention ranking | The panel reads like a to-do list you trust |
-| P3 Remote | SSH probe for the Arch workstation and home server | Sessions from 3 machines in one world |
-| P4 Digest | End-of-day digest + morning brief | You start your day from Overview, not from asking agents |
-| P5 Linux | Arch package, Wayland polish | Daily use on both machines |
-| Later | Act from Overview (approve, reply), cloud sessions | Decided after P4 |
+| P1 Local | Claude Code and Codex sessions on this Mac, in the app | done |
+| P2 Summaries | Done, left, needs you, next per session (OpenRouter, redacted) | done |
+| 0.0.1 alpha | Today / Projects / Tasks / Settings; which app runs each session; ↗ focus or resume; close; machines over ssh; no false "needs you" for long commands | this release |
+| 0.0.2 | Per-project summaries written by the model (not derived), morning brief and end-of-day wrap-up, settings for model and "never send" | next |
+| 0.0.3 | More agents (Gemini, OpenCode, Kimi) from current samples; Codex "runs in" detection | later |
+| Later | Menu-bar mini view, Linux package and window focus, onboarding without the owner's own key | before anyone else uses it |
