@@ -480,7 +480,7 @@ function renderBrief() {
   pBrief.innerHTML = h;
 }
 pBrief.addEventListener('click', (e) => {
-  const ob = e.target.closest('[data-open-b]'); if (ob) { openInOrca(ob.getAttribute('data-open-b')); return; }
+  const ob = e.target.closest('[data-open-b]'); if (ob) { go(ob.getAttribute('data-open-b')); return; }
   const t = e.target.closest('[data-btrack]'), l = e.target.closest('[data-loc]'), g = e.target.closest('[data-gotask]');
   if (t) { const b = BRIEF.find((x) => x.id === t.getAttribute('data-btrack')); addTask(b.title, b.src, 'brief', { brief: b.id }); toast('Tracking: ' + b.title); return; }
   if (g) { showTab('tasks'); return; }
@@ -509,8 +509,6 @@ function select(id, fromMap) {
   G.selId = id || null; renderNow();
   if (id && fromMap && tab === 'now') { const el = pNow.querySelector('[data-id="' + id + '"]'); if (el && window.matchMedia('(min-width: 861px)').matches) el.scrollIntoView({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' }); }
 }
-// the old "open" entry point: the same single action as ↗
-async function openInOrca(id) { return go(id); }
 async function revealFolder(id) { const s = byId(id); const r = await act('reveal', id); toast(r.ok ? 'Showing ' + where(s.cwd) : 'Could not open the folder: ' + r.error); }
 async function archiveSession(id) {
   const s = byId(id); const r = await act('close', id);
@@ -519,7 +517,7 @@ async function archiveSession(id) {
 }
 async function restoreAll() { const r = await act('restore_all'); if (r.ok) { toast('Archived sessions are back'); await refreshNow(G, null, rebuild); } }
 pNow.addEventListener('click', (e) => {
-  const o = e.target.closest('[data-open]'); if (o) { openInOrca(o.getAttribute('data-open')); return; }
+  const o = e.target.closest('[data-open]'); if (o) { go(o.getAttribute('data-open')); return; }
   const rv = e.target.closest('[data-reveal]'); if (rv) { revealFolder(rv.getAttribute('data-reveal')); return; }
   const ar = e.target.closest('[data-archive]'); if (ar) { archiveSession(ar.getAttribute('data-archive')); return; }
   if (e.target.closest('[data-restore]')) { restoreAll(); return; }
@@ -528,7 +526,7 @@ pNow.addEventListener('click', (e) => {
   const l = e.target.closest('[data-locate]') || e.target.closest('[data-id]'); if (!l) return;
   locate(l.getAttribute('data-locate') || l.getAttribute('data-id'));
 });
-pNow.addEventListener('keydown', (e) => { const el = e.target.closest('[data-id]'); if (!el || e.target.closest('button')) return; if (e.key === 'Enter') { e.preventDefault(); openInOrca(el.getAttribute('data-id')); } else if (e.key === ' ') { e.preventDefault(); locate(el.getAttribute('data-id')); } });
+pNow.addEventListener('keydown', (e) => { const el = e.target.closest('[data-id]'); if (!el || e.target.closest('button')) return; if (e.key === 'Enter') { e.preventDefault(); go(el.getAttribute('data-id')); } else if (e.key === ' ') { e.preventDefault(); locate(el.getAttribute('data-id')); } });
 const TABS = { proj: [document.getElementById('t-proj'), document.getElementById('p-proj')], tasks: [document.getElementById('t-tasks'), pTasks], brief: [document.getElementById('t-brief'), pBrief] };
 function showTab(w) { tab = w; for (const k in TABS) { TABS[k][0].setAttribute('aria-selected', k === w); TABS[k][1].hidden = k !== w; } }
 for (const k in TABS) TABS[k][0].addEventListener('click', () => showTab(k));

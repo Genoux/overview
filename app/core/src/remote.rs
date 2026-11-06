@@ -58,7 +58,7 @@ os=$(uname -s); echo "@os $os"
 st() { if [ "$os" = Darwin ]; then stat -f '%m %z' "$1"; else stat -c '%Y %s' "$1"; fi; }
 { find .claude/projects -maxdepth 2 -type f -name '*.jsonl' -mtime -7 2>/dev/null; find .codex/sessions -type f -name '*.jsonl' -mtime -7 2>/dev/null; } | while IFS= read -r f; do printf '@file %s %s\n' "$(st "$f")" "$f"; done
 for p in .claude/sessions/*.json; do [ -f "$p" ] && printf '@pid %s\n' "$(tr -d '\n' < "$p")"; done
-if [ "$os" = Linux ]; then for p in $(ps axo pid=,comm= 2>/dev/null | awk '$2=="MainThread"||$2=="node"{print $1}'); do e=$(readlink "/proc/$p/exe" 2>/dev/null) && printf '@exe %s %s\n' "$p" "$e"; done; fi
+if [ "$os" = Linux ]; then for p in $(ps -u "$(id -u)" -o pid= 2>/dev/null); do e=$(readlink "/proc/$p/exe" 2>/dev/null) && printf '@exe %s %s\n' "$p" "$e"; done; fi
 echo "@ps"; ps axo pid=,ppid=,tty=,comm= 2>/dev/null; echo "@end"
 "#;
 

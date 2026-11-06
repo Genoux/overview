@@ -169,11 +169,16 @@ fn machine_remove(app: tauri::AppHandle, alias: String) -> Result<(), String> {
 /// Quotes a value for a POSIX shell.
 fn sh_quote(v: &str) -> String { format!("'{}'", v.replace('\'', "'\\''")) }
 
-/// Opens a new Terminal window running `line` (macOS Terminal; elsewhere the desktop's terminal).
+/// Runs `line` in a new window of the owner's terminal: on macOS a one-off `.command` script opened with whatever app
+/// handles those (Terminal unless the owner chose another); elsewhere the desktop's default terminal.
 fn terminal(line: &str) -> Result<(), String> {
     if cfg!(target_os = "macos") {
-        let script = format!("tell application \"Terminal\"\n  do script \"{}\"\n  activate\nend tell", line.replace('\\', "\\\\").replace('"', "\\\""));
-        Command::new("osascript").arg("-e").arg(script).spawn().map_err(|e| e.to_string())?;
+        let f = std::env::temp_dir().join(format!("overview-{}.command", std::process::id() as u64 * 1000 + (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.subsec_millis()).unwrap_or(0) as u64)));
+        // the script removes itself first, then runs the line in a login shell
+        std::fs::write(&f, format!("#!/bin/sh\nrm -f \"$0\"\n{line}\nexec \"${{SHELL:-/bin/zsh}}\" -l\n")).map_err(|e| e.to_string())?;
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::set_permissions(&f, std::fs::Permissions::from_mode(0o700)).map_err(|e| e.to_string())?;
+        Command::new("open").arg(&f).spawn().map_err(|e| e.to_string())?;
     } else {
         Command::new("x-terminal-emulator").args(["-e", "sh", "-c", line]).spawn().map_err(|e| e.to_string())?;
     }
@@ -188,19 +193,12 @@ fn resume_line(s: &Session) -> Result<String, String> {
     }
 }
 
-/// Brings the app running a local session to the front; Terminal and iTerm also select the exact tab.
-fn focus_local(app_name: &str, tty: &str) -> Result<(), String> {
+/// Brings the app hosting a local session to the front: the `.app` bundle found in its process tree.
+fn focus_local(run: &overview_core::procs::Run) -> Result<(), String> {
+    let Some(bundle) = &run.bundle else { return Err(format!("it runs in {}, which has no window to bring forward", run.app)) };
     if !cfg!(target_os = "macos") { return Err("bringing a window forward works on macOS for now".into()); }
-    let dev = format!("/dev/{tty}");
-    let script = match app_name {
-        "Terminal" => format!("tell application \"Terminal\"\n activate\n repeat with w in windows\n  repeat with t in tabs of w\n   if tty of t is \"{dev}\" then\n    set selected of t to true\n    set index of w to 1\n   end if\n  end repeat\n end repeat\nend tell"),
-        "iTerm" => format!("tell application \"iTerm\"\n activate\n repeat with w in windows\n  repeat with t in tabs of w\n   repeat with s in sessions of t\n    if tty of s is \"{dev}\" then\n     select w\n     select t\n    end if\n   end repeat\n  end repeat\n end repeat\nend tell"),
-        _ => String::new(),
-    };
-    if !script.is_empty() { Command::new("osascript").arg("-e").arg(script).spawn().map_err(|e| e.to_string())?; return Ok(()); }
-    let bundle = match app_name { "VS Code" => "Visual Studio Code", "Orca" | "Ghostty" | "Herdr" | "Cursor" | "WezTerm" | "kitty" | "Alacritty" | "Warp" | "Zed" | "Windsurf" => app_name, other => return Err(format!("it runs in {other}, which Overview cannot bring forward")) };
-    let ok = Command::new("open").args(["-a", bundle]).status().map_err(|e| e.to_string())?.success();
-    if ok { Ok(()) } else { Err(format!("could not open {bundle}")) }
+    let ok = Command::new("open").arg(bundle).status().map_err(|e| e.to_string())?.success();
+    if ok { Ok(()) } else { Err(format!("could not open {}", run.app)) }
 }
 
 /// The one way to get to a session. Open somewhere: bring that window forward. Not open: resume it in a new terminal.
@@ -209,7 +207,7 @@ fn focus_local(app_name: &str, tty: &str) -> Result<(), String> {
 fn go(id: String) -> Result<String, String> {
     let s = find(&id)?;
     if s.machine == "local" {
-        if let Some(r) = &s.run { focus_local(&r.app, &r.tty)?; return Ok(format!("focus:{}", r.app)); }
+        if let Some(r) = &s.run { focus_local(r)?; return Ok(format!("focus:{}", r.app)); }
         if !std::path::Path::new(&s.cwd).is_dir() { return Err(format!("its folder {} is not on this machine", s.cwd)); }
         terminal(&format!("cd {} && {}", sh_quote(&s.cwd), resume_line(&s)?))?;
         return Ok("resume".into());
