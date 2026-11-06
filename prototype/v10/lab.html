@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blob Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../vendor/signal/signal.css">
+<link rel="stylesheet" href="../vendor/signal/overview.css">
+<style>
+:root {
+  --ground: var(--sg-overview-ground); --bg: var(--sg-surface-base); --panel: var(--sg-surface-raised); --side: var(--sg-surface-sunken); --sel: var(--sg-surface-selected);
+  --line: var(--sg-border-subtle); --line2: var(--sg-border-default); --control: var(--sg-border-control);
+  --fg: var(--sg-text-primary); --dim: var(--sg-text-secondary); --subtle: var(--sg-text-subtle); --faint: var(--sg-text-disabled);
+  --accent: var(--sg-accent-fg); --done: var(--sg-status-done-fg); --err: var(--sg-status-err-fg);
+  --mono: var(--sg-font-mono); --sans: var(--sg-font-sans);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body { font-family: var(--sans); font-size: 13px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+header { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 16px; height: 40px; padding: 0 16px; background: var(--side); border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 12px; }
+header b { font-weight: 500; }
+header .sp { flex: 1; }
+header a { color: var(--subtle); text-decoration: none; } header a:hover { color: var(--fg); }
+.seg { display: flex; border: 1px solid var(--line2); border-radius: 3px; overflow: hidden; }
+.seg button, .btn { font: inherit; color: var(--dim); background: none; border: 0; padding: 5px 10px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line2); }
+.seg button[aria-pressed="true"] { color: var(--fg); background: var(--sel); }
+.btn { border: 1px solid var(--control); border-radius: 3px; color: var(--fg); }
+button:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
+main { display: grid; grid-template-columns: 300px 1fr; gap: 0; min-height: calc(100vh - 40px); }
+aside { border-right: 1px solid var(--line); padding: 16px; display: grid; align-content: start; gap: 18px; }
+h2 { margin: 0 0 8px; font: 500 11px/1.4 var(--mono); color: var(--subtle); text-transform: lowercase; letter-spacing: 0.02em; }
+ol { margin: 0; padding: 0; list-style: none; counter-reset: r; display: grid; gap: 8px; }
+ol li { counter-increment: r; display: grid; grid-template-columns: 22px 1fr; color: var(--dim); }
+ol li::before { content: counter(r, decimal-leading-zero); font-family: var(--mono); font-size: 11px; color: var(--faint); padding-top: 1px; }
+ol li b { color: var(--fg); font-weight: 500; font-family: var(--mono); font-size: 12px; }
+.check { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.check .ok { color: var(--done); } .check .bad { color: var(--err); }
+.focus { display: grid; gap: 10px; }
+.faces { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.faces figure { margin: 0; display: grid; justify-items: center; gap: 2px; padding: 6px 0 4px; background: var(--ground); border: 1px solid var(--line); border-radius: 3px; }
+.faces figcaption { font-family: var(--mono); font-size: 10px; color: var(--subtle); }
+.who { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+.who b { color: var(--fg); font-weight: 500; }
+section.grid { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; align-content: start; }
+.card { display: grid; gap: 6px; padding: 10px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; cursor: pointer; text-align: left; font: inherit; color: inherit; }
+.card:hover { border-color: var(--line2); }
+.card[aria-pressed="true"] { border-color: var(--accent); }
+.card .stage { display: grid; place-items: end center; height: 104px; background: var(--ground); border-radius: 3px; padding-bottom: 8px; }
+.card .nm { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 12px; }
+.card .nm span { color: var(--faint); font-size: 11px; }
+.card .look { font-family: var(--mono); font-size: 10.5px; color: var(--subtle); line-height: 1.5; }
+.traits { display: grid; gap: 3px; }
+.traits div { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 6px; font-family: var(--mono); font-size: 10px; color: var(--faint); }
+.traits i { display: block; height: 3px; border-radius: 2px; background: var(--line2); position: relative; }
+.traits i::after { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--w); border-radius: 2px; background: var(--dim); }
+canvas { image-rendering: pixelated; }
+@media (max-width: 760px) { main { grid-template-columns: 1fr; } aside { border-right: 0; border-bottom: 1px solid var(--line); } header .hide { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <b>blob lab</b><span class="hide" style="color:var(--subtle)">every blob is generated; none is hand-picked</span>
+  <span class="sp"></span>
+  <div class="seg" role="group" aria-label="agent type" id="agents"><button type="button" data-a="all" aria-pressed="true">all</button><button type="button" data-a="claude" aria-pressed="false">claude</button><button type="button" data-a="codex" aria-pressed="false">codex</button><button type="button" data-a="gemini" aria-pressed="false">gemini</button></div>
+  <button class="btn" type="button" id="reroll">new batch</button>
+  <a href="index.html">map →</a>
+</header>
+<main>
+  <aside>
+    <div class="focus" id="focus"></div>
+    <div><h2>pixel check</h2><div class="check" id="check">checking…</div></div>
+    <div><h2>the rules</h2><ol id="rules"></ol></div>
+  </aside>
+  <section class="grid" id="grid" aria-label="generated blobs"></section>
+</main>
+<script type="module">
+import { readSignal, esc } from './js/core.js';
+import { genome, sprite, RULES } from './js/creatures.js';
+
+readSignal();
+const AGENTS = ['claude', 'codex', 'gemini'], N = 36, SCALE = 4;
+let batch = 1, filter = 'all', sel = null;
+const params = new URLSearchParams(location.search);
+
+// a blob for the lab: same genome function as the map, with its own seed
+function blob(i) { const agent = filter === 'all' ? AGENTS[i % 3] : filter, seed = batch * 100003 + i * 7919; return { id: 'lab' + batch + filter + i, agent, g: genome(seed, agent), state: 'done' }; }
+function paint(s, face, asleep, flat, scale) {
+  const spr = sprite(s, face, asleep, flat), c = document.createElement('canvas');
+  c.width = spr.width * scale; c.height = spr.height * scale;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(spr, 0, 0, c.width, c.height);
+  return c;
+}
+const TRAITS = [['social', (g) => g.social], ['energy', (g) => (g.energy - 0.7) / 0.7], ['curious', (g) => g.curious], ['sleepy', (g) => g.sleepy], ['talk', (g) => (g.talk - 0.3) / 0.7]];
+const traits = (g) => '<div class="traits">' + TRAITS.map(([n, f]) => '<div>' + n + '<i style="--w:' + Math.round(f(g) * 100) + '%"></i></div>').join('') + '</div>';
+const look = (g) => [g.build, g.coat, g.eyes + ' eyes, ' + g.gap, g.acc === 'none' ? 'no accessory' : g.acc].join(' · ');
+
+function render() {
+  const grid = document.getElementById('grid'); grid.textContent = '';
+  const list = []; for (let i = 0; i < N; i++) list.push(blob(i));
+  if (!sel || !list.some((b) => b.id === sel.id)) sel = list[0];
+  for (const b of list) {
+    const card = document.createElement('button'); card.type = 'button'; card.className = 'card'; card.setAttribute('aria-pressed', String(b.id === sel.id));
+    card.innerHTML = '<div class="stage"></div><div class="nm">' + esc(b.g.name) + '<span>' + b.agent + '</span></div><div class="look">' + esc(look(b.g)) + '</div>' + traits(b.g);
+    card.querySelector('.stage').appendChild(paint(b, 'open', false, false, SCALE));
+    card.addEventListener('click', () => { sel = b; render(); });
+    grid.appendChild(card);
+  }
+  focus();
+}
+function focus() {
+  const el = document.getElementById('focus'), b = sel;
+  el.innerHTML = '<div class="who"><b>' + esc(b.g.name) + '</b> · ' + b.agent + ' · ' + esc(look(b.g)) + '</div><div class="faces"></div>' + traits(b.g);
+  const faces = el.querySelector('.faces');
+  for (const [label, face, asleep, flat] of [['open', 'open'], ['blink', 'blink'], ['happy', 'happy'], ['focus', 'focus'], ['surprised', 'surprised'], ['worried', 'worried'], ['resting', 'closed'], ['asleep', 'closed', true], ['failed', 'x', false, true]]) {
+    const f = document.createElement('figure'); f.appendChild(paint(b, face, !!asleep, !!flat, 2)); const cap = document.createElement('figcaption'); cap.textContent = label; f.appendChild(cap); faces.appendChild(f);
+  }
+}
+// draw many blobs in every face and count pixels that break a readability rule (face off the body, accessory clipped)
+function check(n) {
+  const faces = ['open', 'blink', 'closed', 'happy', 'focus', 'surprised', 'worried'], found = {};
+  let count = 0;
+  for (let i = 0; i < n; i++) for (const agent of AGENTS) {
+    const s = { id: 'chk' + agent + i, agent, g: genome(i * 104729 + 7, agent), state: 'done' };
+    for (const f of faces) { count++; for (const p of sprite(s, f, false, false).issues) (found[p] = found[p] || []).push(s.g.name + ' ' + agent + ' ' + s.g.build + ' ' + f); }
+    count++; for (const p of sprite(s, 'x', false, true).issues) (found[p] = found[p] || []).push(s.g.name + ' ' + agent + ' failed');
+  }
+  const bad = Object.values(found).reduce((a, x) => a + x.length, 0);
+  document.getElementById('check').innerHTML = count.toLocaleString('en') + ' sprites drawn · ' + (bad ? '<span class="bad">' + bad + ' problems</span>: ' + esc(Object.entries(found).map(([k, v]) => k + ' (' + v.slice(0, 3).join(', ') + ')').join('; ')) : '<span class="ok">0 problems</span>') + '<br>every face pixel on the body, nothing clipped';
+  document.title = 'Blob Lab · check ' + count + ' · ' + bad;
+}
+
+document.getElementById('rules').innerHTML = RULES.map(([k, t]) => '<li><span><b>' + k + '</b> ' + esc(t) + '</span></li>').join('');
+document.getElementById('reroll').addEventListener('click', () => { batch++; render(); });
+document.getElementById('agents').addEventListener('click', (e) => { const a = e.target.closest('button'); if (!a) return; filter = a.dataset.a; for (const x of e.currentTarget.children) x.setAttribute('aria-pressed', String(x === a)); render(); });
+render();
+setTimeout(() => check(+(params.get('check') || 300)), 50);
+</script>
+</body>
+</html>

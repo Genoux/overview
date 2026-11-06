@@ -37,11 +37,40 @@ The first question changes everything else. Hangar's approved roadmap already ha
 
 - [ ] **Hangar or Overview?** My recommendation: build Overview first as a separate observer on top of Orca. Hangar's Floor and inbox designs carry over, and Hangar can absorb Overview later.
 - [ ] **Read-only in v1?** My recommendation: yes. A raised hand shows why, and one click jumps to that pane in Orca. Answering from Overview comes later.
-- [ ] **LLM and privacy:** is it OK to send redacted transcript excerpts to the Claude API? The alternative is a local model, which is slower and gives weaker summaries.
+- [x] **LLM:** OpenRouter with the owner's key for now, behind a provider-agnostic adapter; out-of-the-box options decided before any public release (see LLM plan).
 - [ ] **Sources in order:** I propose Orca on this Mac, then the Arch workstation and home server over SSH, then cloud sessions (Codex cloud, Claude Code on the web). Is anything missing?
 - [ ] **Where it lives on screen:** a full window, a second-monitor wall, or a small always-on-top pane plus a menu-bar count?
 - [ ] **Creatures:** reuse Hangar's grey blobs, or give each agent type its own species (Claude, Codex, Gemini)?
 - [ ] **Name:** "Overview" is a working name.
+
+## LLM plan (decided 2026-11-05)
+
+**Why it matters:** the summary is the core feature. Opening the app (or reading the morning brief) must answer, at a glance and without opening any session: where is each project, what was done, what needs me, what is the next step.
+
+**Now (for the owner only):**
+- One cheap, fast model through **OpenRouter**, with the owner's own key, stored in the macOS keychain (never in a file or the repo).
+- The summarizer speaks the OpenAI-compatible chat format, so the endpoint and the model are settings, not code. OpenRouter is the first endpoint, not a dependency.
+- Output is our own strict JSON, checked on our side: one-line title, what was done, what is left, what it needs from me, the next step, priority.
+- Secrets are redacted before sending; only the transcript tail goes out, size-capped; a per-project "never send" switch.
+
+**Later (before anyone else installs it):** a key prompt on first launch is poor UX. Options to decide then, all fitting the same adapter:
+- a hosted endpoint we run (our key behind a small proxy, paid by subscription through a merchant of record), so it works on install;
+- a bundled local model for people who want nothing to leave their machine;
+- bring-your-own key as an advanced setting.
+The switch away from OpenRouter, or alongside it, must stay a configuration change.
+
+## Sources: the agents themselves, not Orca (decided 2026-11-06)
+
+Overview is not bound to Orca or any one tool. It reads what each coding agent already writes on disk, so it works whatever terminal, editor or orchestrator the user runs them from:
+
+| Agent | Where it keeps sessions | What we read |
+|---|---|---|
+| Claude Code | `~/.claude/projects/<folder>/<session>.jsonl` | working folder, git branch, title, last prompt and reply, pending tool calls, stop reason |
+| Codex | `~/.codex/sessions/YYYY/MM/DD/rollout-*.jsonl` | working folder, messages, tool calls and outputs, turn started / complete |
+| Gemini CLI, OpenCode, Kimi, others | their own folders (to add one adapter each) | the same normalized fields |
+| Orca (optional) | its status hooks | sharper live states when present; never required |
+
+Each agent gets one small reader (an adapter) that turns its files into the same normalized session: agent, project folder, branch, title, state, time since last activity, last prompt, last reply, and what it is waiting on. State is inferred from the files: a turn in progress = running; a tool call left without a result for a while = waiting (usually an approval); a turn that ended on a question = waiting for a reply; a turn that ended = done; an API error = failed; quiet for a day = asleep. Readers only read: they never write to an agent's files, and they never open credential files (for example `~/.gemini/oauth_creds.json` or `.env`).
 
 ## Core pipeline
 
@@ -75,7 +104,7 @@ Remote hosts: the same binary runs on the remote machine in `probe` mode over SS
 | UI | React + TypeScript + Vite | Panels, lists, digest. |
 | Pixel world | **PixiJS 8** with nearest-neighbour scaling at integer zoom | Crisp pixels at any window size. Sprite sheets and animation states, smooth with 30+ creatures. |
 | Art pipeline | Aseprite → sprite sheet JSON | Clean, hand-made pixel art. Hangar's `blobs.js` is the starting reference. |
-| LLM | Claude API: Haiku 5.5 (`claude-haiku-5-5`) for per-session summaries, Sonnet 5.5 (`claude-sonnet-5-5`) for the daily digest | Fast and cheap for frequent small summaries, stronger model once a day. The key lives in the OS keychain. |
+| LLM | Any OpenAI-compatible endpoint; OpenRouter first, with a cheap fast model for per-session summaries (and optionally a stronger one for the daily brief). | No lock-in: endpoint and model are settings. The key lives in the OS keychain. |
 | Packaging | `.dmg` for macOS; AppImage + an AUR package for Arch | Covers both of your machines. |
 
 ## Security model

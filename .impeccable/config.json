@@ -34,7 +34,7 @@
         "rule": "overused-font",
         "value": "instrument sans",
         "createdAt": "2026-11-05T17:08:27.644Z",
-        "reason": "Claude: Instrument Sans is Signal's prose face, inherited from Hangar's Signal tokens; John approved this look ('doesn't feel too much like AI')"
+        "reason": "Signal design system: Instrument Sans is the shared prose face for Overview and Hangar (DESIGN.md, ../signal tokens)"
       }
     ]
   }

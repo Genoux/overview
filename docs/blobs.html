@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Blobs Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../prototype/vendor/signal/signal.css">
+<link rel="stylesheet" href="../prototype/vendor/signal/overview.css">
+<style>
+:root {
+  --ground: var(--sg-overview-ground); --bg: var(--sg-surface-base); --panel: var(--sg-surface-raised); --side: var(--sg-surface-sunken); --sel: var(--sg-surface-selected);
+  --line: var(--sg-border-subtle); --line2: var(--sg-border-default); --control: var(--sg-border-control);
+  --fg: var(--sg-text-primary); --dim: var(--sg-text-secondary); --subtle: var(--sg-text-subtle); --faint: var(--sg-text-disabled);
+  --accent: var(--sg-accent-fg); --done: var(--sg-status-done-fg); --err: var(--sg-status-err-fg);
+  --mono: var(--sg-font-mono); --sans: var(--sg-font-sans);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); }
+body { font-family: var(--sans); font-size: 14px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+header { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: 16px; height: 40px; padding: 0 16px; background: var(--side); border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 12px; }
+header b { font-weight: 500; } header .sp { flex: 1; }
+header a { color: var(--subtle); text-decoration: none; } header a:hover { color: var(--fg); }
+main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 80px; }
+section { padding: 36px 0; border-top: 1px solid var(--line); }
+section:first-of-type { border-top: 0; padding-top: 8px; }
+h1 { font: 500 22px/1.3 var(--sans); margin: 0 0 10px; }
+h2 { font: 500 17px/1.35 var(--sans); margin: 0 0 6px; }
+h2 small { font: 400 12px var(--mono); color: var(--subtle); margin-right: 10px; }
+p { margin: 0 0 12px; max-width: 70ch; color: var(--dim); }
+p b, li b { color: var(--fg); font-weight: 500; }
+code, .m { font-family: var(--mono); font-size: 12.5px; color: var(--fg); }
+.lead { font-size: 15px; color: var(--dim); max-width: 66ch; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; font-family: var(--mono); font-size: 12px; color: var(--subtle); }
+.seg { display: flex; border: 1px solid var(--line2); border-radius: 3px; overflow: hidden; }
+.seg button, .btn { font: inherit; color: var(--dim); background: none; border: 0; padding: 5px 10px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line2); }
+.seg button[aria-pressed="true"] { color: var(--fg); background: var(--sel); }
+.btn { border: 1px solid var(--control); border-radius: 3px; color: var(--fg); }
+button:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
+/* the six steps */
+.steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.step { display: grid; grid-template-rows: 132px auto; gap: 8px; }
+.step .stage { display: grid; place-items: end center; background: var(--ground); border: 1px solid var(--line); border-radius: 5px; padding-bottom: 12px; }
+.step h3 { margin: 0; font: 500 12px var(--mono); } .step h3 span { color: var(--subtle); margin-right: 6px; }
+.step p { font-size: 12.5px; line-height: 1.5; margin: 2px 0 0; }
+canvas { image-rendering: pixelated; }
+/* personality rows */
+.trait { display: grid; grid-template-columns: 170px 1fr 1fr; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.trait:first-child { border-top: 0; }
+.trait .tl { font-family: var(--mono); font-size: 12px; } .trait .tl small { display: block; color: var(--subtle); font-size: 12px; font-family: var(--sans); }
+.row { display: flex; gap: 6px; align-items: end; }
+.row figure { margin: 0; display: grid; justify-items: center; gap: 2px; flex: 1; padding: 8px 2px 6px; background: var(--ground); border-radius: 3px; }
+.row figcaption { font-family: var(--mono); font-size: 11px; color: var(--subtle); }
+.tag { font-family: var(--mono); font-size: 11px; color: var(--subtle); text-align: center; margin-bottom: 4px; }
+/* rules */
+.fixes { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.fix { padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; display: grid; gap: 8px; }
+.fix .pair { display: grid; grid-template-columns: 1fr 20px 1fr; align-items: end; gap: 4px; }
+.fix .pair div { display: grid; justify-items: center; gap: 2px; padding: 8px 0 6px; background: var(--ground); border-radius: 3px; font-family: var(--mono); font-size: 11px; color: var(--subtle); }
+.fix .arrow { align-self: center; text-align: center; color: var(--subtle); font-family: var(--mono); }
+.fix .what { font-family: var(--mono); font-size: 12px; color: var(--dim); line-height: 1.5; }
+.fix .what b { color: var(--fg); font-weight: 500; }
+ol.rules { margin: 16px 0 0; padding: 0; list-style: none; counter-reset: r; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px; }
+ol.rules li { counter-increment: r; display: grid; grid-template-columns: 24px 1fr; color: var(--dim); font-size: 13px; }
+ol.rules li::before { content: counter(r, decimal-leading-zero); font-family: var(--mono); font-size: 11px; color: var(--subtle); padding-top: 2px; }
+/* tables */
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 12px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 500 11px var(--mono); color: var(--subtle); }
+td.n { font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+td .m { font-size: 12px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+/* the free-time timeline: one row per blob */
+.chart { position: relative; margin-top: 8px; }
+.chart svg { display: block; width: 100%; height: auto; touch-action: none; }
+.chart .ax { font: 11px var(--mono); fill: var(--subtle); }
+.chart .nm { font: 500 12px var(--mono); fill: var(--fg); }
+.chart .bl { font: 500 11px var(--mono); }
+.chart .tip { position: absolute; pointer-events: none; background: var(--panel); border: 1px solid var(--line2); border-radius: 5px; padding: 8px 10px; font-size: 12px; min-width: 190px; box-shadow: 0 6px 18px rgb(0 0 0 / 0.45); }
+.chart .tip .tt { font-family: var(--mono); font-size: 12px; color: var(--subtle); margin-bottom: 4px; }
+.chart .tip .tr { display: grid; grid-template-columns: 14px 1fr auto; gap: 6px; align-items: center; font-family: var(--mono); font-size: 11px; color: var(--subtle); }
+.chart .tip .tr i { height: 2px; background: var(--dim); }
+.chart .tip .tr b { color: var(--fg); font-weight: 500; text-align: right; }
+.chart .tip .ta { margin-top: 6px; color: var(--dim); font-size: 12px; }
+.legendnote { font-family: var(--mono); font-size: 12px; color: var(--subtle); display: flex; gap: 16px; flex-wrap: wrap; margin-top: 6px; }
+.legendnote span { display: inline-flex; align-items: center; gap: 6px; }
+.legendnote i { width: 16px; height: 2px; background: var(--dim); display: inline-block; }
+.legendnote i.band { height: 10px; background: var(--line2); border-radius: 3px; }
+.rank td.sc { width: 160px; }
+.rank .bar2 { height: 6px; border-radius: 3px; background: var(--line2); position: relative; }
+.rank .bar2 i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--dim); }
+.rank tr.top td { color: var(--fg); }
+.rank tr.top td:first-child::before { content: "▸ "; color: var(--subtle); }
+details { margin-top: 12px; } summary { cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--subtle); }
+.formula { font-family: var(--mono); font-size: 12.5px; background: var(--panel); border: 1px solid var(--line); border-radius: 5px; padding: 14px 16px; color: var(--fg); line-height: 1.8; margin: 12px 0 16px; overflow-x: auto; white-space: pre; }
+@media (max-width: 860px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); } .trait { grid-template-columns: 1fr; } .two, ol.rules { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header><b>how blobs live</b><span class="sp"></span><a href="../prototype/v10/index.html">map →</a><a href="../prototype/v10/lab.html">blob lab →</a></header>
+<main>
+<section>
+  <h1>How a blob is made, and how it lives</h1>
+  <p class="lead">Everything on this page is drawn by the same code as the map, live in your browser: the blobs are generated here, and the timeline comes from running the real simulation for ten minutes. Nothing is a mock-up.</p>
+</section>
+
+<section aria-labelledby="h-make">
+  <h2 id="h-make"><small>01</small>A blob is built in six steps</h2>
+  <p>Every blob comes from a <b>seed</b> (for a real session, its id), so the same session always gets the same blob. The seed first rolls a <b>personality</b>, then the look is drawn <b>from</b> that personality, then the rules repair anything that would look wrong (section 03). Drawing is pure pixels, after Hangar: a fixed outline per agent type, scaled, and shaded as one soft gel lit from the top left, with no black outline and no mouth.</p>
+  <div class="bar"><div class="seg" role="group" aria-label="Agent type" id="agent"><button type="button" data-a="claude" aria-pressed="true">claude</button><button type="button" data-a="codex" aria-pressed="false">codex</button><button type="button" data-a="gemini" aria-pressed="false">gemini</button></div><button class="btn" type="button" id="another">another blob</button><span id="who"></span></div>
+  <div class="steps" id="steps"></div>
+</section>
+
+<section aria-labelledby="h-pers">
+  <h2 id="h-pers"><small>02</small>The look follows the personality</h2>
+  <p>Five traits, each from 0 to 1, decide how a blob behaves. They also tilt the dice for its look, so you can read a blob's character from its face. Below: out of 600 generated blobs, the four lowest and four highest for each trait.</p>
+  <div id="traits"></div>
+</section>
+
+<section aria-labelledby="h-rules">
+  <h2 id="h-rules"><small>03</small>Rules repair anything that would look wrong</h2>
+  <p>Random choices can clash: a cap on Gemini's ears, spots on a body too thin to show them, too many decorations at once. The rule pass fixes the clash instead of throwing the blob away, so the seed still gives the same blob. These are <b>real repairs</b> from the first blobs the generator made:</p>
+  <div class="fixes" id="fixes"></div>
+  <ol class="rules" id="rules"></ol>
+  <p style="margin-top:16px">The tests run 20,000 blobs through these rules and expect zero breaks; the blob lab draws thousands of them in every face and checks that every face pixel sits on the body.</p>
+</section>
+
+<section aria-labelledby="h-free">
+  <h2 id="h-free"><small>04</small>Free time: personality, the clock, friends</h2>
+  <p>A blob whose session is finished is free, and like in Hangar it stays by its own desk: napping or playing ball in front of its slab. Now and then it walks over to a friend on its own machine for a real back-and-forth, about the friend's work, news from elsewhere, John, or the day, then comes home. The moment its session needs it again (running, waiting for you, failed), it is back at its desk.</p>
+  <div class="two">
+    <table aria-label="How much each activity attracts a blob">
+      <thead><tr><th>activity</th><th>who likes it most</th></tr></thead>
+      <tbody id="likes"></tbody>
+    </table>
+    <table aria-label="How the time of day and company tilt it">
+      <thead><tr><th>tilt</th><th>effect</th></tr></thead>
+      <tbody>
+        <tr><td class="m">lunch 11:45–13:30</td><td>visits ×2.5 (lunch together)</td></tr>
+        <tr><td class="m">evening 19:00–23:00</td><td>naps ×1.5</td></tr>
+        <tr><td class="m">night 23:00–06:00</td><td>naps ×4, play ×0.4, visits ×0.5</td></tr>
+        <tr><td class="m">friendship</td><td>a visit pulls more the closer the friend</td></tr>
+        <tr><td class="m">a friend waiting on you</td><td>keeping it company grows with how long it has waited</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:16px">Below: what the four free blobs of the sample do over ten simulated minutes. Hover to see who does what at that moment.</p>
+  <div class="bar"><span>time of day</span><div class="seg" role="group" aria-label="Time of day" id="hour"><button type="button" data-h="10" aria-pressed="true">10:00</button><button type="button" data-h="12.5" aria-pressed="false">12:30 lunch</button><button type="button" data-h="23.5" aria-pressed="false">23:30 night</button></div></div>
+  <div class="chart" id="chart"></div>
+  <div class="legendnote" id="legend"></div>
+  <details><summary>show the timeline as a table</summary><table id="table"></table></details>
+</section>
+
+<section aria-labelledby="h-choose">
+  <h2 id="h-choose"><small>05</small>How a blob chooses</h2>
+  <p>Whenever its current activity ends (15 to 40 seconds), a free blob scores every option it has: napping or playing at home, visiting a friend (at work, or free on its own plot), keeping a waiting friend company, or staying put.</p>
+  <div class="formula">pull  =  how much it likes this       (its personality, table above)
+       ×  time of day                  (snacks at lunch, rest at night)
+       ×  company and friends there
+       ×  nearness                     1 ÷ (1 + distance ÷ 8 to 18 cells)
+       ×  variety                      × 0.6 for each time it did this lately</div>
+  <p>It takes its <b>top three</b> and picks one at random, weighted by pull: sensible, never robotic. Below, the options of the first blob at the moment you hover on the timeline (or the latest one); the top three are marked ▸:</p>
+  <table class="rank" id="rank" aria-live="polite"></table>
+</section>
+
+<section aria-labelledby="h-real">
+  <h2 id="h-real"><small>06</small>Real data always wins</h2>
+  <p>Personality only decides <b>free time</b>. The real state of each session overrides it at once: <b>running, waiting or failed</b> sends the blob straight to its desk, whatever it was doing; <b>asleep</b> (quiet a day or more) keeps it dozing beside its dark slab; a session that <b>finishes</b> celebrates and nearby blobs cheer; one that <b>fails</b> gets comfort from its two closest friends. Friendships start from real structure (same project = friends, same machine = acquaintances) and grow from chatting, playing, visits and comfort. Nothing in the world ever slows or blocks real work: Claude Code, Codex and the rest never see the blobs.</p>
+</section>
+</main>
+<script type="module">
+import { G, INITIAL, clone, readSignal } from '../prototype/v10/js/core.js';
+import { explainGenome, sprite, RULES, BUILDS } from '../prototype/v10/js/creatures.js';
+import { buildWorld } from '../prototype/v10/js/world.js';
+import { resetLife, body, simulate, rank, activity } from '../prototype/v10/js/life.js';
+
+readSignal();
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+function paint(g, face, scale, id) {
+  const spr = sprite({ id, agent: g.agent, g, state: 'done' }, face || 'open', false, false), c = document.createElement('canvas');
+  c.width = spr.width * scale; c.height = spr.height * scale;
+  const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(spr, 0, 0, c.width, c.height); return c;
+}
+const coatWord = (c) => (c === 'mid' ? 'lit' : c);
+
+/* ---------- 01 the six steps ---------- */
+let agent = 'claude', seed = 11;
+function steps() {
+  const { g } = explainGenome(seed * 7919 + 3, agent), plain = { pattern: 'none', acc: 'none', mouth: 'none' };
+  const S = [
+    ['silhouette', 'The outline of its agent type, drawn row by row: ' + ({ claude: 'a droplet', codex: 'a cube', gemini: 'twin lobes' })[agent] + '. A soft gel lit from the top left: darker edge, shaded side, a glint.', Object.assign({}, g, plain, { build: 'round', ws: BUILDS.round[0], hs: BUILDS.round[1], coat: 'pale' }), 'blank'],
+    ['build', 'Its proportions: ' + g.build + ' (one of five tested builds, never free stretching).', Object.assign({}, g, plain, { coat: 'pale' }), 'blank'],
+    ['coat', 'Its grey: ' + coatWord(g.coat) + '. Colour stays reserved for status.', Object.assign({}, g, plain), 'blank'],
+    ['markings', g.pattern === 'none' ? 'No markings this time (plain is the most common).' : 'Its markings: ' + g.pattern + '.', Object.assign({}, g, { acc: 'none', mouth: 'none' }), 'blank'],
+    ['accessory', g.acc === 'none' ? 'No accessory this time.' : 'Its accessory: ' + g.acc + ', centred on the top.', Object.assign({}, g, { mouth: 'none' }), 'blank'],
+    ['face', 'Eyes: ' + g.eyes + (g.mouth === 'none' ? '' : ', a ' + g.mouth + ' mouth') + '. Expressions swap only the face: blink, happy, focused, worried…', g, 'open']
+  ];
+  const box = $('steps'); box.textContent = '';
+  S.forEach(([name, text, gg, face], i) => {
+    const d = el('div', 'step'), st = el('div', 'stage'); st.appendChild(paint(gg, face, 5, 'step' + agent + seed + i)); d.appendChild(st);
+    const cap = el('div'), h = el('h3'); h.appendChild(el('span', null, String(i + 1).padStart(2, '0'))); h.appendChild(document.createTextNode(name)); cap.appendChild(h); cap.appendChild(el('p', null, text)); d.appendChild(cap); box.appendChild(d);
+  });
+  $('who').textContent = g.name + ' · social ' + pct(g.social) + ' · energy ' + pct((g.energy - 0.7) / 0.7) + ' · curious ' + pct(g.curious) + ' · sleepy ' + pct(g.sleepy) + ' · talk ' + pct((g.talk - 0.3) / 0.7);
+}
+const pct = (x) => Math.round(x * 100) + '%';
+$('agent').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; agent = b.dataset.a; for (const x of e.currentTarget.children) x.setAttribute('aria-pressed', String(x === b)); steps(); });
+$('another').addEventListener('click', () => { seed++; steps(); });
+steps();
+
+/* ---------- 02 personality shows ---------- */
+const POOL = []; for (let i = 0; i < 600; i++) POOL.push(explainGenome(i * 104729 + 17, ['claude', 'codex', 'gemini'][i % 3]).g);
+const TRAITS = [
+  ['sleepy', (g) => g.sleepy, 'sleepy eyes, round or squat bodies', 'rests more and longer'],
+  ['curious', (g) => g.curious, 'wide eyes, antennas', 'plays and walks more, minds long walks less, explores other machines'],
+  ['social', (g) => g.social, 'smiles, freckles, round builds; few horns', 'drawn to the circle and to friends at work'],
+  ['energy', (g) => (g.energy - 0.7) / 0.7, 'tall and small builds, tufts', 'walks faster, likes play and snacks']
+];
+for (const [name, f, looks, acts] of TRAITS) {
+  const sorted = POOL.slice().sort((a, b) => f(a) - f(b)), lo = sorted.slice(0, 4), hi = sorted.slice(-4).reverse();
+  const row = el('div', 'trait'), tl = el('div', 'tl', name); tl.appendChild(el('small', null, 'high: ' + looks + '. Behaviour: ' + acts + '.')); row.appendChild(tl);
+  for (const [label, set] of [['lowest ' + name, lo], ['highest ' + name, hi]]) {
+    const wrap = el('div'); wrap.appendChild(el('div', 'tag', label)); const r = el('div', 'row');
+    set.forEach((g, i) => { const fig = el('figure'); fig.appendChild(paint(g, 'open', 3, 'tr' + name + label + i)); fig.appendChild(el('figcaption', null, pct(f(g)))); r.appendChild(fig); });
+    wrap.appendChild(r); row.appendChild(wrap);
+  }
+  $('traits').appendChild(row);
+}
+
+/* ---------- 03 real repairs ---------- */
+const DESC = { fit: 'accessory did not fit this body', spots: 'pattern too busy for this build', mouth: 'no room for a mouth under the eyes', budget: 'too many decorations at once' };
+const seen = new Set(); let shown = 0;
+for (let i = 0; i < 400 && shown < 8; i++) {
+  const ag = ['claude', 'codex', 'gemini'][i % 3], ex = explainGenome(i * 7919 + 13, ag); if (!ex.fixed.length) continue;
+  const k = ex.fixed.join() + ag; if (seen.has(k)) continue; seen.add(k); shown++;
+  const changed = ['acc', 'pattern', 'mouth', 'eyes'].filter((f) => ex.raw[f] !== ex.g[f]).map((f) => f + ': ' + ex.raw[f] + ' → ' + ex.g[f]);
+  const card = el('div', 'fix'), pair = el('div', 'pair');
+  const a = el('div'); a.appendChild(paint(ex.raw, 'open', 3, 'raw' + i)); a.appendChild(document.createTextNode('rolled')); pair.appendChild(a);
+  pair.appendChild(el('span', 'arrow', '→'));
+  const b = el('div'); b.appendChild(paint(ex.g, 'open', 3, 'fix' + i)); b.appendChild(document.createTextNode('repaired')); pair.appendChild(b);
+  card.appendChild(pair);
+  const w = el('div', 'what'); const bb = el('b', null, ex.g.name + ' · ' + ag + ' · ' + ex.g.build); w.appendChild(bb); w.appendChild(el('div', null, [...new Set(ex.fixed)].map((r) => r + ': ' + DESC[r]).join('; '))); w.appendChild(el('div', null, changed.join(' · '))); card.appendChild(w);
+  $('fixes').appendChild(card);
+}
+for (const [k, t] of RULES) { const li = el('li'), sp = el('span'); sp.appendChild(el('b', null, k + ' ')); sp.appendChild(document.createTextNode(t)); li.appendChild(sp); $('rules').appendChild(li); }
+
+/* ---------- 04 what each activity is liked by ---------- */
+const WHO = { nap: 'sleepy blobs: napping in front of their desk, eyes shut', play: 'curious and lively blobs: playing ball in front of their desk', visit: 'social blobs: dropping by a friend on the same machine, for a real exchange about the work or the day', company: 'everyone, more if social: standing by a friend who waits on you', linger: 'everyone, a little: staying put' };
+for (const k of Object.keys(WHO)) { const tr = el('tr'); tr.appendChild(el('td', 'm', k)); tr.appendChild(el('td', null, WHO[k])); $('likes').appendChild(tr); }
+
+/* ---------- 04 the simulation: the free blobs, ten minutes ---------- */
+const KINDS = ['nap', 'play', 'visit', 'company', 'travel'];
+const SHADE = { nap: 'var(--sg-text-disabled)', play: 'var(--fg)', visit: 'var(--dim)', company: 'var(--subtle)', travel: 'var(--line)' };
+const FREE = INITIAL.filter((s) => s.state === 'done').map((s) => s.id);
+let hour = 10, run = null;
+function simulateRun() {
+  resetLife(); G.S = clone(INITIAL); G.world = buildWorld(); G.hourOverride = hour; G.t = 0; G.S.forEach(body);
+  const out = { t: [], rows: FREE.map((id) => ({ id, name: G.bodies[id].g.name, act: [], label: [] })), ranks: [] }, first = G.S.find((x) => x.id === FREE[0]);
+  let t = 0;
+  for (let i = 0; i <= 600 * 20; i++) {
+    if (i) { t += 0.05; G.t = t; simulate(0.05, t); }
+    if (i % 20) continue;
+    out.t.push(t);
+    for (const r of out.rows) { const b = G.bodies[r.id], s = G.S.find((x) => x.id === r.id), a = b.path.length ? 'travel' : b.act.type; r.act.push(a === 'linger' ? 'nap' : a === 'comfort' ? 'company' : a === 'celebrate' || a === 'none' ? 'travel' : a); r.label.push(activity(s)); }
+    if (i % 100 === 0) out.ranks.push({ t, list: rank(first).slice(0, 6).map((x) => ({ label: x.o.label, parts: x.parts })) });
+  }
+  return out;
+}
+function refresh() { run = simulateRun(); chart(); table(); ranking(run.t.length - 1); }
+const ROWH = 28, GAP = 14, TOP = 6, LEFT = 64, RIGHT = 12;
+function chart() {
+  const box = $('chart'), W = Math.max(320, box.clientWidth), H = TOP + run.rows.length * (ROWH + GAP) + 24, NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H); svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'What the free blobs do over ten minutes');
+  const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+  const x = (i) => LEFT + (W - LEFT - RIGHT) * i / (run.t.length - 1);
+  run.rows.forEach((r, k) => {
+    const y0 = TOP + k * (ROWH + GAP); const nm = mk('text', { x: 0, y: y0 + ROWH / 2 + 4, class: 'nm' }); nm.textContent = r.name;
+    let start = 0;
+    for (let i = 1; i <= r.act.length; i++) if (i === r.act.length || r.act[i] !== r.act[start]) { const a = r.act[start]; const w = Math.max(1, x(i - 1) - x(start) - 2); mk('rect', { x: x(start) + 1, y: y0 + (a === 'travel' ? ROWH / 2 - 2 : 0), width: w, height: a === 'travel' ? 4 : ROWH, rx: 3, fill: SHADE[a] });
+      // the bar names its activity when there is room, so identity never rests on the grey alone
+      if (a !== 'travel' && w > a.length * 7 + 10) { const tx = mk('text', { x: x(start) + 6, y: y0 + ROWH / 2 + 4, class: 'bl', fill: ['play', 'visit'].includes(a) ? 'var(--bg)' : 'var(--fg)' }); tx.textContent = a; }
+      start = i; }
+  });
+  const ay = TOP + run.rows.length * (ROWH + GAP) + 8;
+  for (let m = 0; m <= 10; m += 2) { const tx = mk('text', { x: x(m * 60), y: ay + 6, 'text-anchor': m === 0 ? 'start' : m === 10 ? 'end' : 'middle', class: 'ax' }); tx.textContent = m + ' min'; }
+  const cross = mk('line', { y1: TOP, y2: ay - 8, stroke: 'var(--fg)', 'stroke-width': 1, visibility: 'hidden' });
+  box.textContent = ''; box.appendChild(svg);
+  const tip = el('div', 'tip'); tip.hidden = true; box.appendChild(tip);
+  const show = (clientX) => {
+    const r = svg.getBoundingClientRect(), px = (clientX - r.left) * W / r.width, i = Math.max(0, Math.min(run.t.length - 1, Math.round((px - LEFT) / (W - LEFT - RIGHT) * (run.t.length - 1))));
+    cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('visibility', 'visible');
+    tip.textContent = ''; tip.appendChild(el('div', 'tt', Math.floor(run.t[i] / 60) + ' min ' + String(Math.round(run.t[i] % 60)).padStart(2, '0') + ' s'));
+    for (const rw of run.rows) { const tr = el('div', 'tr'); tr.appendChild(el('i')); tr.appendChild(el('span', null, rw.name)); tr.appendChild(el('b', null, rw.label[i])); tip.appendChild(tr); }
+    tip.hidden = false; const left = x(i) * r.width / W; tip.style.top = '0px'; tip.style.left = Math.max(0, left + 12 + tip.offsetWidth > r.width ? left - 12 - tip.offsetWidth : left + 12) + 'px';
+    ranking(i);
+  };
+  svg.addEventListener('pointermove', (e) => show(e.clientX)); svg.addEventListener('pointerdown', (e) => show(e.clientX));
+  svg.addEventListener('pointerleave', () => { tip.hidden = true; cross.setAttribute('visibility', 'hidden'); });
+  const lg = $('legend'); lg.textContent = '';
+  for (const k of KINDS) { const sp = el('span'), sw = el('i', 'band'); sw.style.background = SHADE[k]; if (k === 'travel') sw.style.height = '3px'; sp.appendChild(sw); sp.appendChild(document.createTextNode(k === 'travel' ? 'walking between places' : k)); lg.appendChild(sp); }
+}
+function table() {
+  const t = $('table'); t.textContent = '';
+  const hd = el('tr'); hd.appendChild(el('th', null, 'time')); for (const r of run.rows) hd.appendChild(el('th', null, r.name)); t.appendChild(hd);
+  for (let i = 0; i < run.t.length; i += 30) { const tr = el('tr'); tr.appendChild(el('td', 'n', Math.floor(run.t[i] / 60) + ':' + String(Math.round(run.t[i] % 60)).padStart(2, '0'))); for (const r of run.rows) tr.appendChild(el('td', null, r.label[i])); t.appendChild(tr); }
+}
+function ranking(i) {
+  const tt = run.t[i]; let snap = run.ranks[0]; for (const r of run.ranks) if (r.t <= tt) snap = r;
+  const t = $('rank'); t.textContent = '';
+  const hd = el('tr'); for (const h of [run.rows[0].name + ' at ' + Math.floor(snap.t / 60) + ' min ' + String(Math.round(snap.t % 60)).padStart(2, '0') + ' s', 'likes', 'time', 'company', 'near', 'variety', 'pull']) hd.appendChild(el('th', null, h)); t.appendChild(hd);
+  const max = Math.max(...snap.list.map((x) => x.parts.score), 0.01);
+  snap.list.forEach((x, k) => {
+    const p = x.parts, tr = el('tr', k < 3 ? 'top' : ''); tr.appendChild(el('td', null, x.label));
+    for (const v of [p.like, p.tilt, p.boost, p.near, p.variety]) tr.appendChild(el('td', 'n', '×' + v.toFixed(2)));
+    const td = el('td', 'n sc'), bar = el('div', 'bar2'), fill = el('i'); fill.style.width = Math.round(p.score / max * 100) + '%'; bar.appendChild(fill); td.appendChild(el('div', null, p.score.toFixed(2))); td.appendChild(bar); tr.appendChild(td); t.appendChild(tr);
+  });
+}
+$('hour').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; hour = +b.dataset.h; for (const x of e.currentTarget.children) x.setAttribute('aria-pressed', String(x === b)); refresh(); });
+refresh();
+let rw = 0; window.addEventListener('resize', () => { clearTimeout(rw); rw = setTimeout(chart, 150); });
+document.title = 'How Blobs Live';
+</script>
+</body>
+</html>
