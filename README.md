@@ -19,8 +19,7 @@ It is unsigned: the first time, right-click › Open.
 ## Run from source
 
 ```sh
-# Linux needs the webview and GTK libraries once:
-# WebKitGTK 4.1 and OpenSSL dev packages from your distro (e.g. webkit2gtk-4.1 on Arch)
+# Linux needs, once: WebKitGTK 4.1 and OpenSSL dev packages from your distro (e.g. webkit2gtk-4.1 on Arch)
 app/run.sh        # debug build; the first run compiles for a minute or two
 cargo run -p overview-core --bin overview-probe -- --summary   # session counts in the terminal
 ```
@@ -35,5 +34,5 @@ scripts/build     # release packages into dist/ (AppImage on Linux, zipped .app 
 ## Release
 
 Tag-driven (jb-toolkit `RULES.md` R4): `jb bump X.Y.Z` on a branch, merge,
-`jb tag` on main, push the tag. The Release workflow builds the Linux packages
-and drafts a GitHub release.
+`jb tag` on main, push the tag. The Release workflow builds the macOS app and the
+Linux AppImage and drafts a GitHub release.
