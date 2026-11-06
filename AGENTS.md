@@ -53,8 +53,9 @@ Both folders are private GitHub repos on the owner's personal account. Never use
 ## Checks and releases
 
 - `scripts/check`: `cargo fmt --check`, `clippy -D warnings`, `cargo test` for the workspace. The prototypes' `npm test` runs are not part of it (history, not shipped).
-- `scripts/build`: Linux gives `.deb` + `.AppImage` through the Tauri CLI (pinned `@tauri-apps/cli` version, run with npx); macOS gives a zipped, unsigned `.app`. The Release workflow runs on Ubuntu, so a tag ships Linux packages; macOS builds are made locally.
-- CI and Release install the Linux webkit/GTK libraries before compiling, because Tauri links against them.
+- Targets are the owner's machines only: macOS (Apple silicon) and Linux on a Wayland compositor. No distro packages (.deb, .rpm): Linux ships one AppImage, which runs on any distro. Ubuntu appears only as the GitHub runner that builds it.
+- `scripts/build`: Linux gives the AppImage through the Tauri CLI (pinned `@tauri-apps/cli` version, run with npx); macOS gives a zipped, unsigned `.app`. The Release workflow builds both (macOS and Ubuntu runners) and attaches them to one draft release.
+- CI and Release install WebKitGTK on the Linux runner before compiling, because Tauri links against them.
 
 ## Known Linux gaps (alpha)
 

@@ -1,6 +1,10 @@
 # Created by jb-toolkit; owned by the project. Tag-driven (R4.3): push vX.Y.Z
 # and this verifies, checks, builds and drafts a release. Publishing the draft
 # is the owner's decision.
+#
+# Targets are the owner's own machines: macOS (Apple silicon) and Linux on a
+# Wayland compositor. The Linux build ships one AppImage, which runs on any
+# distro; the Ubuntu runner is only the machine that builds it.
 name: Release
 
 on:
@@ -11,8 +15,11 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
+  build:
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
@@ -27,45 +34,48 @@ jobs:
             exit 1
           fi
 
-      # Tauri compiles against the system webview and GTK on Linux.
+      # Tauri compiles against WebKitGTK on Linux.
       - name: Linux libraries for Tauri
+        if: runner.os == 'Linux'
+        timeout-minutes: 10
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libssl-dev patchelf
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libssl-dev librsvg2-dev patchelf file
 
-      - if: hashFiles('Cargo.toml') != ''
-        uses: dtolnay/rust-toolchain@stable
+      - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy, rustfmt
-      - if: hashFiles('bun.lock', 'bun.lockb') != ''
-        uses: oven-sh/setup-bun@v2
-      - if: hashFiles('package.json') != '' && hashFiles('bun.lock', 'bun.lockb') == ''
-        uses: actions/setup-node@v4
-        with:
-          node-version: lts/*
-      - if: hashFiles('pnpm-lock.yaml') != ''
-        run: corepack enable
-
+      - uses: Swatinem/rust-cache@v2
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - uses: Swatinem/rust-cache@v2
 
       # A tag can point at a commit CI never saw.
       - name: Check
         run: scripts/check
 
       - name: Build
-        run: |
-          mkdir -p dist
-          if [ -x scripts/build ]; then scripts/build; fi
+        run: scripts/build
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ runner.os }}
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
       - name: Draft release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           flags="--draft --generate-notes --verify-tag"
           case "$GITHUB_REF_NAME" in *-*) flags="$flags --prerelease" ;; esac
-          files=$(find dist -maxdepth 1 -type f)
           # shellcheck disable=SC2086
-          gh release create "$GITHUB_REF_NAME" $flags --title "$GITHUB_REF_NAME" $files
+          gh release create "$GITHUB_REF_NAME" $flags --title "$GITHUB_REF_NAME" dist/*
