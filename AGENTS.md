@@ -59,4 +59,6 @@ Both folders are private GitHub repos on the owner's personal account. Never use
 
 ## Known Linux gaps (alpha)
 
-- Reading sessions, ssh machines and summaries (key through `secret-tool`) work on Linux. Focusing a session's window opens its macOS `.app` bundle and resume writes a `.command` file, so "go to session" is macOS-first; the reveal path falls back to `xdg-open`.
+- Reading sessions, ssh machines and summaries (key through `secret-tool`) work on Linux.
+- "Go to session" on Linux: Hyprland only (detected by `HYPRLAND_INSTANCE_SIGNATURE`). The window is found by walking up from the agent's pid to the nearest ancestor that owns a window in `hyprctl clients -j` (`procs::window_owner`), then `hyprctl dispatch focuswindow pid:<owner>`. A terminal that runs many windows from one process gets one of them focused. A session in tmux has no window. Other Wayland compositors get an error until the owner uses one.
+- Resume and remote shells open the owner's terminal through `xdg-terminal-exec`, else `$TERMINAL -e`, else `x-terminal-emulator`. Not yet tried on the owner's Hyprland machine.

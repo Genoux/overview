@@ -351,12 +351,30 @@ fn terminal(line: &str) -> Result<(), String> {
             .spawn()
             .map_err(|e| e.to_string())?;
     } else {
-        Command::new("x-terminal-emulator")
-            .args(["-e", "sh", "-c", line])
-            .spawn()
-            .map_err(|e| e.to_string())?;
+        linux_terminal(line)?;
     }
     Ok(())
+}
+
+/// The owner's terminal on Linux, from the desktop's own conventions, never a list of apps: `xdg-terminal-exec`
+/// (the freedesktop default-terminal launcher), else `$TERMINAL -e`, else Debian's `x-terminal-emulator`.
+fn linux_terminal(line: &str) -> Result<(), String> {
+    let run = |prog: &str, pre: &[&str]| {
+        Command::new(prog)
+            .args(pre)
+            .args(["sh", "-c", line])
+            .spawn()
+            .is_ok()
+    };
+    let custom = std::env::var("TERMINAL").ok().filter(|t| !t.is_empty());
+    if run("xdg-terminal-exec", &[])
+        || custom.as_deref().is_some_and(|t| run(t, &["-e"]))
+        || run("x-terminal-emulator", &["-e"])
+    {
+        Ok(())
+    } else {
+        Err("no terminal found: install xdg-terminal-exec or set $TERMINAL".into())
+    }
 }
 
 fn resume_line(s: &Session) -> Result<String, String> {
@@ -367,26 +385,58 @@ fn resume_line(s: &Session) -> Result<String, String> {
     }
 }
 
-/// Brings the app hosting a local session to the front: the `.app` bundle found in its process tree.
+/// Brings the window hosting a local session to the front: on macOS the `.app` bundle found in its process tree; on
+/// Hyprland the window owned by the agent's nearest ancestor.
 fn focus_local(run: &overview_core::procs::Run) -> Result<(), String> {
-    let Some(bundle) = &run.bundle else {
-        return Err(format!(
+    let no_window = || {
+        format!(
             "it runs in {}, which has no window to bring forward",
             run.app
-        ));
+        )
     };
-    if !cfg!(target_os = "macos") {
-        return Err("bringing a window forward works on macOS for now".into());
+    if cfg!(target_os = "macos") {
+        let bundle = run.bundle.as_ref().ok_or_else(no_window)?;
+        let ok = Command::new("open")
+            .arg(bundle)
+            .status()
+            .map_err(|e| e.to_string())?
+            .success();
+        return if ok {
+            Ok(())
+        } else {
+            Err(format!("could not open {}", run.app))
+        };
     }
-    let ok = Command::new("open")
-        .arg(bundle)
-        .status()
-        .map_err(|e| e.to_string())?
-        .success();
-    if ok {
+    if std::env::var_os("HYPRLAND_INSTANCE_SIGNATURE").is_none() {
+        return Err("bringing a window forward works on macOS and Hyprland for now".into());
+    }
+    let hyprctl = |args: &[&str]| {
+        Command::new("hyprctl")
+            .args(args)
+            .output()
+            .map_err(|e| format!("hyprctl: {e}"))
+    };
+    let clients: serde_json::Value = serde_json::from_slice(&hyprctl(&["clients", "-j"])?.stdout)
+        .map_err(|e| format!("hyprctl clients: {e}"))?;
+    let windows: Vec<u32> = clients
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|c| c["pid"].as_u64().map(|p| p as u32))
+        .collect();
+    let procs = overview_core::procs::parse_ps(&overview_core::procs::ps_now());
+    let owner =
+        overview_core::procs::window_owner(run.pid, &procs, &windows).ok_or_else(no_window)?;
+    let out = hyprctl(&["dispatch", "focuswindow", &format!("pid:{owner}")])?;
+    let said = String::from_utf8_lossy(&out.stdout);
+    if out.status.success() && said.trim() == "ok" {
         Ok(())
     } else {
-        Err(format!("could not open {}", run.app))
+        Err(format!(
+            "hyprctl could not focus {}: {}",
+            run.app,
+            said.trim()
+        ))
     }
 }
 
