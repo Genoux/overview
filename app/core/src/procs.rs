@@ -195,6 +195,33 @@ fn installed_bundle(name: &str, dirs: &[std::path::PathBuf]) -> Option<String> {
     None
 }
 
+/// This machine's process table, in the shape `parse_ps` reads.
+pub fn ps_now() -> String {
+    std::process::Command::new("ps")
+        .args(["axo", "pid=,ppid=,tty=,comm="])
+        .output()
+        .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
+        .unwrap_or_default()
+}
+
+/// The process that owns the window a session runs in: `pid` itself or its nearest ancestor among `window_pids`
+/// (the owning pids the desktop reports for its windows, e.g. Hyprland's `hyprctl clients`). None when the session
+/// runs outside any window (tmux, sshd).
+pub fn window_owner(pid: u32, procs: &HashMap<u32, Proc>, window_pids: &[u32]) -> Option<u32> {
+    let mut p = pid;
+    for _ in 0..40 {
+        if window_pids.contains(&p) {
+            return Some(p);
+        }
+        let parent = procs.get(&p)?.ppid;
+        if parent <= 1 || parent == p {
+            return None;
+        }
+        p = parent;
+    }
+    None
+}
+
 /// This machine's live sessions.
 pub fn local(home: &Path) -> HashMap<String, Run> {
     let mut files = vec![];
@@ -211,12 +238,7 @@ pub fn local(home: &Path) -> HashMap<String, Run> {
     if files.is_empty() {
         return HashMap::new();
     }
-    let ps = std::process::Command::new("ps")
-        .args(["axo", "pid=,ppid=,tty=,comm="])
-        .output()
-        .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
-        .unwrap_or_default();
-    let mut runs = from_parts(&files, &ps);
+    let mut runs = from_parts(&files, &ps_now());
     if cfg!(target_os = "macos") {
         let dirs = [
             std::path::PathBuf::from("/Applications"),
@@ -292,5 +314,17 @@ mod tests {
             Some(true)
         );
         assert_eq!(installed_bundle("tmux", &[apps]), None);
+    }
+
+    #[test]
+    fn the_window_is_the_nearest_ancestor_that_owns_one() {
+        // a terminal (50) and an editor whose window belongs to its main process (80), not the pty helper (81)
+        let ps = "1 0 ? systemd\n50 1 ? term\n60 50 pts/1 zsh\n70 60 pts/1 claude\n80 1 ? editor\n81 80 ? editor\n82 81 pts/2 zsh\n83 82 pts/2 claude\n500 1 ? tmux: server\n600 500 pts/3 bash\n700 600 pts/3 claude\n";
+        let procs = parse_ps(ps);
+        let windows = [50, 80, 999];
+        assert_eq!(window_owner(70, &procs, &windows), Some(50));
+        assert_eq!(window_owner(83, &procs, &windows), Some(80));
+        assert_eq!(window_owner(700, &procs, &windows), None);
+        assert_eq!(window_owner(12345, &procs, &windows), None);
     }
 }
