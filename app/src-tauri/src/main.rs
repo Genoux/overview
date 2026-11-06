@@ -427,17 +427,21 @@ fn focus_local(run: &overview_core::procs::Run) -> Result<(), String> {
     let procs = overview_core::procs::parse_ps(&overview_core::procs::ps_now());
     let owner =
         overview_core::procs::window_owner(run.pid, &procs, &windows).ok_or_else(no_window)?;
-    let out = hyprctl(&["dispatch", "focuswindow", &format!("pid:{owner}")])?;
-    let said = String::from_utf8_lossy(&out.stdout);
-    if out.status.success() && said.trim() == "ok" {
-        Ok(())
-    } else {
-        Err(format!(
-            "hyprctl could not focus {}: {}",
-            run.app,
-            said.trim()
-        ))
+    // Hyprland with a Lua config reads `dispatch` as Lua (0.56 and later); a classic config takes the dispatcher name.
+    let lua = format!("hl.dsp.focus({{ window = \"pid:{owner}\" }})");
+    let classic = format!("pid:{owner}");
+    let mut said = String::new();
+    for args in [
+        vec!["dispatch", lua.as_str()],
+        vec!["dispatch", "focuswindow", classic.as_str()],
+    ] {
+        let out = hyprctl(&args)?;
+        said = String::from_utf8_lossy(&out.stdout).trim().to_string();
+        if out.status.success() && said == "ok" {
+            return Ok(());
+        }
     }
+    Err(format!("hyprctl could not focus {}: {said}", run.app))
 }
 
 /// The one way to get to a session. Open somewhere: bring that window forward. Not open: resume it in a new terminal.
