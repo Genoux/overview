@@ -22,17 +22,17 @@ A read-only monitor of every coding-agent session (Orca, Claude Code, Codex, SSH
 | `prototype/v5/` | Map v5 (history). Same modules as v4 plus `pix.js`, which rasterises landmark sprites pixel by pixel (2:1 edges, 3-tone faces, outline) so they share the creatures' pixel grid. Never draw world objects as smooth vector shapes |
 | `prototype/v4/` | Map v4 (history): ES modules in `js/`: `core` (state, palette from Signal, sample data), `creatures` (genome, sprites, emotes), `world` (neighborhood generation, A*), `life` (simulation, conversations), `render` (canvas), `ui` (rail, input, boot). Needs `./serve.sh` because modules don't load from file:// |
 | `prototype/overview-map.html` | Map v3, single file. `map.html` (v2) and `world.html` (v1) are history |
-| `prototype/vendor/signal/` | Copy of the Signal CSS the prototype loads. Never edit it here |
+| `app/web/vendor/signal/`, `prototype/vendor/signal/` | Copies of Signal's CSS (`signal.css`, `components.css`, `overview.css`) that the app and the prototype load. Never edit them here |
 | `docs/PLAN.md` | Product plan and roadmap |
 | `docs/view.html` | Markdown reader used by the hub (`?f=<path>`) |
 | `PRODUCT.md`, `DESIGN.md` | Product facts; how Overview applies Signal |
 | `.impeccable/` | Design brief, review captures, detector config |
-| `scripts/sync-signal.sh` | Rebuilds Signal and copies its CSS into `prototype/vendor/signal/` |
+| `scripts/sync-signal.sh` | Rebuilds Signal and copies its CSS into `app/web/vendor/signal/` and `prototype/vendor/signal/` |
 
 ## Design system
 
 Overview's look comes from **Signal** (`../signal`, package `@barrymind/signal`), which is shared with Hangar and future apps:
-- Change a colour, size or component in Signal (`tokens/*.json`), never in Overview, then run `./scripts/sync-signal.sh`.
+- Change a colour, size or component in Signal (`tokens/*.json`, `css/components.css`), never in Overview, then run `./scripts/sync-signal.sh`. The app's markup uses Signal's `.sg-*` classes; `app/web/app.css` holds only Overview's own layout (title bar, map stage, rail, settings page) and reads `--sg-*` tokens directly.
 - Map-only values go in Signal's Overview extension, `../signal/tokens/extensions/overview.tokens.json`.
 - The design rules: colour only for status and for "you", monochrome graphite everywhere else, mono for machine text and sans for prose, hairlines and small radii.
 

@@ -359,7 +359,7 @@ function queueSpeech(s, b, X, Y) {
 }
 function overlayRects() {
   const sr = stage.getBoundingClientRect(), dpr = G.dpr, out = [{ x: 0, y: 0, w: G.W, h: 26 * dpr }, { x: 0, y: 0, w: 52 * dpr, h: G.H }];
-  stage.querySelectorAll('.zoom, .mini, .edge, .info').forEach((el) => { const r = el.getBoundingClientRect(); out.push({ x: (r.left - sr.left) * dpr, y: (r.top - sr.top) * dpr, w: r.width * dpr, h: r.height * dpr }); });
+  stage.querySelectorAll('.ov, .sg-edge-marker').forEach((el) => { const r = el.getBoundingClientRect(); out.push({ x: (r.left - sr.left) * dpr, y: (r.top - sr.top) * dpr, w: r.width * dpr, h: r.height * dpr }); });
   return out;
 }
 function rectAt(c, m) {
@@ -465,8 +465,8 @@ export function draw(t) {
 
 /* ---------------- overlays: edge markers, tooltip, minimap ---------------- */
 const edgesEl = document.getElementById('edges'), edgeEls = {};
-const CROSS = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3 3 9" stroke="var(--err)" stroke-width="1.5"/></svg>';
-export const DIAM = '<svg class="i" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 11 6 6 11 1 6Z" fill="var(--wait)"/></svg>';
+const CROSS = '<svg class="sg-icon sg-tone-err" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3 3 9" stroke="currentColor" stroke-width="1.5"/></svg>';
+export const DIAM = '<svg class="sg-icon sg-tone-wait" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1 11 6 6 11 1 6Z" fill="currentColor"/></svg>';
 export function edgeMarkers(onLocate) {
   const cw = G.W / G.dpr, ch = G.H / G.dpr, pad = 26, seen = {};
   for (const s of G.S) {
@@ -476,15 +476,15 @@ export function edgeMarkers(onLocate) {
     seen[s.id] = 1;
     const cx = cw / 2, cy = ch / 2, dx = x - cx, dy = y - cy, sc = Math.min((cw / 2 - pad - 60) / Math.abs(dx || 1e-6), (ch / 2 - pad - 34) / Math.abs(dy || 1e-6)), ang = Math.atan2(dy, dx) * 180 / Math.PI;
     let el = edgeEls[s.id];
-    if (!el) { el = document.createElement('button'); el.type = 'button'; el.className = 'edge'; el.addEventListener('click', () => onLocate(s.id)); edgesEl.appendChild(el); edgeEls[s.id] = el; }
-    el.classList.toggle('err', s.state === 'err');
-    const label = (s.state === 'err' ? CROSS : DIAM) + '<span>' + s.plot + '</span> ' + fmt(s.since) + '<svg class="ar" viewBox="0 0 10 10" style="transform:rotate(' + ang.toFixed(0) + 'deg)" aria-hidden="true"><path d="M2 5h6M5.5 2.5 8 5 5.5 7.5" fill="none" stroke="var(--dim)" stroke-width="1.2"/></svg>';
+    if (!el) { el = document.createElement('button'); el.type = 'button'; el.className = 'sg-edge-marker'; el.addEventListener('click', () => onLocate(s.id)); edgesEl.appendChild(el); edgeEls[s.id] = el; }
+    el.classList.toggle('sg-edge-marker--err', s.state === 'err');
+    const label = (s.state === 'err' ? CROSS : DIAM) + '<span>' + s.plot + '</span> ' + fmt(s.since) + '<svg viewBox="0 0 10 10" style="transform:rotate(' + ang.toFixed(0) + 'deg)" aria-hidden="true"><path d="M2 5h6M5.5 2.5 8 5 5.5 7.5" fill="none" stroke="var(--sg-text-secondary)" stroke-width="1.2"/></svg>';
     if (el._l !== label) { el.innerHTML = label; el._l = label; el.setAttribute('aria-label', s.plot + (s.state === 'err' ? ' failed' : ' needs you') + ', off screen. Go to it.'); }
     let ex = cx + dx * sc, ey = cy + dy * sc;
     const sr = stage.getBoundingClientRect();
     const hw = el.offsetWidth / 2 + 6, hh = el.offsetHeight / 2 + 6;
     // never under a corner overlay: below the zoom group, above the minimap, beside the open info panel
-    stage.querySelectorAll('.zoom, .mini, .info:not([hidden])').forEach((ov) => { const r = ov.getBoundingClientRect(), x0 = r.left - sr.left - hw, x1 = r.right - sr.left + hw, y0 = r.top - sr.top - hh, y1 = r.bottom - sr.top + hh; if (ex > x0 && ex < x1 && ey > y0 && ey < y1) { if (ov.classList.contains('zoom')) ey = y1; else if (ov.classList.contains('info')) ex = x1; else ey = y0; } });
+    stage.querySelectorAll('.ov-zoom, .ov-minimap, .ov-info:not([hidden])').forEach((ov) => { const r = ov.getBoundingClientRect(), x0 = r.left - sr.left - hw, x1 = r.right - sr.left + hw, y0 = r.top - sr.top - hh, y1 = r.bottom - sr.top + hh; if (ex > x0 && ex < x1 && ey > y0 && ey < y1) { if (ov.classList.contains('ov-zoom')) ey = y1; else if (ov.classList.contains('ov-info')) ex = x1; else ey = y0; } });
     ex = Math.max(hw, Math.min(cw - hw, ex));
     el.style.left = ex + 'px'; el.style.top = ey + 'px';
   }
@@ -498,7 +498,7 @@ export function placeTip(icon, dragging) {
   if (!s || !b || dragging) { tip.hidden = true; tipKey = ''; return; }
   const act = activity(s), bf = bestFriend(s.id), keyNow = id + s.state + act + (bf ? bf.id : '');
   if (keyNow !== tipKey) {
-    tip.innerHTML = '<div class="n">' + esc(gene(s.id).name) + ' · ' + s.agent + ' on ' + hostOf(s).name + (bf ? ' · friends with ' + esc(gene(bf.id).name) : '') + '</div><div class="t">' + esc(s.title) + '</div><div class="s">' + icon(s.state) + WORD[s.state] + ' · ' + fmt(s.since) + ' · ' + esc(act) + '</div>';
+    tip.innerHTML = '<div class="sg-tooltip__kicker">' + esc(gene(s.id).name) + ' · ' + s.agent + ' on ' + hostOf(s).name + (bf ? ' · friends with ' + esc(gene(bf.id).name) : '') + '</div><div class="sg-tooltip__title">' + esc(s.title) + '</div><div class="sg-tooltip__meta">' + icon(s.state) + WORD[s.state] + ' · ' + fmt(s.since) + ' · ' + esc(act) + '</div>';
     tipKey = keyNow;
   }
   const below = (b.y + b.h) / G.dpr + 10, room = G.H / G.dpr - below - 12;
@@ -521,7 +521,7 @@ export function minimap() {
   const tl = toW(0, 0), br = toW(G.W, G.H), A1 = pr(tl[0], tl[1]), B1 = pr(br[0], br[1]);
   mg.strokeStyle = C.dim; mg.lineWidth = 1.5; mg.strokeRect(Math.round(A1[0]) + 0.5, Math.round(A1[1]) + 0.5, Math.round(B1[0] - A1[0]), Math.round(B1[1] - A1[1]));
   const n = G.S.filter((s) => s.state === 'wait').length, mc = document.getElementById('mcount'), txt = n ? n + ' need you' : 'clear';
-  if (mc.textContent !== txt) { mc.textContent = txt; mc.style.color = n ? 'var(--wait)' : ''; }
+  if (mc.textContent !== txt) { mc.textContent = txt; mc.style.color = n ? 'var(--sg-status-wait-fg)' : ''; }
 }
 export function mmJump(e) { const r = mm.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * mm.width, y = (e.clientY - r.top) / r.height * mm.height, X = (x - mmT.ox) / mmT.sc, Y = (y - mmT.oy) / mmT.sc, a = X / 16, b = Y / 8; G.tgt.u = (a + b) / 2; G.tgt.v = (b - a) / 2; if (reduce) Object.assign(G.cam, G.tgt); }
 export function hitAgent(X, Y) { const dpr = G.dpr; let f = null; for (const s of G.S) { const b = G.boxes[s.id]; if (b && X >= b.x - 4 * dpr && X <= b.x + b.w + 4 * dpr && Y >= b.y - 4 * dpr && Y <= b.y + b.h + 2 * dpr) f = s.id; } return f; }
