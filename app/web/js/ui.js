@@ -523,7 +523,7 @@ function renderSettings() {
   const l = meta.llm;
   h += '<section class="set-s"><h3>summaries</h3><p class="sg-lead">A small model reads the end of each session, after anything that looks secret is removed, and writes what was done, what is left and what it needs from you. The key lives in the keychain.</p>' +
     '<div class="sg-kv"><span class="sg-kv__label">model</span><span class="sg-kv__value">' + esc((l && l.model) || (live ? 'openai/gpt-oss-120b' : 'sample')) + '</span><span class="sg-kv__label">state</span><span class="sg-kv__value">' + (l ? (l.error ? '<span class="sg-tone-err">' + esc(l.error) + '</span>' : l.pending ? 'summarizing ' + l.pending : 'up to date') : 'sample data') + '</span></div></section>';
-  h += '<section class="set-s"><h3>about</h3><div class="sg-kv"><span class="sg-kv__label">version</span><span class="sg-kv__value">Overview ' + esc(meta.version || '0.0.1') + ' alpha</span><span class="sg-kv__label">reads</span><span class="sg-kv__value">Claude Code and Codex sessions, on this computer and over ssh</span></div></section></div>';
+  h += '<section class="set-s"><h3>about</h3><div class="sg-kv"><span class="sg-kv__label">version</span><span class="sg-kv__value">Overview ' + esc(meta.version || 'unknown') + '</span><span class="sg-kv__label">reads</span><span class="sg-kv__value">Claude Code and Codex sessions, on this computer and over ssh</span></div></section></div>';
   if (addOpen) {
     const hosts = sshHosts || [];
     h += '<div class="sg-backdrop" data-dclose="1"></div><div class="sg-dialog" role="dialog" aria-label="Add a machine"><header class="set-h"><h3>Add a machine</h3><button class="sg-tag sg-tag--button" type="button" data-dclose="1" aria-label="Close">Esc</button></header>' +
@@ -589,7 +589,7 @@ function rebuild() { resetLife(); G.S = clone(INITIAL); G.world = buildWorld(); 
 zval(); renderAll();
 if (live) {
   // real data: no demo; the tag says live; states update in place, and the world is rebuilt when sessions come or go
-  demoBtn.style.display = 'none'; const tag = document.querySelector('.tright .sg-tag'); if (tag) tag.textContent = 'v' + meta.version + ' alpha';
+  demoBtn.style.display = 'none'; const tag = document.querySelector('.tright .sg-tag'); if (tag) tag.textContent = 'v' + meta.version;
   watch(G, (s, prev) => { if (s) onStateChange(s, prev); renderAll(); if (!setEl.hidden) renderSettings(); }, () => { rebuild(); if (!setEl.hidden) renderSettings(); });
 } else setDemo(false);
 requestAnimationFrame(frame);
