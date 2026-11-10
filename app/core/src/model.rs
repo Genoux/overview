@@ -36,6 +36,11 @@ pub struct Session {
     pub last_reply: Option<String>,
     /// What a waiting session waits on: a command, a file, or the question it asked.
     pub waiting_on: Option<String>,
+    /// Tool calls with no result yet that may need an approval, described. The file cannot say whether a prompt is
+    /// on screen, so a reader fills this only when its agent's live process reports one (`Run::waiting_for`):
+    /// `settle` then trusts the process over the reader's guess. Left empty, the guess stands.
+    #[serde(skip)]
+    pub open_calls: Option<String>,
     /// The file this was read from (for the summarizer and for "open"); for a remote session, its local cached copy.
     pub path: String,
     /// "local", or the ssh alias of the machine it runs on.
@@ -116,6 +121,15 @@ pub fn infer(seen: &Seen, quiet: u64) -> (State, Option<String>) {
         Some(r) if r.trim_end().ends_with('?') => (State::Wait, Some(clip(r, 160))),
         _ => (State::Done, None),
     }
+}
+
+/// The open calls a reader hands to `Session::open_calls`: none when a question to the owner is among them.
+pub fn open_calls(pending: &[Pending]) -> Option<String> {
+    if pending.is_empty() || pending.iter().any(|p| p.ask == Ask::Always) {
+        return None;
+    }
+    let what: Vec<&str> = pending.iter().map(|p| p.what.as_str()).collect();
+    Some(what.join(", "))
 }
 
 /// Shortens text to `n` characters on a character boundary, collapsing whitespace.

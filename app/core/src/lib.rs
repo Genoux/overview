@@ -52,16 +52,124 @@ pub fn scan(home: &Path) -> Vec<Session> {
     out
 }
 
-/// Gives each session its live process, if any. A session whose agent says it is working is running,
-/// even when its transcript has been quiet for a while (a long tool call); waiting and failed stay as they are.
+/// Gives each session its live process, if any, and lets what that process reports settle the state.
 pub fn attach_runs(sessions: &mut [Session], runs: &std::collections::HashMap<String, procs::Run>) {
     for s in sessions.iter_mut() {
         s.run = runs.get(&s.id).cloned();
-        if let Some(r) = &s.run {
-            if r.busy && matches!(s.state, model::State::Done | model::State::Idle) {
-                s.state = model::State::Run;
-                s.waiting_on = None;
-            }
+        settle(s);
+    }
+}
+
+/// The agent's own word wins over the transcript. Guessing approvals from the transcript was wrong both ways:
+/// replayed over 30 days of the owner's sessions (2026-11-10, 17,143 tool calls scored against the approval
+/// decision the agent stamps on each result), it raised 6 alerts, 5 of them false, and missed 197 prompts that
+/// stayed up 30 seconds or more, because hooks and automatic approval modes ask in modes that "never ask".
+/// No agent is named here: a reader opts in by filling `open_calls`, and a live process by reporting a prompt.
+fn settle(s: &mut Session) {
+    use model::State;
+    let busy = s.run.as_ref().is_some_and(|r| r.busy);
+    let guessed = s.state == State::Wait && s.open_calls.is_some();
+    if let Some(prompt) = s.run.as_ref().and_then(|r| r.waiting_for.clone()) {
+        // a prompt is on screen: say what it is about when the transcript knows
+        let asked = s.waiting_on.take().filter(|_| s.state == State::Wait);
+        s.waiting_on = asked.or_else(|| s.open_calls.clone()).or(Some(prompt));
+        s.state = State::Wait;
+    } else if guessed || (busy && matches!(s.state, State::Done | State::Idle)) {
+        // no prompt on screen: an open call is running, or was left behind by an agent that stopped
+        s.state = if busy { State::Run } else { State::Done };
+        s.waiting_on = None;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use model::State;
+    use procs::Run;
+
+    fn session(state: State, waiting_on: Option<&str>, open_calls: Option<&str>) -> Session {
+        Session {
+            id: "s1".into(),
+            agent: "agent",
+            cwd: "/w/gramly".into(),
+            project: "gramly".into(),
+            branch: None,
+            title: None,
+            state,
+            quiet_secs: 90,
+            updated: 0,
+            last_prompt: None,
+            last_reply: None,
+            waiting_on: waiting_on.map(str::to_string),
+            open_calls: open_calls.map(str::to_string),
+            path: String::new(),
+            machine: "local".into(),
+            run: None,
         }
+    }
+    fn settled(session: Session, run: Option<Run>) -> (State, Option<String>) {
+        let mut sessions = [session];
+        let runs = run.map(|r| ("s1".to_string(), r)).into_iter().collect();
+        attach_runs(&mut sessions, &runs);
+        (sessions[0].state, sessions[0].waiting_on.clone())
+    }
+    fn run(busy: bool, waiting_for: Option<&str>) -> Run {
+        Run {
+            pid: 1,
+            tty: "pts/1".into(),
+            app: "a terminal".into(),
+            bundle: None,
+            started: 0,
+            busy,
+            waiting_for: waiting_for.map(str::to_string),
+        }
+    }
+    const CALL: &str = "Bash: pnpm deploy";
+    const QUESTION: &str = "Electron or Tauri?";
+
+    #[test]
+    fn a_prompt_on_screen_needs_you_whatever_the_mode() {
+        // the reader saw a mode that "never asks" and said running, yet a prompt is up
+        assert_eq!(
+            settled(
+                session(State::Run, None, Some(CALL)),
+                Some(run(false, Some("approve Bash")))
+            ),
+            (State::Wait, Some(CALL.into()))
+        );
+        // nothing in the transcript to name: the agent's own words
+        assert_eq!(
+            settled(
+                session(State::Run, None, None),
+                Some(run(false, Some("dialog open")))
+            ),
+            (State::Wait, Some("dialog open".into()))
+        );
+    }
+    #[test]
+    fn a_slow_command_with_no_prompt_is_not_an_alert() {
+        let guessed = || session(State::Wait, Some(CALL), Some(CALL));
+        assert_eq!(
+            settled(guessed(), Some(run(true, None))),
+            (State::Run, None)
+        );
+        // the agent is gone: nothing can be asking
+        assert_eq!(settled(guessed(), None), (State::Done, None));
+    }
+    #[test]
+    fn a_question_in_the_reply_still_waits() {
+        let asked = || session(State::Wait, Some(QUESTION), None);
+        assert_eq!(settled(asked(), None), (State::Wait, Some(QUESTION.into())));
+        assert_eq!(
+            settled(asked(), Some(run(false, None))),
+            (State::Wait, Some(QUESTION.into()))
+        );
+    }
+    #[test]
+    fn a_reader_that_leaves_open_calls_empty_keeps_its_own_guess() {
+        assert_eq!(
+            settled(session(State::Wait, Some(CALL), None), None),
+            (State::Wait, Some(CALL.into()))
+        );
     }
 }

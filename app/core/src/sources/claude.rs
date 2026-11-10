@@ -1,5 +1,5 @@
 //! Claude Code: one JSONL file per session in `~/.claude/projects/<folder>/<session>.jsonl`.
-use crate::model::{clip, infer, project_of, Ask, Pending, Seen, Session};
+use crate::model::{clip, infer, open_calls, project_of, Ask, Pending, Seen, Session};
 use crate::tail::{first_lines, last_lines};
 use serde_json::Value;
 use std::collections::HashSet;
@@ -253,6 +253,7 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
         last_prompt,
         last_reply,
         waiting_on,
+        open_calls: open_calls(&seen.pending),
         path: path.to_string_lossy().to_string(),
         machine: "local".into(),
         run: None,
