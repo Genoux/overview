@@ -179,6 +179,7 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
         last_prompt,
         last_reply,
         waiting_on,
+        open_calls: None,
         path: path.to_string_lossy().to_string(),
         machine: "local".into(),
         run: None,

@@ -1,6 +1,7 @@
 //! Which app runs each live session, so "go" can bring that window forward and "close" can end an idle agent.
 //!
-//! Claude Code writes `~/.claude/sessions/<pid>.json` for every running CLI (session id, pid, a live busy/idle status).
+//! Claude Code writes `~/.claude/sessions/<pid>.json` for every running CLI (session id, pid, and a live status:
+//! busy, idle, or waiting with what it waits for).
 //! The process tree then leads from that pid up to whatever hosts its terminal. Nothing here knows any app by name:
 //! - on macOS, the host is the nearest ancestor whose executable lives in an `.app` bundle; its name is the bundle's name
 //!   and the bundle path is what "go" opens;
@@ -28,6 +29,8 @@ pub struct Run {
     pub started: u64,
     /// The agent says it is working right now.
     pub busy: bool,
+    /// The agent says a prompt is on screen (an approval, a question, a dialog), in its own words.
+    pub waiting_for: Option<String>,
 }
 
 pub struct Proc {
@@ -168,6 +171,8 @@ pub fn from_parts_with(
                 bundle,
                 started: v["startedAt"].as_u64().map(|ms| ms / 1000).unwrap_or(0),
                 busy: v["status"].as_str() == Some("busy"),
+                waiting_for: (v["status"].as_str() == Some("waiting"))
+                    .then(|| v["waitingFor"].as_str().unwrap_or("your input").to_string()),
             },
         );
     }
@@ -317,7 +322,8 @@ mod tests {
                 app: "Some Editor".into(),
                 bundle: Some("/Applications/Some Editor.app".into()),
                 started: 1_700_000_000,
-                busy: true
+                busy: true,
+                waiting_for: None
             }
         );
         assert_eq!(
@@ -325,6 +331,14 @@ mod tests {
             ("tmux", true)
         );
         assert_eq!(runs["s3"].app, "some-remote");
+        let asking =
+            r#"{"pid":400,"sessionId":"s1","status":"waiting","waitingFor":"approve Bash"}"#;
+        let runs = from_parts_with(&[asking.to_string()], ps, &exe);
+        assert_eq!(
+            (runs["s1"].busy, runs["s1"].waiting_for.as_deref()),
+            (false, Some("approve Bash"))
+        );
+        let runs = from_parts_with(&files, ps, &exe);
         assert!(!runs.contains_key("gone"));
         // a process named like its executable keeps its own name, even when that executable sits in a hidden folder
         let ps2 = "1 0 ? init\n50 1 ? tool-core\n60 50 pts/1 zsh\n70 60 pts/1 claude\n";
