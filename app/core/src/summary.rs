@@ -259,7 +259,7 @@ pub fn parse(content: &str) -> Result<Summary, String> {
 /// The API key from the OS keychain (macOS: `security`, Linux: `secret-tool`). Never logged, never written to disk.
 pub fn key_from_keychain(account: &str) -> Option<String> {
     let out = if cfg!(target_os = "macos") {
-        std::process::Command::new("security")
+        crate::procs::program("security")
             .args([
                 "find-generic-password",
                 "-s",
@@ -271,7 +271,7 @@ pub fn key_from_keychain(account: &str) -> Option<String> {
             .output()
             .ok()?
     } else {
-        std::process::Command::new("secret-tool")
+        crate::procs::program("secret-tool")
             .args(["lookup", "service", "overview", "account", account])
             .output()
             .ok()?

@@ -92,6 +92,7 @@ mod tests {
             id: "s1".into(),
             agent: "agent",
             cwd: "/w/gramly".into(),
+            root: "/w/gramly".into(),
             project: "gramly".into(),
             branch: None,
             title: None,

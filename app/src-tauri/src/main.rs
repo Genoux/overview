@@ -10,7 +10,6 @@ use overview_core::summary::{self, Endpoint, Summary};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::path::PathBuf;
-use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Mutex, OnceLock};
 use std::time::Duration;
@@ -55,7 +54,7 @@ fn home() -> PathBuf {
         .unwrap_or_default()
 }
 fn hostname() -> String {
-    Command::new("hostname")
+    overview_core::procs::program("hostname")
         .arg("-s")
         .output()
         .ok()
@@ -346,7 +345,7 @@ fn terminal(line: &str) -> Result<(), String> {
         use std::os::unix::fs::PermissionsExt;
         std::fs::set_permissions(&f, std::fs::Permissions::from_mode(0o700))
             .map_err(|e| e.to_string())?;
-        Command::new("open")
+        overview_core::procs::program("open")
             .arg(&f)
             .spawn()
             .map_err(|e| e.to_string())?;
@@ -359,10 +358,14 @@ fn terminal(line: &str) -> Result<(), String> {
 /// The owner's terminal on Linux, from the desktop's own conventions, never a list of apps: `xdg-terminal-exec`
 /// (the freedesktop default-terminal launcher), else `$TERMINAL -e`, else Debian's `x-terminal-emulator`.
 fn linux_terminal(line: &str) -> Result<(), String> {
+    // sh runs the line, then becomes the owner's own shell in the same folder, so an agent that ends or a resume
+    // that fails leaves its message on screen. The line itself never goes to that shell: it is POSIX, and the
+    // owner's shell may not be (fish, nushell).
+    let kept_open = format!("{line}; exec \"${{SHELL:-sh}}\" -l");
     let run = |prog: &str, pre: &[&str]| {
-        Command::new(prog)
+        overview_core::procs::program(prog)
             .args(pre)
-            .args(["sh", "-c", line])
+            .args(["sh", "-c", &kept_open])
             .spawn()
             .is_ok()
     };
@@ -396,7 +399,7 @@ fn focus_local(run: &overview_core::procs::Run) -> Result<(), String> {
     };
     if cfg!(target_os = "macos") {
         let bundle = run.bundle.as_ref().ok_or_else(no_window)?;
-        let ok = Command::new("open")
+        let ok = overview_core::procs::program("open")
             .arg(bundle)
             .status()
             .map_err(|e| e.to_string())?
@@ -411,7 +414,7 @@ fn focus_local(run: &overview_core::procs::Run) -> Result<(), String> {
         return Err("bringing a window forward works on macOS and Hyprland for now".into());
     }
     let hyprctl = |args: &[&str]| {
-        Command::new("hyprctl")
+        overview_core::procs::program("hyprctl")
             .args(args)
             .output()
             .map_err(|e| format!("hyprctl: {e}"))
@@ -461,10 +464,10 @@ fn go(id: String) -> Result<String, String> {
             focus_local(r)?;
             return Ok(format!("focus:{}", r.app));
         }
-        if !std::path::Path::new(&s.cwd).is_dir() {
-            return Err(format!("its folder {} is not on this machine", s.cwd));
+        if !std::path::Path::new(&s.root).is_dir() {
+            return Err(format!("its folder {} is not on this machine", s.root));
         }
-        terminal(&format!("cd {} && {}", sh_quote(&s.cwd), resume_line(&s)?))?;
+        terminal(&format!("cd {} && {}", sh_quote(&s.root), resume_line(&s)?))?;
         return Ok("resume".into());
     }
     if !remote::valid_alias(&s.machine) {
@@ -472,7 +475,7 @@ fn go(id: String) -> Result<String, String> {
     }
     let inner = match &s.run {
         Some(_) => format!("cd {} && exec \"$SHELL\" -l", sh_quote(&s.cwd)),
-        None => format!("cd {} && {}", sh_quote(&s.cwd), resume_line(&s)?),
+        None => format!("cd {} && {}", sh_quote(&s.root), resume_line(&s)?),
     };
     terminal(&format!("ssh -t {} {}", s.machine, sh_quote(&inner)))?;
     Ok(if s.run.is_some() {
@@ -497,7 +500,7 @@ fn reveal(id: String) -> Result<(), String> {
     } else {
         "xdg-open"
     };
-    Command::new(opener)
+    overview_core::procs::program(opener)
         .arg(&s.cwd)
         .spawn()
         .map_err(|e| e.to_string())?;
@@ -524,7 +527,7 @@ fn close(app: tauri::AppHandle, id: String) -> Result<(), String> {
             if !ours {
                 return Err("that agent is no longer running".into());
             }
-            Command::new("kill")
+            overview_core::procs::program("kill")
                 .args(["-TERM", &r.pid.to_string()])
                 .status()
                 .map_err(|e| e.to_string())?;

@@ -92,9 +92,9 @@ mm.addEventListener('pointermove', (e) => { if (mmDown) mmJump(e); });
 mm.addEventListener('pointerup', () => { mmDown = false; });
 
 /* ---------------- the info panel: click a machine or a project ---------------- */
-const infoEl = document.getElementById('info'); let infoAt = 0, infoKey = '';
+const infoEl = document.getElementById('info'); let infoAt = 0, infoKey = '', infoFolded = false;
 const WORDS = { run: 'running', wait: 'needs you', done: 'done', err: 'failed', idle: 'asleep' }, ORDER = ['wait', 'err', 'run', 'done', 'idle'];
-function openInfo(area) { G.sel.area = area; infoKey = ''; renderInfo(); }
+function openInfo(area) { G.sel.area = area; infoKey = ''; infoFolded = false; infoEl.scrollTop = 0; renderInfo(); }
 function counts(list) { return ORDER.filter((st) => list.some((s) => s.state === st)).map((st) => '<span class="info-count">' + icon(st) + list.filter((s) => s.state === st).length + ' ' + WORDS[st] + '</span>').join(''); }
 function sessionRow(s) {
   const what = wantsDesk(s) || s.state === 'idle' ? s.summary : activity(s);
@@ -109,7 +109,7 @@ function renderInfo() {
     const room = G.world.offices[a.id], h = room.hood.h, list = G.S.filter((s) => s.plot === a.id), guests = G.S.filter((s) => s.plot !== a.id && awayFrom(s) === a.id);
     head = a.id; sub = h.name + ' · ' + list.length + (list.length > 1 ? ' agents' : ' agent');
     const home = list.find((x) => x.cwd);
-    if (home) sub += ' · ' + where(home.cwd);
+    if (home) sub += ' · ' + where(home.root);
     body = '<div class="info-counts">' + counts(list) + '</div><div class="info-list">' + list.map(sessionRow).join('') + '</div>' +
       (live && home ? '<div class="info-foot"><button class="sg-btn" type="button" data-reveal="' + home.id + '">show folder</button></div>' : '') +
       '<div class="info-foot">' + (guests.length ? 'visiting now: ' + guests.map((s) => esc(gene(s.id).name) + ' from ' + s.plot).join(', ') : 'a finished agent naps or plays by its slab; the slab shows its session') + '</div>';
@@ -119,18 +119,23 @@ function renderInfo() {
     body = '<div class="info-counts">' + counts(list) + '</div><div class="info-list">' + isl.rooms.map((r) => { const ps = G.S.filter((s) => s.plot === r.project); return '<button class="sg-row info-project" type="button" data-plot="' + r.project + '"><span class="sg-row__title">' + esc(r.project) + '</span><span class="sg-row__age">' + ps.map((s) => icon(s.state)).join('') + '</span><span class="sg-row__meta">' + ps.length + (ps.length > 1 ? ' agents' : ' agent') + ' · ' + ps.map((s) => esc(gene(s.id).name)).join(', ') + '</span></button>'; }).join('') + '</div>' +
       (out.length ? '<div class="info-foot">out visiting: ' + out.map((s) => esc(gene(s.id).name) + ' at ' + awayFrom(s)).join(', ') + '</div>' : '');
   }
+  if (infoFolded) body = '';
   const key = head + sub + body; if (key === infoKey) return; infoKey = key;
-  infoEl.innerHTML = '<div class="info-head"><div><div class="info-title">' + esc(head) + '</div><div class="info-sub">' + esc(sub) + '</div></div><button class="sg-icon-btn" type="button" aria-label="Close">' + '<svg class="sg-icon" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 3l6 6M9 3 3 9" stroke="currentColor" stroke-width="1.3"/></svg></button></div>' + body;
-  infoEl.hidden = false;
+  const scrolled = infoEl.scrollTop;   // the list redraws as ages tick: the owner's place in it must not jump back to the top
+  infoEl.innerHTML = '<div class="info-head"><div><div class="info-title">' + esc(head) + '</div><div class="info-sub">' + esc(sub) + '</div></div><button class="sg-icon-btn" type="button" aria-expanded="' + !infoFolded + '" aria-label="' + (infoFolded ? 'Expand' : 'Collapse') + '">' + '<svg class="sg-icon" viewBox="0 0 12 12" aria-hidden="true"><path d="' + (infoFolded ? 'M3 4.5 6 7.5 9 4.5' : 'M3 7.5 6 4.5 9 7.5') + '" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></button></div>' + body;
+  infoEl.hidden = false; infoEl.scrollTop = scrolled;
 }
 infoEl.addEventListener('click', (e) => {
-  if (e.target.closest('.sg-icon-btn')) { openInfo(null); return; }
+  if (e.target.closest('.sg-icon-btn')) { infoFolded = !infoFolded; infoKey = ''; renderInfo(); return; }
   const rv = e.target.closest('[data-reveal]'); if (rv) { revealFolder(rv.getAttribute('data-reveal')); return; }
   // a session here works like clicking its blob: the map flies to it and the side panel opens its row; this panel stays open
   const loc = e.target.closest('[data-loc]'); if (loc) { const id = loc.getAttribute('data-loc'); revealSession(id); locate(id); return; }
   const pl = e.target.closest('[data-plot]'); if (pl) { const r = G.world.offices[pl.getAttribute('data-plot')]; openInfo({ kind: 'plot', id: r.project }); frameTo([{ u0: r.u0, v0: r.v0, u1: r.u0 + r.w, v1: r.v0 + r.d }]); zval(); }
 });
 infoEl.addEventListener('pointerdown', (e) => e.stopPropagation());
+// the panel sits on the map: its own scrolling and pointer must not zoom the map or hover what lies underneath
+infoEl.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
+infoEl.addEventListener('pointermove', (e) => { e.stopPropagation(); G.hover = { agent: null, area: null }; stage.classList.remove('over-agent'); });
 
 /* ---------------- popovers ---------------- */
 let popEl = null, popFor = null;
@@ -208,7 +213,7 @@ function renderNow() {
         h += '<div class="sg-row' + (sel ? ' is-selected' : '') + '" data-id="' + s.id + '" tabindex="0">' + icon(s.state) + '<span class="sg-row__title">' + esc(s.title) + '</span><span class="sg-row__age">' + fmt(s.since) + '</span><span class="sg-row__meta">' + s.plot + ' · ' + esc(gene(s.id).name) + ' · ' + esc(s.summary) + '</span>' +
           // the selected row opens up: where it lives, and what you can do with it
           (sel && s.sum ? sumBlock(s.sum, false) : '') +
-          (sel ? (s.cwd ? '<span class="sg-row__where">' + esc(where(s.cwd)) + (s.branch ? ' · ⎇ ' + esc(s.branch) : '') + '</span>' : '') + '<span class="sg-row__actions"><button class="sg-btn sg-btn--primary" type="button" data-open="' + s.id + '"><kbd>Enter</kbd>resume</button>' + (live ? '<button class="sg-btn" type="button" data-reveal="' + s.id + '">folder</button>' + ((s.state === 'done' || s.state === 'idle') ? '<button class="sg-btn" type="button" data-archive="' + s.id + '">archive</button>' : '') : '') + '</span>' : '') + '</div>';
+          (sel ? (s.cwd ? '<span class="sg-row__where">' + esc(where(s.root) + (s.cwd !== s.root ? ' → ' + where(s.cwd) : '')) + (s.branch ? ' · ⎇ ' + esc(s.branch) : '') + '</span>' : '') + '<span class="sg-row__actions"><button class="sg-btn sg-btn--primary" type="button" data-open="' + s.id + '"><kbd>Enter</kbd>resume</button>' + (live ? '<button class="sg-btn" type="button" data-reveal="' + s.id + '">folder</button>' + ((s.state === 'done' || s.state === 'idle') ? '<button class="sg-btn" type="button" data-archive="' + s.id + '">archive</button>' : '') : '') + '</span>' : '') + '</div>';
       }
     }
   }

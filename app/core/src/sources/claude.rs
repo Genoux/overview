@@ -117,8 +117,10 @@ fn what_of(item: &Value) -> String {
 }
 
 /// Reads one session file. `quiet` is the seconds since it last changed; `updated` its unix time.
+const TAIL: u64 = 384 * 1024;
+
 pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
-    let tail = last_lines(path, 384 * 1024);
+    let tail = last_lines(path, TAIL);
     if tail.is_empty() {
         return None;
     }
@@ -132,8 +134,10 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
     let mut seen = Seen::default();
     let mut pending: Vec<(String, Pending)> = vec![];
     let mut mode = String::from("default");
+    let mut root = None::<String>;
     for r in &tail {
         if let Some(c) = r["cwd"].as_str() {
+            root.get_or_insert_with(|| c.to_string());
             cwd = Some(c.to_string());
         }
         if let Some(b) = r["gitBranch"].as_str() {
@@ -217,13 +221,17 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
         }
     }
     // the working folder and a first prompt are written early; look at the start if the tail had none
-    if cwd.is_none() || (title.is_none() && last_prompt.is_none()) {
-        for r in first_lines(path, 128 * 1024) {
-            if cwd.is_none() {
-                if let Some(c) = r["cwd"].as_str() {
-                    cwd = Some(c.to_string());
-                }
+    // a long session's tail no longer holds its start, so the folder it started in is read there too
+    let cut = std::fs::metadata(path).is_ok_and(|m| m.len() > TAIL);
+    if cut || cwd.is_none() || (title.is_none() && last_prompt.is_none()) {
+        let head = first_lines(path, 128 * 1024);
+        if let Some(c) = head.iter().find_map(|r| r["cwd"].as_str()) {
+            if cut || root.is_none() {
+                root = Some(c.to_string());
             }
+            cwd.get_or_insert_with(|| c.to_string());
+        }
+        for r in head {
             if title.is_none() && r["type"] == "user" && r["isMeta"].as_bool() != Some(true) {
                 if let Some(t) = text_of(&r["message"]["content"]) {
                     if !t.starts_with('<') {
@@ -235,6 +243,7 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
     }
     seen.pending = pending.into_iter().map(|(_, p)| p).collect();
     let cwd = cwd?;
+    let root = root.unwrap_or_else(|| cwd.clone());
     let (state, waiting_on) = infer(&seen, quiet);
     Some(Session {
         id: id.unwrap_or_else(|| {
@@ -243,8 +252,9 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
                 .unwrap_or_default()
         }),
         agent: "claude",
-        project: project_of(&cwd),
+        project: project_of(&cwd, &root),
         cwd,
+        root,
         branch,
         title: title.or_else(|| last_prompt.as_ref().map(|p| clip(p, 80))),
         state,
@@ -271,6 +281,36 @@ mod tests {
         ));
         std::fs::write(&p, lines.join("\n") + "\n").unwrap();
         p
+    }
+    #[test]
+    fn a_session_that_moved_keeps_the_folder_it_started_in() {
+        let moved = write(&[
+            r#"{"type":"user","cwd":"/w/gramly","sessionId":"s9","message":{"role":"user","content":"Tidy the notes"}}"#,
+            r#"{"type":"assistant","cwd":"/w/gramly/notes/2026","message":{"stop_reason":"end_turn","content":[{"type":"text","text":"Tidied."}]}}"#,
+        ]);
+        let s = read(&moved, 60, 0).unwrap();
+        assert_eq!(
+            (s.root.as_str(), s.cwd.as_str(), s.project.as_str()),
+            ("/w/gramly", "/w/gramly/notes/2026", "gramly")
+        );
+    }
+    #[test]
+    fn a_long_session_still_knows_the_folder_it_started_in() {
+        let filler = format!(
+            r#"{{"type":"assistant","cwd":"/w/gramly/notes","message":{{"content":[{{"type":"text","text":"{}"}}]}}}}"#,
+            "x".repeat(4096)
+        );
+        let mut lines = vec![
+            r#"{"type":"user","cwd":"/w/gramly","sessionId":"s8","message":{"role":"user","content":"Tidy the notes"}}"#,
+        ];
+        lines.extend(std::iter::repeat_n(filler.as_str(), 120));
+        let long = write(&lines);
+        assert!(std::fs::metadata(&long).unwrap().len() > TAIL);
+        let s = read(&long, 60, 0).unwrap();
+        assert_eq!(
+            (s.root.as_str(), s.cwd.as_str()),
+            ("/w/gramly", "/w/gramly/notes")
+        );
     }
     #[test]
     fn a_turn_that_ended_is_done_and_a_pending_command_waits() {

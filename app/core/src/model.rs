@@ -21,9 +21,11 @@ pub struct Session {
     pub id: String,
     /// "claude", "codex", ...
     pub agent: &'static str,
-    /// The working folder the agent ran in.
+    /// The folder the agent works in now: it moves when the agent changes folder.
     pub cwd: String,
-    /// The folder's last path segment: the project, as the map shows it.
+    /// The folder the session started in. The agent files the session under it, so resuming happens there.
+    pub root: String,
+    /// The project, as the map shows it: see `project_of`.
     pub project: String,
     pub branch: Option<String>,
     pub title: Option<String>,
@@ -143,19 +145,27 @@ pub fn clip(t: &str, n: usize) -> String {
     out
 }
 
-/// The project a working folder belongs to: the top folder of its git repository (a session that `cd`s into a
-/// subfolder stays on its project), or the folder's own name outside a repository.
-pub fn project_of(cwd: &str) -> String {
-    let mut p = std::path::Path::new(cwd);
-    loop {
-        if p.join(".git").exists() {
-            return name_of(&p.to_string_lossy());
-        }
-        match p.parent() {
-            Some(up) if up.as_os_str().len() > 1 => p = up,
-            _ => return name_of(cwd),
-        }
+/// The project a session belongs to: the repository it works in, else the repository it started in, else the
+/// folder it started in. A home folder is "~": its own name is the owner's, which says nothing.
+pub fn project_of(cwd: &str, root: &str) -> String {
+    let folder = repository_of(cwd)
+        .or_else(|| repository_of(root))
+        .unwrap_or_else(|| root.to_string());
+    if is_home(&folder) {
+        "~".into()
+    } else {
+        name_of(&folder)
     }
+}
+fn repository_of(folder: &str) -> Option<String> {
+    std::path::Path::new(folder)
+        .ancestors()
+        .find(|p| p.join(".git").exists())
+        .map(|p| p.to_string_lossy().into_owned())
+}
+fn is_home(folder: &str) -> bool {
+    let parts: Vec<&str> = folder.split('/').filter(|part| !part.is_empty()).collect();
+    matches!(parts.as_slice(), ["home" | "Users", _])
 }
 fn name_of(path: &str) -> String {
     path.trim_end_matches('/')
@@ -212,6 +222,18 @@ mod tests {
     fn clipping() {
         assert_eq!(clip("a  b\n c", 10), "a b c");
         assert_eq!(clip("abcdefghij", 5), "abcd…");
-        assert_eq!(project_of("/nonexistent/x/code/gramly/"), "gramly");
+        assert_eq!(
+            project_of("/nonexistent/x/code/gramly/", "/nonexistent/x/code/gramly/"),
+            "gramly"
+        );
+    }
+    #[test]
+    fn a_session_outside_a_repository_is_named_after_where_it_started() {
+        assert_eq!(
+            project_of("/nonexistent/x/gramly/.demo", "/nonexistent/x/gramly"),
+            "gramly"
+        );
+        assert_eq!(project_of("/home/sam/.agent/memory", "/home/sam"), "~");
+        assert_eq!(project_of("/Users/sam", "/Users/sam"), "~");
     }
 }

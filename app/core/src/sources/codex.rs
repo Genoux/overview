@@ -50,9 +50,11 @@ fn policy_asks(policy: &Value) -> bool {
 
 pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
     let (mut cwd, mut id, mut title) = (None::<String>, None::<String>, None::<String>);
+    let mut root = None::<String>;
     for r in first_lines(path, 64 * 1024) {
         if r["type"] == "session_meta" {
             cwd = r["payload"]["cwd"].as_str().map(String::from);
+            root = cwd.clone();
             id = r["payload"]["id"].as_str().map(String::from);
         }
         if title.is_none()
@@ -161,6 +163,7 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
     }
     seen.pending = pending.into_iter().map(|(_, p)| p).collect();
     let cwd = cwd?;
+    let root = root.unwrap_or_else(|| cwd.clone());
     let (state, waiting_on) = infer(&seen, quiet);
     Some(Session {
         id: id.unwrap_or_else(|| {
@@ -169,8 +172,9 @@ pub fn read(path: &Path, quiet: u64, updated: u64) -> Option<Session> {
                 .unwrap_or_default()
         }),
         agent: "codex",
-        project: project_of(&cwd),
+        project: project_of(&cwd, &root),
         cwd,
+        root,
         branch: None,
         title: title.or_else(|| last_prompt.as_ref().map(|p| clip(p, 80))),
         state,

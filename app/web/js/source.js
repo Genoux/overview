@@ -21,7 +21,7 @@ function ago(sec) { const m = Math.max(0, Math.round((Date.now() / 1000 - sec) /
 function toMap(s, i, plotOf) {
   const out = { id: s.id, plot: plotOf(s), project: s.project, machine: s.machine || 'local', agent: ['claude', 'codex', 'gemini'].includes(s.agent) ? s.agent : 'claude', state: STATE[s.state] || 'idle',
     since: Math.max(0, Math.round(s.quiet_secs / 60)), prio: i + 1, title: clip(s.title || s.project, 90),
-    summary: clip(s.last_reply || s.last_prompt || '', 160), branch: s.branch || null, path: s.path, cwd: s.cwd, src: s.agent,
+    summary: clip(s.last_reply || s.last_prompt || '', 160), branch: s.branch || null, path: s.path, cwd: s.cwd, root: s.root || s.cwd, src: s.agent,
     run: s.run ? { app: s.run.app, tty: s.run.tty, pid: s.run.pid, busy: s.run.busy, open: s.run.started ? ago(s.run.started) : '' } : null };
   // the LLM summary, when ready: a task title, what was done and is left, what it needs from you, the next step
   const m = s.summary;

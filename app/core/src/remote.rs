@@ -11,7 +11,7 @@ use crate::sources::{claude, codex};
 use std::collections::{HashMap, HashSet};
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::Stdio;
 use std::time::{Duration, Instant};
 
 const TAIL: u64 = 384 * 1024;
@@ -33,7 +33,7 @@ pub fn ssh(alias: &str, script: &str, timeout: Duration) -> Result<String, Strin
     if !valid_alias(alias) {
         return Err(format!("not an ssh destination: {alias}"));
     }
-    let mut child = Command::new("ssh")
+    let mut child = crate::procs::program("ssh")
         .args([
             "-o",
             "BatchMode=yes",

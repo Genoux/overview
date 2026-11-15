@@ -13,8 +13,8 @@
 //! from a remote machine over ssh (see `remote.rs`).
 use serde::Serialize;
 use serde_json::Value;
-use std::collections::HashMap;
-use std::path::Path;
+use std::collections::{BTreeSet, HashMap};
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone, Serialize, PartialEq)]
 pub struct Run {
@@ -217,8 +217,39 @@ fn installed_bundle(name: &str, dirs: &[std::path::PathBuf]) -> Option<String> {
 }
 
 /// This machine's process table, in the shape `parse_ps` reads.
+/// What a program of the system may inherit of one environment value when the app runs from a bundle: the entries
+/// outside the bundle, or nothing when the value pointed only inside it.
+pub fn outside_bundle(value: &str, bundle: &str) -> Option<String> {
+    let entries: Vec<&str> = value.split(':').collect();
+    let kept: Vec<&str> = entries
+        .iter()
+        .copied()
+        .filter(|entry| !Path::new(entry).starts_with(bundle))
+        .collect();
+    (kept.len() == entries.len() || kept.iter().any(|entry| !entry.is_empty()))
+        .then(|| kept.join(":"))
+}
+
+/// A command for a program outside the app; every program the app starts goes through here. As an AppImage the app
+/// runs with the bundle's library and data folders in its environment (`APPDIR` names the bundle), and a system
+/// program started with those loads the bundle's libraries and dies: measured 2026-11-14 on `workstation`, ghostty
+/// from the installed app exits with "symbol lookup error: /usr/lib/libtiff.so.6", so no terminal ever opened.
+pub fn program(name: &str) -> std::process::Command {
+    let mut command = std::process::Command::new(name);
+    let bundle = std::env::var("APPDIR").ok().filter(|b| !b.is_empty());
+    for (variable, value) in bundle.iter().flat_map(|_| std::env::vars_os()) {
+        // a value that is not text cannot name a folder of the bundle: the program inherits it as it is
+        let Some(text) = value.to_str() else { continue };
+        match outside_bundle(text, bundle.as_deref().unwrap_or_default()) {
+            Some(kept) => command.env(variable, kept),
+            None => command.env_remove(variable),
+        };
+    }
+    command
+}
+
 pub fn ps_now() -> String {
-    std::process::Command::new("ps")
+    program("ps")
         .args(["axo", "pid=,ppid=,tty=,comm="])
         .output()
         .map(|o| String::from_utf8_lossy(&o.stdout).to_string())
@@ -243,23 +274,44 @@ pub fn window_owner(pid: u32, procs: &HashMap<u32, Proc>, window_pids: &[u32]) -
     None
 }
 
+/// The folder an agent started with its own `CLAUDE_CONFIG_DIR` (a profile) keeps its pid file in, read from the
+/// process's environment as `/proc/<pid>/environ` gives it. Only this one variable is looked at.
+pub fn config_dir_of(environ: &str) -> Option<PathBuf> {
+    environ
+        .split('\0')
+        .find_map(|entry| entry.strip_prefix("CLAUDE_CONFIG_DIR="))
+        .filter(|dir| !dir.is_empty())
+        .map(PathBuf::from)
+}
+
+/// Every folder running agents keep their pid files in: the default one, and each profile a running agent uses.
+// ponytail: profiles are found on Linux only; macOS needs the environment from `ps -E`, to add when the owner
+// runs profiles there.
+fn config_dirs(home: &Path, procs: &HashMap<u32, Proc>) -> BTreeSet<PathBuf> {
+    let profiles = procs
+        .iter()
+        .filter(|(_, process)| cfg!(target_os = "linux") && skip(process.name()))
+        .filter_map(|(pid, _)| std::fs::read(format!("/proc/{pid}/environ")).ok())
+        .filter_map(|environ| config_dir_of(&String::from_utf8_lossy(&environ)));
+    std::iter::once(home.join(".claude"))
+        .chain(profiles)
+        .collect()
+}
+
 /// This machine's live sessions.
 pub fn local(home: &Path) -> HashMap<String, Run> {
-    let mut files = vec![];
-    if let Ok(dir) = std::fs::read_dir(home.join(".claude/sessions")) {
-        for e in dir.flatten() {
-            let p = e.path();
-            if p.extension().map(|x| x == "json").unwrap_or(false) {
-                if let Ok(t) = std::fs::read_to_string(&p) {
-                    files.push(t);
-                }
-            }
-        }
-    }
+    let ps = ps_now();
+    let files: Vec<String> = config_dirs(home, &parse_ps(&ps))
+        .iter()
+        .filter_map(|dir| std::fs::read_dir(dir.join("sessions")).ok())
+        .flat_map(|dir| dir.flatten())
+        .map(|entry| entry.path())
+        .filter(|path| path.extension().is_some_and(|x| x == "json"))
+        .filter_map(|path| std::fs::read_to_string(path).ok())
+        .collect();
     if files.is_empty() {
         return HashMap::new();
     }
-    let ps = ps_now();
     // Linux lets a process rename itself ("MainThread"); its executable, from /proc, says what it is
     let exe: HashMap<u32, String> = if cfg!(target_os = "linux") {
         parse_ps(&ps)
@@ -299,6 +351,40 @@ pub fn local(home: &Path) -> HashMap<String, Run> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn a_system_program_inherits_nothing_from_the_bundle() {
+        let bundle = "/tmp/.mount_a";
+        assert_eq!(
+            outside_bundle("/tmp/.mount_a/usr/lib/:/usr/lib", bundle),
+            Some("/usr/lib".into())
+        );
+        assert_eq!(
+            outside_bundle("/tmp/.mount_a//usr/lib/gtk-3.0", bundle),
+            None
+        );
+        assert_eq!(
+            outside_bundle("wayland,x11", bundle),
+            Some("wayland,x11".into())
+        );
+        assert_eq!(outside_bundle("", bundle), Some(String::new()));
+        assert_eq!(
+            outside_bundle("/tmp/.mount_abc/bin", bundle),
+            Some("/tmp/.mount_abc/bin".into())
+        );
+    }
+    #[test]
+    fn a_profile_folder_comes_from_the_agents_own_environment() {
+        assert_eq!(
+            config_dir_of(
+                "HOME=/home/sam\0CLAUDE_CONFIG_DIR=/home/sam/profiles/work\0TERM=xterm\0"
+            ),
+            Some(PathBuf::from("/home/sam/profiles/work"))
+        );
+        assert_eq!(
+            config_dir_of("HOME=/home/sam\0NOT_CLAUDE_CONFIG_DIR=/x\0"),
+            None
+        );
+    }
     #[test]
     fn the_host_comes_from_the_tree_not_from_a_list() {
         let ps = "  1     0 ??       /sbin/launchd\n 100     1 ??       /Applications/Some Editor.app/Contents/Frameworks/Some Editor Helper.app/Contents/MacOS/Some Editor Helper\n 200   100 ttys019  login\n 300   200 ttys019  -zsh\n 400   300 ttys019  claude\n 500     1 ?        tmux: server\n 600   500 pts/3    bash\n 700   600 pts/3    claude\n 900     1 ?        MainThread\n 910   900 pts/4    zsh\n 920   910 pts/4    claude\n";
